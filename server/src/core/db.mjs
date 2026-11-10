@@ -72,7 +72,7 @@ export async function migrate(db) {
   const files = (await readdir(folder)).filter((n) => /^\d+_.*\.sql$/.test(n)).sort();
   for (const file of files) {
     const version = Number(file.split('_')[0]),
-      sql = await readFile(new URL(file, folder), 'utf8'),
+      sql = (await readFile(new URL(file, folder), 'utf8')).replaceAll('\r\n', '\n'),
       checksum = digest(sql);
     await db.transaction(async (tx) => {
       await tx.query('SELECT pg_advisory_xact_lock(73402912)');
@@ -80,8 +80,15 @@ export async function migrate(db) {
         await tx.query('SELECT checksum FROM schema_migrations WHERE version=$1', [version])
       ).rows[0];
       if (old) {
-        if (old.checksum !== checksum)
-          throw new Error('Migration changed after application: ' + file);
+        if (old.checksum !== checksum) {
+          // Accept only the previous Windows newline representation of identical SQL.
+          if (old.checksum !== digest(sql.replaceAll('\n', '\r\n')))
+            throw new Error('Migration changed after application: ' + file);
+          await tx.query('UPDATE schema_migrations SET checksum=$2 WHERE version=$1', [
+            version,
+            checksum,
+          ]);
+        }
         return;
       }
       for (const statement of sql
