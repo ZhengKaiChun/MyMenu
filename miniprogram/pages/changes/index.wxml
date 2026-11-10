@@ -1,0 +1,56 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="已点的菜 · 申请更换" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-changes">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">想换一道，也好好说</view>
+        <text class="muted">自己点的、未做好且未过期的菜，可以申请更换。</text>
+      </view>
+      <view class="section-title"><view class="h3">我已点的菜</view></view>
+      <view wx:for="{{lines}}" wx:key="id" class="swap-source">
+        <image class="food" src="{{item.cover}}" mode="aspectFill" />
+        <view class="grow">
+          <view class="h4">{{item.snapshot.name}}</view>
+          <text class="caption">
+            {{util.date(item.meal_date)}} · {{item.slot}} · {{item.quantity}}份
+          </text>
+        </view>
+        <button class="text-btn" bindtap="swap" data-id="{{item.id}}" disabled="{{item.changing}}">
+          {{item.changing?'换菜等回音':'申请更换'}}
+        </button>
+      </view>
+      <view class="section-title"><view class="h3">换菜进度</view></view>
+      <button
+        wx:for="{{changes}}"
+        wx:key="id"
+        class="change-card"
+        bindtap="go"
+        data-page="changeDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="row">
+          <text>{{util.date(item.meal_date)}} · {{item.slot}}</text>
+          <text class="tag wait">{{item.label}}</text>
+        </view>
+        <view class="change-pair">
+          <view>
+            <image class="food" src="{{item.oldCover}}" mode="aspectFill" />
+            <text>{{item.old_snapshot.name}}</text>
+          </view>
+          <text>→</text>
+          <view>
+            <image class="food" src="{{item.newCover}}" mode="aspectFill" />
+            <text>{{item.new_snapshot.name}}</text>
+          </view>
+        </view>
+        <text class="caption">{{item.nickname}} · {{item.quantity}}份 · 查看回音 ›</text>
+      </button>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
+      看全家今日菜单
+    </button>
+  </view>
+</g-shell>

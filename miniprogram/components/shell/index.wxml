@@ -1,0 +1,12 @@
+<view class="shell">
+  <view class="nav" style="padding-top:{{top}}px;height:{{top+navHeight}}px">
+    <view class="nav-inner" style="height:{{navHeight}}px">
+      <button wx:if="{{back}}" class="back" bindtap="back" aria-label="返回">‹</button>
+      <text class="nav-title">{{title}}</text>
+    </view>
+  </view>
+  <view class="shell-body"><slot /></view>
+  <view class="shell-dock"><slot name="dock" /></view>
+  <view class="shell-tabs"><slot name="tabs" /></view>
+</view>
+<g-privacy />

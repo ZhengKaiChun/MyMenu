@@ -1,0 +1,60 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="一份换菜的小心愿" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-changeDetail">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view wx:if="{{change}}">
+        <view class="page-intro">
+          <view class="h2">{{change.label}}</view>
+          <text class="muted">
+            {{change.nickname}} · {{util.date(change.meal_date)}} · {{change.slot}} ·
+            {{change.quantity}}份
+          </text>
+        </view>
+        <view class="change-letter">
+          <text class="letter-kicker">A LITTLE CHANGE FOR OUR TABLE</text>
+          <view class="change-pair">
+            <view>
+              <image class="food" src="{{change.oldCover}}" mode="aspectFill" />
+              <text class="caption">原来的菜</text>
+              <view class="h4">{{change.old_snapshot.name}}</view>
+            </view>
+            <text>→</text>
+            <view>
+              <image class="food" src="{{change.newCover}}" mode="aspectFill" />
+              <text class="caption">想换成</text>
+              <view class="h4">{{change.new_snapshot.name}}</view>
+            </view>
+          </view>
+          <view class="h4">想对饲养员说</view>
+          <view class="muted">{{change.reason || '今天想换个口味，可以吗？'}}</view>
+          <text class="caption">等待或未答应时，原来的菜保持不变。</text>
+          <view wx:if="{{change.reply}}" class="card">
+            <view class="h4">饲养员的回音</view>
+            <text>{{change.reply}}</text>
+          </view>
+        </view>
+        <view wx:if="{{isCook}}">
+          <label class="form-label">回一句话（选填）</label>
+          <textarea
+            value="{{reply}}"
+            data-field="reply"
+            bindinput="input"
+            maxlength="300"
+            placeholder="好呀，给你换这道。"
+          />
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <view wx:if="{{change.status==='pending'}}">
+      <view wx:if="{{isCook}}" class="row">
+        <button class="btn secondary" data-decision="reject" bindtap="reply">这次不换</button>
+        <button class="btn" data-decision="accept" bindtap="reply">好呀，换这道</button>
+      </view>
+      <button wx:else class="btn ghost" bindtap="withdraw">撤回换菜申请</button>
+    </view>
+    <button wx:else class="btn" bindtap="go" data-page="today">查看全家今日菜单</button>
+  </view>
+</g-shell>

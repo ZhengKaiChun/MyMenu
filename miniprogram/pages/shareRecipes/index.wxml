@@ -1,0 +1,29 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="把拿手菜，寄给朋友" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-shareRecipes">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">这几道，想分享给你</view>
+        <text class="muted">选中菜品的用料与步骤会一起寄出。</text>
+      </view>
+      <view class="share-selection-top">
+        <text>{{selected.length}}／{{dishes.length}}道已选</text>
+        <button bindtap="all">{{all?'取消全选':'一键全选'}}</button>
+      </view>
+      <checkbox-group bindchange="select">
+        <label wx:for="{{dishes}}" wx:key="id" class="recipe-share-row">
+          <checkbox value="{{item.id}}" checked="{{util.contains(selected,item.id)}}" />
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <view>
+            <view class="h4">{{item.name}}</view>
+            <text class="caption">{{item.minutes}}分钟 · 含用料与制作步骤</text>
+          </view>
+        </label>
+      </checkbox-group>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">装进信封，预览分享</button>
+  </view>
+</g-shell>

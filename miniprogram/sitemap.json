@@ -1,0 +1,9 @@
+{
+  "desc": "家庭隐私页面不参与搜索索引",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

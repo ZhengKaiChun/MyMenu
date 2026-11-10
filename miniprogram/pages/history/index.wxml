@@ -1,0 +1,69 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="三个月的吃饭记录" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-history">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="today-heading">
+        <view>
+          <text class="caption">OUR DAILY TABLE</text>
+          <view class="h2">回味那些，好好吃饭的日子</view>
+        </view>
+        <button class="text-btn" bindtap="go" data-page="history">回味 ›</button>
+      </view>
+      <picker mode="date" value="{{date}}" bindchange="date">
+        <view class="today-date">
+          <g-icon name="calendar" size="22" />
+          <text class="grow">{{date}}</text>
+          <text>换一天 ⌄</text>
+        </view>
+      </picker>
+      <view class="today-summary">
+        <text>{{total}}道菜已安排</text>
+        <text>{{quantity}}份点菜</text>
+      </view>
+      <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" class="today-meal">
+        <view class="row" style="border-bottom: 1px solid #ddc7a4; padding-bottom: 9px">
+          <g-icon
+            name="{{meal.slot==='早餐'?'bowl':meal.slot==='午餐'?'utensils':'pot'}}"
+            size="23"
+          />
+          <view class="h3 grow">{{meal.slot}}</view>
+          <text class="caption">{{meal.dishes.length}}道菜</text>
+        </view>
+        <view wx:for="{{meal.dishes}}" wx:key="dishId" class="today-dish">
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <view class="grow">
+            <view class="h4">{{item.snapshot.name}}</view>
+            <view class="orderer-list">
+              <view wx:for="{{item.sources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
+                <g-pig index="{{source.pig}}" size="26" />
+                <text>{{source.identity}} · {{source.nickname}} {{source.quantity}}份</text>
+                <button
+                  wx:if="{{isCook}}"
+                  class="text-btn"
+                  style="font-size: 9px"
+                  data-id="{{source.id}}"
+                  bindtap="done"
+                >
+                  {{source.done?'已吃到':'标记做好'}}
+                </button>
+              </view>
+            </view>
+            <text class="caption">合计{{item.quantity}}份</text>
+          </view>
+          <button
+            wx:if="{{isCook}}"
+            class="text-btn"
+            bindtap="go"
+            data-page="recipe"
+            data-id="{{item.dishId}}"
+          >
+            做法 ›
+          </button>
+        </view>
+        <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没有吃饭记录。</view>
+      </view>
+    </view>
+  </scroll-view>
+  <g-tabbar slot="tabs" active="today" />
+</g-shell>

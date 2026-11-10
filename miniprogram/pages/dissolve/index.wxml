@@ -1,0 +1,62 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="解散小家 · 全员确认" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-dissolve">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="dissolve-note">
+        <view wx:if="{{!proposal}}">
+          <g-icon name="home" size="46" />
+          <view class="h2">这件事，要一起决定</view>
+          <view class="muted">
+            确认后抄送其他所有成员。
+            <view>每个人都同意，才会解散小家。</view>
+            <view>有人不同意，小家继续保留。</view>
+          </view>
+        </view>
+        <view wx:else>
+          <view class="h2">{{status}}</view>
+          <view wx:for="{{proposal.votes}}" wx:key="user_id" class="vote-member">
+            <g-pig index="{{item.identity==='猪爸爸'?1:7}}" size="37" />
+            <view class="grow">
+              <view class="h4">{{item.nickname}}</view>
+              <text class="caption">{{item.identity || '野生小猪'}}</text>
+            </view>
+            <text class="tag">
+              {{item.decision==='agree'?'已同意':item.decision==='reject'?'不同意':'等确认'}}
+            </text>
+          </view>
+          <view class="copy-receipt">发起时已抄送其他所有成员。未全员同意前不会解散。</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button
+      wx:if="{{!proposal || proposal.status!=='pending'}}"
+      class="btn ghost"
+      bindtap="confirm"
+    >
+      发起解散，全员确认
+    </button>
+    <view wx:elif="{{canVote}}" class="row">
+      <button class="btn secondary" bindtap="vote" data-decision="reject">不同意，保留小家</button>
+      <button class="btn ghost" bindtap="vote" data-decision="agree">同意解散</button>
+    </view>
+    <button wx:elif="{{isInitiator}}" class="btn ghost" bindtap="cancel">撤回解散申请</button>
+  </view>
+</g-shell>
+<view wx:if="{{showConfirm}}" class="modal-mask">
+  <view class="crying-confirm">
+    <image src="/assets/pigs-crying.png" mode="aspectFit" style="width: 100%; height: 120px" />
+    <view class="h3">真的，要解散小家吗？</view>
+    <view class="muted" style="margin: 18px 0 23px">
+      小猪们有点舍不得这张饭桌。
+      <view>你确认后，会通知其他所有家庭成员；</view>
+      <view>只有每个人都同意，小家才会解散。</view>
+    </view>
+    <view class="cry-actions">
+      <button class="btn" bindtap="close" loading="{{actionBusy}}">先不解散，再陪陪小猪</button>
+      <button class="btn ghost" bindtap="start" loading="{{actionBusy}}">确定发起，全员确认</button>
+    </view>
+  </view>
+</view>

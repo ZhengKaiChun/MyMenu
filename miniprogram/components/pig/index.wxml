@@ -1,0 +1,7 @@
+<view style="width:{{size}}px;height:{{size}}px;overflow:hidden;position:relative">
+  <image
+    src="/assets/pig-family.png"
+    mode="scaleToFill"
+    style="position:absolute;width:400%;height:200%;left:{{left}}%;top:{{top}}%"
+  />
+</view>

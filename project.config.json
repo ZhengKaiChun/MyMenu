@@ -1,0 +1,25 @@
+{
+  "appid": "wx3ab03337b159fadd",
+  "projectname": "给我饭",
+  "description": "给我饭原生小程序",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "libVersion": "3.7.12",
+  "setting": {
+    "es6": true,
+    "enhance": true,
+    "minified": true,
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "urlCheck": true,
+    "postcss": true
+  },
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "node_modules"
+      }
+    ]
+  }
+}

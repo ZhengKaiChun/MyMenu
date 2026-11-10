@@ -1,0 +1,33 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="一封小家的邀请" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-invitation">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="real-letter">
+        <view class="letter-inner">
+          <text class="letter-postmark">给我饭 INVITATION</text>
+          <text class="letter-kicker">一封留给你的邀请</text>
+          <view class="h2">
+            <view>邀请你</view>
+            <view>{{invitation.role==='cook'?'一起打扫猪圈':'加入我的猪圈'}}</view>
+          </view>
+          <view class="letter-dear">亲爱的小猪：</view>
+          <view class="letter-body">
+            想请你来「{{invitation.name || family.name}}」，
+            <view>把一日三餐，过成我们的日常。</view>
+            <view>饭桌上的位置，已经为你留好。</view>
+          </view>
+          <view class="letter-small-pig"><g-pig index="0" size="65" /></view>
+          <view class="letter-sign">等你回家吃饭 ♡</view>
+        </view>
+        <view class="letter-envelope-edge" />
+      </view>
+      <text class="caption">
+        {{invitation.role==='cook'?'加入后一起管理菜谱、准备三餐':'加入后可以点菜、看回音和全家菜单'}}
+      </text>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="accept" loading="{{actionBusy}}">接受邀请，回家吃饭</button>
+  </view>
+</g-shell>

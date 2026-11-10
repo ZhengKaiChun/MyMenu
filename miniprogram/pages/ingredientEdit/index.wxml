@@ -1,0 +1,69 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="把食材收进冰箱" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-ingredientEdit">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="fridge-form">
+        <view
+          class="fridge-top"
+          style="
+            position: relative;
+            padding: 26px 20px 25px 34px;
+            border-bottom: 5px solid #c6cbb1;
+            background: #e2e8d3;
+          "
+        >
+          <view class="fridge-handle" />
+          <text style="font-size: 8px; color: #929e71">OUR LITTLE FRIDGE</text>
+          <view class="h2" style="font-size: 24px; color: #6e7f52">今天，收好一点新鲜</view>
+          <text class="caption">
+            {{scope==='personal'?'存入我的个人食材库':'存入当前小家食材库'}}
+          </text>
+        </view>
+        <view class="fridge-shelf">
+          <label class="form-label">食材名称</label>
+          <input
+            class="input"
+            value="{{name}}"
+            data-field="name"
+            bindinput="input"
+            type="text"
+            placeholder="例如：鸡翅"
+          />
+          <view class="two">
+            <view>
+              <label class="form-label">现有数量</label>
+              <input
+                class="input"
+                value="{{quantity}}"
+                data-field="quantity"
+                bindinput="input"
+                type="digit"
+                placeholder="8"
+              />
+            </view>
+            <view>
+              <label class="form-label">单位</label>
+              <input
+                class="input"
+                value="{{unit}}"
+                data-field="unit"
+                bindinput="input"
+                type="text"
+                placeholder="只"
+              />
+            </view>
+          </view>
+          <label class="form-label">分类</label>
+          <picker range="{{categories}}" bindchange="category">
+            <view class="select">{{category}}</view>
+          </picker>
+          <text class="caption">写清数量和单位，下次开饭心里有数。</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">放进冰箱并保存</button>
+  </view>
+</g-shell>

@@ -1,0 +1,35 @@
+.native-tabbar {
+  display: flex;
+  padding: 9px 15px calc(10px + env(safe-area-inset-bottom));
+  background: #fffcf6;
+  border-top: 1px solid #e9dfd0;
+}
+.native-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  font-size: 10px;
+  color: #a18a72;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.native-tab image {
+  width: 26px;
+  height: 26px;
+}
+.native-tab.on {
+  color: #b74f37;
+  font-weight: 700;
+}
+.tab-dot {
+  width: 17px;
+  height: 2px;
+  background: #b74f37;
+  border-radius: 2px;
+  position: absolute;
+  bottom: -5px;
+}

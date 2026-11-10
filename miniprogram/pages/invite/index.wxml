@@ -1,0 +1,72 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="邀请小猪回家" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-invite">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="real-letter">
+        <view class="letter-inner">
+          <text class="letter-postmark">给我饭 INVITATION</text>
+          <text class="letter-kicker">一封留给你的邀请</text>
+          <view class="h2">
+            <view>邀请你</view>
+            <view>{{invitation.role==='cook'?'一起打扫猪圈':'加入我的猪圈'}}</view>
+          </view>
+          <view class="letter-dear">亲爱的小猪：</view>
+          <view class="letter-body">
+            想请你来「{{invitation.name || family.name}}」，
+            <view>把一日三餐，过成我们的日常。</view>
+            <view>饭桌上的位置，已经为你留好。</view>
+          </view>
+          <view class="letter-small-pig"><g-pig index="0" size="65" /></view>
+          <view class="letter-sign">等你回家吃饭 ♡</view>
+        </view>
+        <view class="letter-envelope-edge" />
+      </view>
+      <label class="form-label">邀请TA成为</label>
+      <view class="invite-role-grid">
+        <button
+          class="rolebox {{role==='eater'?'selected':''}}"
+          data-role="eater"
+          bindtap="chooseRole"
+        >
+          <g-icon name="bowl" />
+          <view class="h4">大懒猪</view>
+          <text class="caption">负责点菜，好好吃饭</text>
+        </button>
+        <button
+          class="rolebox {{role==='cook'?'selected':''}}"
+          data-role="cook"
+          bindtap="chooseRole"
+        >
+          <g-icon name="pot" />
+          <view class="h4">饲养员</view>
+          <text class="caption">一起做饭，管理菜谱</text>
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button wx:if="{{!invitation}}" class="btn" bindtap="prepare">封好邀请，准备分享</button>
+    <button wx:else class="btn" open-type="share">分享给微信好友</button>
+    <button class="btn secondary" bindtap="code">生成邀请码</button>
+  </view>
+</g-shell>
+<view wx:if="{{showCode}}" class="modal-mask">
+  <view class="modal">
+    <view class="h3">凭这张邀请，回家吃饭</view>
+    <view class="invite-pass">
+      <view class="pass-top">给我饭 · 小家通行证</view>
+      <view class="h3">{{family.name}}</view>
+      <view
+        class="pass-code"
+        style="font-size: 15px; letter-spacing: 1px; word-break: break-all; padding: 0 14px"
+      >
+        {{invitation.token}}
+      </view>
+      <view class="pass-tear" />
+      <view class="pass-bottom">7天有效 · 仅限一位新成员</view>
+    </view>
+    <button class="btn" bindtap="copyCode" loading="{{actionBusy}}">复制邀请码</button>
+    <button class="btn secondary" bindtap="closeCode" loading="{{actionBusy}}">收好这张邀请</button>
+  </view>
+</view>

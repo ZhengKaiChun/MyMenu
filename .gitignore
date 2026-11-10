@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+.runtime/
+artifacts/
+project.private.config.json
+miniprogram/config/local.js
+.DS_Store
+
+.runtime-audit.json
+*.bundle

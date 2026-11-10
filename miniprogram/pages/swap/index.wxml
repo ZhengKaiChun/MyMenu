@@ -1,0 +1,48 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="申请换一道菜" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-swap">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">这顿，想换个口味</view>
+        <text class="muted">
+          {{util.date(source.meal_date)}} · {{source.slot}} ·
+          {{source.quantity}}份，日期与份数保持不变
+        </text>
+      </view>
+      <view class="swap-original">
+        <text class="caption">原来点了</text>
+        <view class="row start">
+          <image class="food" src="{{source.cover}}" mode="aspectFill" />
+          <view class="h3">{{source.snapshot.name}}</view>
+        </view>
+      </view>
+      <view class="section-title"><view class="h3">这次想换成</view></view>
+      <view class="swap-options">
+        <button
+          wx:for="{{dishes}}"
+          wx:key="id"
+          class="swap-option {{selected===item.id?'selected':''}}"
+          data-id="{{item.id}}"
+          bindtap="pick"
+        >
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <text>{{item.name}}</text>
+          <text style="float: right">{{selected===item.id?'✓':'○'}}</text>
+        </button>
+      </view>
+      <label class="form-label">想换菜的原因（选填）</label>
+      <textarea
+        value="{{reason}}"
+        data-field="reason"
+        bindinput="input"
+        maxlength="300"
+        placeholder="今天想换个口味，可以帮我换一道吗？"
+      />
+      <text class="caption">等待或未答应时，原来的菜保持不变。</text>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">发送换菜申请</button>
+  </view>
+</g-shell>

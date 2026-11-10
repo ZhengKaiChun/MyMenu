@@ -1,0 +1,24 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="好味道，已经收好" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-copyDone">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="copy-complete">
+        <view class="copy-complete-book"><g-icon name="book" size="71" /></view>
+        <view class="h2">
+          <view>这份拿手味道，</view>
+          <view>在你家安家啦</view>
+        </view>
+        <text>{{receipt.name}} · 已收下{{receipt.count}}道菜</text>
+        <view class="copy-result-card">
+          <view class="h4">可独立编辑 · 用料步骤一起保存</view>
+          <text class="caption">新增{{receipt.added}}道，替换{{receipt.replaced}}道</text>
+          <text class="caption">不会修改分享者的小家，也不会复制TA的成员或点餐记录。</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="open" loading="{{actionBusy}}">去这个小家，看看菜谱</button>
+  </view>
+</g-shell>

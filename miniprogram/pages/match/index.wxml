@@ -1,0 +1,34 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="冰箱里，有答案" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-match">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">手边的食材，能做什么？</view>
+        <text class="muted">从自己的小家菜谱中寻找搭配。</text>
+      </view>
+      <view class="search row">
+        <input
+          placeholder="试试：番茄＋鸡蛋"
+          value="{{query}}"
+          data-field="query"
+          bindinput="input"
+        />
+        <button bindtap="search">搜索</button>
+      </view>
+      <view wx:for="{{results}}" wx:key="id" class="card">
+        <view class="dish">
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <view class="grow">
+            <view class="h4">{{item.name}}</view>
+            <text class="caption">命中 {{item.matched}} 项 · 还需 {{util.join(item.missing)}}</text>
+          </view>
+          <button class="text-btn" bindtap="go" data-page="recipe" data-id="{{item.id}}">
+            做法 ›
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <g-tabbar slot="tabs" active="pantry" />
+</g-shell>

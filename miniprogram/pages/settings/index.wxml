@@ -1,0 +1,34 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="我的与设置" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-settings">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="card profile-pass row">
+        <image
+          wx:if="{{user.avatar}}"
+          src="{{user.avatar}}"
+          mode="aspectFill"
+          style="width: 68px; height: 68px; border-radius: 50%"
+        />
+        <g-pig wx:else index="7" size="68" />
+        <view>
+          <view class="h2">{{user.nickname}}</view>
+          <button class="text-btn" bindtap="go" data-page="profile">修改头像与昵称 ›</button>
+        </view>
+      </view>
+      <view class="card">
+        <button class="btn secondary" bindtap="go" data-page="personal" loading="{{actionBusy}}">
+          个人现有食材
+        </button>
+        <button class="btn secondary" bindtap="go" data-page="history" loading="{{actionBusy}}">
+          最近三个月的吃饭记录
+        </button>
+      </view>
+      <button wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="bindPhone">
+        绑定／修改手机号
+      </button>
+      <button class="btn secondary" bindtap="logout" loading="{{actionBusy}}">退出登录</button>
+      <button class="btn ghost" bindtap="deleteAccount" loading="{{actionBusy}}">注销账号</button>
+    </view>
+  </scroll-view>
+</g-shell>

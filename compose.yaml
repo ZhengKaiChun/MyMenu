@@ -1,0 +1,48 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://menu:${POSTGRES_PASSWORD}@db:5432/menu
+      PUBLIC_ORIGIN: https://${DOMAIN}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media:/app/.runtime/media
+    networks: [internal]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: menu
+      POSTGRES_USER: menu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [postgres:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U menu -d menu]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  gateway:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes: ["./deploy/Caddyfile:/etc/caddy/Caddyfile:ro", "caddy:/data"]
+    networks: [internal]
+volumes:
+  postgres:
+  media:
+  caddy:
+networks:
+  internal:

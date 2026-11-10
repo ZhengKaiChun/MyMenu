@@ -1,0 +1,37 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="想吃的，已好好送达" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-sent">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="empty">
+        <view
+          style="
+            margin: 20px auto;
+            width: 160px;
+            height: 135px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f4e5cd;
+            border-radius: 30px 30px 8px 30px;
+          "
+        >
+          <g-icon name="envelope" size="90" />
+        </view>
+        <view class="h2">{{accepted?'这顿已经安排上啦':'小猪的心愿已送达'}}</view>
+        <view class="muted">
+          {{date}} · {{slot}}
+          <view>{{accepted?'已经加入当天做饭清单。':'等饲养员回一句温柔的好呀。'}}</view>
+        </view>
+        <view style="margin-top: 28px">
+          <button class="btn" bindtap="go" data-page="requests" loading="{{actionBusy}}">
+            看看开饭回音
+          </button>
+          <button class="btn secondary" bindtap="go" data-page="today" loading="{{actionBusy}}">
+            看看全家今日菜单
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</g-shell>

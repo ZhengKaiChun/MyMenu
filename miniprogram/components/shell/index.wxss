@@ -1,0 +1,48 @@
+.shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #fffcf6;
+}
+.nav {
+  flex-shrink: 0;
+  padding-left: 22px;
+  padding-right: 108px;
+  background: #fffcf6;
+  box-sizing: border-box;
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.back {
+  font-size: 30px;
+  width: 18px;
+  margin: 0;
+  padding: 0;
+  color: #64452e;
+}
+.nav-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #49352a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.shell-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.shell-dock:empty,
+.shell-tabs:empty {
+  display: none;
+}
+.shell-dock {
+  flex-shrink: 0;
+}
+.shell-tabs {
+  flex-shrink: 0;
+}

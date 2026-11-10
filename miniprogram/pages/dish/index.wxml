@@ -1,0 +1,23 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="这道菜，有点心动" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content flush page-dish">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <image wx:if="{{dish}}" class="food large" src="{{dish.cover}}" mode="aspectFill" />
+      <view style="padding: 18px 20px">
+        <view class="h2">{{dish.name}}</view>
+        <view class="muted">{{dish.intro}}</view>
+        <view class="pill-row" style="margin: 18px 0">
+          <text class="tag">{{dish.minutes}} 分钟</text>
+          <text class="tag">{{dish.servings}} 人份</text>
+        </view>
+        <view class="h3">想吃就加入菜篮吧</view>
+        <text class="caption">选好日期和餐次，把想吃的告诉TA。</text>
+        <button wx:if="{{isCook}}" class="btn secondary" bindtap="recipe">查看用料与做法</button>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="add" loading="{{actionBusy}}">＋ 加入我的菜篮</button>
+  </view>
+</g-shell>

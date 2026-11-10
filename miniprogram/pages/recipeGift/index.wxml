@@ -1,0 +1,42 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="收到一封菜谱手写信" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-recipeGift">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="real-letter recipe-letter">
+        <view class="letter-inner">
+          <text class="letter-postmark">给我饭 RECIPE MAIL</text>
+          <text class="letter-kicker">把家的味道，寄给你</text>
+          <view class="h2">
+            <view>这几道拿手菜，</view>
+            <view>想请你也尝尝。</view>
+          </view>
+          <view class="letter-dear">亲爱的饭搭子：</view>
+          <view class="letter-body">
+            <view>我把小家的{{gift.dishes.length}}道拿手菜写下来了，</view>
+            <view>用料、做法，都在这封信里。</view>
+            <view>把它们收进你的小家，</view>
+            <view>下一顿，也吃得热热乎乎。</view>
+          </view>
+          <view class="letter-small-pig"><g-pig index="0" size="65" /></view>
+          <view class="letter-sign">
+            {{gift.sender}}亲手寄来
+            <view>{{gift.family}}</view>
+          </view>
+        </view>
+        <view class="letter-envelope-edge" />
+      </view>
+      <view class="section-title"><view class="h3">信里装着{{gift.dishes.length}}道菜</view></view>
+      <view class="gift-mini-list">
+        <view wx:for="{{gift.dishes}}" wx:key="id">
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <text>{{item.name}}</text>
+          <text class="caption">{{item.ingredients.length}}项用料 · {{item.steps.length}}步</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">收下这份味道 · 保存到小家</button>
+  </view>
+</g-shell>

@@ -1,0 +1,131 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="给我饭" back="{{false}}">
+  <view class="page-content flush page-menu">
+    <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+    <view class="menu-mast">
+      <view class="grow">
+        <view class="menu-house">
+          <view class="h2">{{family.name}}</view>
+          <text class="tag good">{{family.role==='cook'?'饲养员':'大懒猪'}}</text>
+        </view>
+        <text class="caption">家庭菜单 · 一起好好吃饭</text>
+      </view>
+      <button class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
+    </view>
+    <view class="menu-schedule">
+      <picker mode="date" value="{{date}}" bindchange="date">
+        <view class="row native-date">
+          <g-icon name="calendar" size="21" />
+          <text>{{date}} ⌄</text>
+        </view>
+      </picker>
+      <view class="meal-switch">
+        <button
+          wx:for="{{['早餐','午餐','晚餐']}}"
+          wx:key="*this"
+          class="{{slot===item?'active':''}}"
+          bindtap="meal"
+          data-slot="{{item}}"
+        >
+          {{item}}
+        </button>
+      </view>
+    </view>
+    <view class="menu-search">
+      <view class="search row">
+        <g-icon name="search" size="20" />
+        <input placeholder="搜索菜名" bindinput="search" value="{{search}}" />
+      </view>
+    </view>
+    <view class="menu-heading">
+      <text class="h3 grow">小家菜单</text>
+      <button bindtap="go" data-page="today">今日菜单 ›</button>
+      <button bindtap="go" data-page="requests">
+        {{family.role==='cook'?'吃饭申请':'我的回音'}} ›
+      </button>
+    </view>
+    <view class="menu-catalog">
+      <scroll-view class="menu-rail" scroll-y>
+        <button class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
+          <g-icon name="utensils" size="27" />
+          <text>全部</text>
+        </button>
+        <button
+          wx:for="{{collections}}"
+          wx:key="id"
+          class="{{category===item.id?'active':''}}"
+          bindtap="category"
+          data-id="{{item.id}}"
+        >
+          <g-icon name="{{index%3===0?'pot':index%3===1?'leaf':'bowl'}}" size="27" />
+          <text>{{item.name}}</text>
+        </button>
+      </scroll-view>
+      <scroll-view class="menu-dishes" scroll-y>
+        <view class="catalog-label">
+          <text>想吃的，就点给TA</text>
+          <text>{{dishes.length}} 道</text>
+        </view>
+        <view wx:for="{{dishes}}" wx:key="id" class="menu-dish">
+          <button class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
+            <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          </button>
+          <view class="menu-dish-info">
+            <button class="h3" bindtap="go" data-page="dish" data-id="{{item.id}}">
+              {{item.name}}
+            </button>
+            <view class="muted" style="font-size: 11px">{{item.intro}}</view>
+            <view class="dish-meta">
+              <text class="tag">{{item.minutes}} 分钟</text>
+              <text class="tag">{{item.servings}} 人份</text>
+            </view>
+            <view class="dish-bottom">
+              <button class="dish-add" bindtap="add" data-id="{{item.id}}">
+                {{cart.length?'＋':'想吃'}}
+              </button>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{!dishes.length}}" class="empty">
+          <g-icon name="book" size="45" />
+          <view class="h3">这里还没有菜</view>
+          <text class="caption">
+            {{family.role==='cook'?'去小家里的菜谱管理添加第一道拿手菜':'等饲养员录入菜品后，就能点菜啦'}}
+          </text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+  <view slot="dock" class="dock">
+    <view class="basket-bar">
+      <button class="basket-count" bindtap="cart"><g-icon name="utensils" size="30" /></button>
+      <button class="basket-summary" bindtap="cart">
+        <text style="font-weight: 700">{{count?'已选 '+count+' 份':'选几道想吃的菜'}}</text>
+        <text class="caption">{{date}} · {{slot}}</text>
+      </button>
+      <button class="btn small" bindtap="checkout">确认点菜</button>
+    </view>
+  </view>
+  <g-tabbar slot="tabs" active="menu" />
+</g-shell>
+<view wx:if="{{showCart}}" class="modal-mask sheet-mask">
+  <view class="sheet">
+    <view class="sheet-title">
+      <view class="h3">小猪的菜篮</view>
+      <button class="close" bindtap="cart">×</button>
+    </view>
+    <scroll-view scroll-y style="max-height: 52vh">
+      <view wx:for="{{cart}}" wx:key="id" class="row list-row cart-dish">
+        <image class="food" src="{{item.cover}}" mode="aspectFill" />
+        <text class="grow">{{item.name}}</text>
+        <view class="row">
+          <button class="pill" bindtap="minus" data-id="{{item.id}}">−</button>
+          <text>{{item.quantity}}</text>
+          <button class="pill" bindtap="add" data-id="{{item.id}}">＋</button>
+        </view>
+      </view>
+    </scroll-view>
+    <text wx:if="{{!cart.length}}" class="caption">还没选菜，去挑一道喜欢的吧。</text>
+    <button class="btn" bindtap="checkout">确认日期和菜品</button>
+  </view>
+</view>

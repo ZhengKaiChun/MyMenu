@@ -1,0 +1,41 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="账号密码登录" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-password">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">小家，等你回来</view>
+        <view class="muted">账号属于你自己，请勿共享密码。</view>
+      </view>
+      <label class="form-label">账号</label>
+      <input
+        class="input"
+        data-field="username"
+        bindinput="input"
+        value="{{username}}"
+        placeholder="请输入账号"
+        type="text"
+      />
+      <label class="form-label">密码</label>
+      <input
+        class="input"
+        data-field="password"
+        bindinput="input"
+        value="{{password}}"
+        placeholder="请输入密码"
+        password="true"
+      />
+      <checkbox-group bindchange="consent">
+        <label class="checkline login-consent">
+          <checkbox value="yes" checked="{{consent}}" />
+          <text>已阅读并同意服务协议与隐私说明</text>
+        </label>
+      </checkbox-group>
+      <button class="btn" bindtap="submit" loading="{{actionBusy}}">登录，回到小家</button>
+      <button class="btn secondary" bindtap="go" data-page="register" loading="{{actionBusy}}">
+        还没有账号？去注册
+      </button>
+      <button class="text-btn" bindtap="go" data-page="recover">找回密码 ›</button>
+    </view>
+  </scroll-view>
+</g-shell>

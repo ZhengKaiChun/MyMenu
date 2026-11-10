@@ -1,0 +1,32 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="小家的秘密配方" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-recipe">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="row">
+        <view class="h2">{{dish.name}}</view>
+        <button class="pill" bindtap="toggle">{{textOnly?'图文版':'纯文字'}}</button>
+      </view>
+      <text class="muted">{{dish.minutes}} 分钟 · {{dish.servings}} 人份</text>
+      <image wx:if="{{!textOnly}}" src="{{dish.cover}}" class="food mid" mode="aspectFill" />
+      <view class="section-title"><view class="h3">用料</view></view>
+      <view wx:for="{{dish.ingredients}}" wx:key="index" class="list-row">
+        <text>{{item.name}}</text>
+        <text>{{item.quantity}} {{item.unit}}</text>
+      </view>
+      <view class="section-title"><view class="h3">一步一步，把爱煮好</view></view>
+      <view class="steps">
+        <view wx:for="{{dish.steps}}" wx:key="index" class="step">
+          <text class="step-num">STEP {{index+1}}</text>
+          <image
+            wx:if="{{!textOnly ? item.image : false}}"
+            src="{{item.image}}"
+            class="step-photo"
+            mode="aspectFill"
+          />
+          <view style="font-size: 14px; line-height: 1.95; margin-top: 10px">{{item.text}}</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</g-shell>

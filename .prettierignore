@@ -1,0 +1,6 @@
+node_modules/
+.runtime/
+artifacts/
+miniprogram/assets/
+design/
+package-lock.json

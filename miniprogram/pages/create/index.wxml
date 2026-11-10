@@ -1,0 +1,36 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="创建我的小家" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-create">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="house-name-board">
+        <view class="board-roof"><g-icon name="home" /></view>
+        <view class="board-room">
+          <text>A HOME FOR US</text>
+          <view class="h2">
+            <view>给小家，</view>
+            <view>挂上一块名字牌</view>
+          </view>
+          <text>从此，三餐都有一个归处。</text>
+          <view class="wooden-sign">
+            <label class="form-label">小家名称</label>
+            <input
+              class="input"
+              data-field="name"
+              bindinput="input"
+              value="{{name}}"
+              placeholder="例如：两只小猪的家"
+              type="text"
+            />
+          </view>
+          <text class="caption">
+            创建后默认成为饲养员，称呼为野生小猪。菜谱和食材以后慢慢添加。
+          </text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">挂好名字牌，创建小家</button>
+  </view>
+</g-shell>

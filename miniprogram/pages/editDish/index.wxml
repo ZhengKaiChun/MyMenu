@@ -1,0 +1,141 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="写下一道拿手菜" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-editDish">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="h2">把这道菜，教给小家。</view>
+      <label class="form-label">菜品名称 *</label>
+      <input
+        class="input"
+        value="{{name}}"
+        data-field="name"
+        bindinput="input"
+        type="text"
+        placeholder="例如：番茄炒蛋"
+      />
+      <label class="form-label">菜品封面</label>
+      <button class="upload" bindtap="picture" data-kind="cover" style="width: 100%">
+        <image
+          wx:if="{{cover}}"
+          src="{{cover}}"
+          mode="aspectFill"
+          style="width: 100%; height: 144px"
+        />
+        <text wx:else>＋ 添加菜品图片</text>
+      </button>
+      <view class="row">
+        <text class="caption">相机或相册上传</text>
+        <button class="text-btn" bindtap="ai">✧ AI优化图片 · 预留</button>
+      </view>
+      <label class="form-label">所属合集</label>
+      <picker range="{{collections}}" range-key="name" bindchange="collection">
+        <view class="select">选择合集：{{collectionName || '点击选择'}}</view>
+      </picker>
+      <view class="two">
+        <view>
+          <label class="form-label">用时／分钟</label>
+          <input
+            class="input"
+            value="{{minutes}}"
+            data-field="minutes"
+            bindinput="input"
+            type="number"
+            placeholder="15"
+          />
+        </view>
+        <view>
+          <label class="form-label">份量／人</label>
+          <input
+            class="input"
+            value="{{servings}}"
+            data-field="servings"
+            bindinput="input"
+            type="number"
+            placeholder="2"
+          />
+        </view>
+      </view>
+      <label class="form-label">一句话介绍</label>
+      <input
+        class="input"
+        value="{{intro}}"
+        data-field="intro"
+        bindinput="input"
+        type="text"
+        placeholder="比如：酸酸甜甜，家的味道"
+      />
+      <view class="section-title">
+        <view class="h3">用料</view>
+        <button class="text-btn" bindtap="addIngredient">＋ 一行</button>
+      </view>
+      <view wx:for="{{ingredients}}" wx:key="index" class="row" style="margin: 8px 0; gap: 7px">
+        <input
+          class="input"
+          style="flex: 2"
+          value="{{item.name}}"
+          data-list="ingredients"
+          data-index="{{index}}"
+          data-field="name"
+          bindinput="field"
+          placeholder="食材"
+        />
+        <input
+          class="input"
+          style="flex: 1"
+          value="{{item.quantity}}"
+          type="digit"
+          data-list="ingredients"
+          data-index="{{index}}"
+          data-field="quantity"
+          bindinput="field"
+          placeholder="数量"
+        />
+        <input
+          class="input"
+          style="flex: 1"
+          value="{{item.unit}}"
+          data-list="ingredients"
+          data-index="{{index}}"
+          data-field="unit"
+          bindinput="field"
+          placeholder="单位"
+        />
+        <button class="text-btn" data-index="{{index}}" bindtap="removeIngredient">×</button>
+      </view>
+      <view class="section-title">
+        <view class="h3">制作步骤</view>
+        <text class="caption">步骤图选填</text>
+      </view>
+      <view wx:for="{{steps}}" wx:key="index" class="step">
+        <view class="row">
+          <text class="step-num">步骤 {{index+1}}</text>
+          <button class="text-btn" data-index="{{index}}" bindtap="removeStep">删除此步</button>
+        </view>
+        <button
+          class="upload"
+          bindtap="picture"
+          data-kind="step"
+          data-index="{{index}}"
+          style="width: 100%"
+        >
+          <image wx:if="{{item.image}}" class="step-photo" src="{{item.image}}" mode="aspectFill" />
+          <text wx:else>＋ 步骤图（可选）</text>
+        </button>
+        <textarea
+          class="native-textarea"
+          value="{{item.text}}"
+          data-list="steps"
+          data-index="{{index}}"
+          data-field="text"
+          bindinput="field"
+          placeholder="写下这一步的做法"
+          style="margin-top: 10px"
+        />
+      </view>
+      <button class="list-row" bindtap="addStep">＋ 添加下一步</button>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">保存到小家菜单</button>
+  </view>
+</g-shell>

@@ -1,0 +1,26 @@
+{
+  "singleQuote": true,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": "*.wxml",
+      "options": {
+        "parser": "html",
+        "htmlWhitespaceSensitivity": "ignore"
+      }
+    },
+    {
+      "files": "*.wxss",
+      "options": {
+        "parser": "css"
+      }
+    },
+    {
+      "files": "*.wxs",
+      "options": {
+        "parser": "babel"
+      }
+    }
+  ]
+}

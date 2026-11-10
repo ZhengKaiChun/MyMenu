@@ -1,0 +1,12 @@
+function contains(a, v) {
+  if (!a) return false;
+  for (var i = 0; i < a.length; i++) if (a[i] === v) return true;
+  return false;
+}
+function join(a) {
+  return (a || []).join('、');
+}
+function date(s) {
+  return (s || '').slice(0, 10);
+}
+module.exports = { contains: contains, join: join, date: date };

@@ -1,0 +1,27 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="家庭称呼" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-identity">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">在小家里，怎么称呼你？</view>
+        <view class="muted">称呼只是亲昵，不改变管理权限。</view>
+      </view>
+      <view class="two">
+        <button
+          wx:for="{{names}}"
+          wx:key="*this"
+          class="identity-option {{selected===item?'on':''}}"
+          data-name="{{item}}"
+          bindtap="choose"
+        >
+          <g-pig index="{{indices[index]}}" size="72" />
+          <text class="identity-name">{{item}}</text>
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">保存我的家庭称呼</button>
+  </view>
+</g-shell>

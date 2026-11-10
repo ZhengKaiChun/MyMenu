@@ -1,0 +1,46 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="我的现有食材" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-personal">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">个人食材库</view>
+        <text class="muted">属于你自己；导入小家后各自独立维护。</text>
+      </view>
+      <view class="row"><text class="caption">共 {{items.length}} 种食材</text></view>
+      <view wx:for="{{items}}" wx:key="id" class="card row pantry-item">
+        <view class="avatar"><g-icon name="{{item.icon}}" size="29" /></view>
+        <view class="grow">
+          <view class="h4">{{item.name}}</view>
+          <text class="caption">{{item.quantity}} {{item.unit}} · {{item.category}}</text>
+        </view>
+        <button wx:if="{{isCook}}" class="text-btn" data-id="{{item.id}}" bindtap="edit">
+          编辑
+        </button>
+      </view>
+      <button wx:if="{{isCook}}" class="btn secondary" bindtap="go" data-page="match">
+        看看这些食材能做什么
+      </button>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button wx:if="{{isCook}}" class="btn" bindtap="add">＋ 添加食材</button>
+  </view>
+</g-shell>
+<view wx:if="{{showImport}}" class="modal-mask sheet-mask">
+  <view class="sheet">
+    <view class="sheet-title">
+      <view class="h3">带上我的现有食材</view>
+      <button bindtap="closeImport">×</button>
+    </view>
+    <text class="muted">复制后各自独立维护，同名食材保留小家已有数量。</text>
+    <checkbox-group bindchange="selectImport">
+      <label wx:for="{{personalItems}}" wx:key="id" class="ingredient">
+        <checkbox value="{{item.id}}" />
+        <text class="grow">{{item.name}}</text>
+        <text>{{item.quantity}} {{item.unit}}</text>
+      </label>
+    </checkbox-group>
+    <button class="btn" bindtap="importItems" loading="{{actionBusy}}">复制到当前小家</button>
+  </view>
+</view>

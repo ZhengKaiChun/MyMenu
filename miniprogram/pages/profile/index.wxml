@@ -1,0 +1,35 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="头像与昵称" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-profile">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="center" style="margin: 25px auto; text-align: center">
+        <button
+          open-type="chooseAvatar"
+          bindchooseavatar="chooseAvatar"
+          style="width: 90px; margin: auto"
+        >
+          <image
+            wx:if="{{avatar}}"
+            src="{{avatar}}"
+            style="width: 80px; height: 80px; border-radius: 50%"
+          />
+          <g-pig wx:else index="7" size="80" />
+        </button>
+        <text class="caption">点这里选择头像</text>
+      </view>
+      <label class="form-label">昵称</label>
+      <input
+        class="input"
+        data-field="nickname"
+        bindinput="input"
+        value="{{nickname}}"
+        placeholder="野生小猪"
+        type="text"
+      />
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">保存头像与昵称</button>
+  </view>
+</g-shell>

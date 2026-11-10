@@ -1,0 +1,69 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="开饭回音" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-requests">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">{{isCook?'小猪想吃这些':'开饭有回音'}}</view>
+        <text class="muted">等你回音 → 这顿安排啦／这次先不做</text>
+      </view>
+      <view wx:if="{{changes.length}}">
+        <view class="section-title"><text class="h3">换菜的回音</text></view>
+        <button
+          wx:for="{{changes}}"
+          wx:key="id"
+          class="change-card"
+          bindtap="go"
+          data-page="changeDetail"
+          data-id="{{item.id}}"
+        >
+          <view class="row">
+            <text>{{util.date(item.meal_date)}} · {{item.slot}}</text>
+            <text class="tag wait">{{item.label}}</text>
+          </view>
+          <view class="change-pair">
+            <view>
+              <image class="food" src="{{item.oldCover}}" mode="aspectFill" />
+              <text>{{item.old_snapshot.name}}</text>
+            </view>
+            <text>→</text>
+            <view>
+              <image class="food" src="{{item.newCover}}" mode="aspectFill" />
+              <text>{{item.new_snapshot.name}}</text>
+            </view>
+          </view>
+          <text class="caption">{{item.nickname}} · {{item.quantity}}份 · 查看回音 ›</text>
+        </button>
+      </view>
+      <view wx:for="{{orders}}" wx:key="id" class="wish-ticket">
+        <view class="row">
+          <view class="wish-date">
+            {{util.date(item.meal_date)}}
+            <text style="font-size: 12px">{{item.slot}}</text>
+          </view>
+          <text class="tag wait">{{item.label}}</text>
+        </view>
+        <view class="wish-sender row start" style="margin: 14px 0">
+          <g-pig index="{{item.identity==='猪爸爸'?1:7}}" size="33" />
+          <view>
+            <view class="h4">{{item.nickname}}的小小心愿</view>
+            <text class="caption">点了{{item.items.length}}道菜，想和你一起吃。</text>
+          </view>
+        </view>
+        <view class="wish-foods">
+          <view wx:for="{{item.items}}" wx:key="id" wx:for-item="dish">
+            <image class="food" src="{{dish.cover}}" mode="aspectFill" />
+            <text>{{dish.name}}</text>
+          </view>
+        </view>
+        <view class="wish-message"><text>{{item.note || '想和你一起好好吃饭。'}}</text></view>
+        <button class="list-row" bindtap="go" data-page="requestDetail" data-id="{{item.id}}">
+          查看点菜与回音 ›
+        </button>
+      </view>
+      <view wx:if="{{!orders.length}}" class="empty">
+        <text class="muted">还没有点菜心愿，去菜单看看吧。</text>
+      </view>
+    </view>
+  </scroll-view>
+</g-shell>

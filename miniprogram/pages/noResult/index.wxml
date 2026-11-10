@@ -1,0 +1,18 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="给我饭" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-noResult">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="empty">
+        <view class="state-object"><g-icon name="{{icon}}" size="60" /></view>
+        <view class="h2">{{title}}</view>
+        <text class="muted">{{message}}</text>
+        <view style="margin-top: 25px">
+          <button class="btn secondary" bindtap="go" data-page="home" loading="{{actionBusy}}">
+            返回我的小家
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</g-shell>

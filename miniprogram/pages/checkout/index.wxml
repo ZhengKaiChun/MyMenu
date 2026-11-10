@@ -1,0 +1,70 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="确认点菜" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-checkout">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro"><view class="h2">给这顿饭，寄个心愿</view></view>
+      <picker mode="date" value="{{date}}" bindchange="date">
+        <view class="meal-ticket row">
+          <g-icon name="calendar" size="28" />
+          <view class="grow">
+            <view class="h3">{{date}} · {{slot}}</view>
+            <text class="caption">点击修改日期</text>
+          </view>
+          <text class="caption">修改 ›</text>
+        </view>
+      </picker>
+      <view class="meal-switch" style="margin-top: 12px">
+        <button
+          wx:for="{{['早餐','午餐','晚餐']}}"
+          wx:key="*this"
+          class="{{slot===item?'active':''}}"
+          bindtap="meal"
+          data-slot="{{item}}"
+        >
+          {{item}}
+        </button>
+      </view>
+      <view class="order-paper">
+        <view class="row">
+          <text>已选菜品</text>
+          <text class="caption">{{count}}份</text>
+        </view>
+        <view wx:for="{{items}}" wx:key="id" class="order-dish row">
+          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <view class="grow">
+            <view class="h4">{{item.name}}</view>
+            <text class="caption">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>
+            <view class="order-qty">
+              <button data-id="{{item.id}}" data-dir="-1" bindtap="quantity">−</button>
+              <text>{{item.quantity}}</text>
+              <button data-id="{{item.id}}" data-dir="1" bindtap="quantity">＋</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <label class="form-label">
+        留言
+        <text class="caption">选填</text>
+      </label>
+      <textarea
+        value="{{note}}"
+        data-field="note"
+        bindinput="input"
+        placeholder="如：少盐、不放香菜"
+        maxlength="300"
+      />
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <view class="send-dock">
+      <view>
+        <text>已选{{count}}份</text>
+        <text class="caption">{{date}} · {{slot}}</text>
+      </view>
+      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+        {{family.role==='cook'?'加入做饭清单':'发送吃饭申请'}}
+      </button>
+    </view>
+  </view>
+</g-shell>

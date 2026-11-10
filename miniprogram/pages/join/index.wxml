@@ -1,0 +1,25 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="加入TA的小家" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-join">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">有人为你，留了一个位置</view>
+        <view class="muted">粘贴TA发来的邀请码，来认领你的饭桌。</view>
+      </view>
+      <image class="frame-hero" src="/assets/pig-kitchen.png" mode="aspectFit" />
+      <label class="form-label">邀请码</label>
+      <input
+        class="input"
+        data-field="token"
+        bindinput="input"
+        value="{{token}}"
+        placeholder="粘贴完整邀请码"
+        type="text"
+      />
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">看看是哪位小猪</button>
+  </view>
+</g-shell>

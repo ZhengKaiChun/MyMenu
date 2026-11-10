@@ -1,0 +1,56 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="备菜清单" back="{{true}}">
+  <scroll-view scroll-y class="scroll">
+    <view class="page-content page-shopping">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="memo-sheet">
+        <view class="memo-head">
+          <text>FOR OUR TABLE</text>
+          <view class="h2">备菜清单</view>
+          <text class="caption">{{date}} · {{items.length}}项食材 · 已备齐{{ready}}项</text>
+        </view>
+        <view class="memo-meals">
+          <text>今天要做</text>
+          <button
+            wx:for="{{dishes}}"
+            wx:key="dishId"
+            bindtap="go"
+            data-page="recipe"
+            data-id="{{item.dishId}}"
+          >
+            {{item.snapshot.name}} ↗
+          </button>
+        </view>
+        <view class="memo-tools">
+          <button bindtap="owned">勾选已有食材</button>
+          <button bindtap="all">勾选全部</button>
+        </view>
+        <view class="memo-items">
+          <view
+            wx:for="{{items}}"
+            wx:key="index"
+            class="ingredient {{item.checked?'checked':''}}"
+            bindtap="change"
+            data-index="{{index}}"
+          >
+            <checkbox checked="{{item.checked}}" />
+            <view class="grow">
+              <text class="ing-name">{{item.name}}</text>
+              <text class="caption">{{util.join(item.sources)}}</text>
+            </view>
+            <view class="memo-amount">
+              <text>{{item.quantity}} {{item.unit}}</text>
+              <text wx:if="{{item.owned}}" class="tag good">家里有</text>
+            </view>
+          </view>
+        </view>
+        <text class="memo-foot">同名同单位用料合并；勾选只记录备齐进度。</text>
+      </view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock">
+    <button class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
+      看全家今日菜单
+    </button>
+  </view>
+</g-shell>

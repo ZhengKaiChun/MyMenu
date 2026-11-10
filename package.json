@@ -1,0 +1,37 @@
+{
+  "name": "geiwofan-menu",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server/src/main.mjs",
+    "test": "node --test --test-concurrency=1 server/test/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "assets": "node scripts/assets.mjs",
+    "release": "node scripts/release.mjs",
+    "upload": "node scripts/upload.mjs",
+    "format": "prettier --write \"server/**/*.mjs\" \"miniprogram/**/*.{js,json,wxml,wxss,wxs}\" \"scripts/*.mjs\" \"*.json\" \"*.mjs\"",
+    "lint": "eslint server miniprogram scripts eslint.config.mjs",
+    "db:backup": "node --env-file-if-exists=.env scripts/backup.mjs",
+    "dev:seed": "node --env-file-if-exists=.env scripts/seed.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/multipart": "^9.2.1",
+    "@fastify/rate-limit": "^10.3.0",
+    "fastify": "^5.6.0",
+    "pg": "^8.16.3",
+    "sharp": "^0.35.5",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10"
+  }
+}

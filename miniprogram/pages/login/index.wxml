@@ -1,0 +1,45 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="给我饭" back="{{false}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-login">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="login-brand">
+        <text class="brand-sub">两个人的点菜小厨房</text>
+        <view class="h2 wordmark">给我饭</view>
+        <text>你说想吃什么，我说好呀。</text>
+      </view>
+      <view class="welcome-visual">
+        <image class="frame-hero" src="/assets/pig-kitchen.png" mode="aspectFit" />
+      </view>
+      <view class="login-actions">
+        <button wx:if="{{capabilities.wechat}}" class="btn" bindtap="wechat">微信快捷登录</button>
+        <button class="btn" bindtap="go" data-page="password" loading="{{actionBusy}}">
+          账号密码登录
+        </button>
+        <button class="btn secondary" bindtap="go" data-page="register" loading="{{actionBusy}}">
+          注册独立账号
+        </button>
+        <button
+          wx:if="{{capabilities.wechatPhone}}"
+          class="btn secondary"
+          open-type="getPhoneNumber"
+          bindgetphonenumber="wechatPhone"
+          disabled="{{!consent}}"
+        >
+          微信手机号快捷登录
+        </button>
+        <button wx:if="{{capabilities.sms}}" class="text-btn" bindtap="go" data-page="sms">
+          手机号登录／注册 ›
+        </button>
+        <button class="text-btn" bindtap="legal">服务协议与隐私说明 ›</button>
+      </view>
+      <checkbox-group bindchange="consent">
+        <label class="checkline login-consent">
+          <checkbox value="yes" checked="{{consent}}" />
+          <text>已阅读并同意服务协议与隐私说明</text>
+        </label>
+      </checkbox-group>
+      <view class="privacy-foot">首次登录默认为野生小猪，可直接创建或加入小家。</view>
+    </view>
+  </scroll-view>
+</g-shell>

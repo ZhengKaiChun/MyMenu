@@ -1,0 +1,44 @@
+<wxs module="util" src="../../lib/format.wxs" />
+<g-shell title="手机号登录" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content page-sms">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="page-intro">
+        <view class="h2">绑定手机号</view>
+        <text class="muted">验证码由短信服务发送，请勿向别人透露。</text>
+      </view>
+      <label class="form-label">手机号</label>
+      <input
+        class="input"
+        value="{{phone}}"
+        data-field="phone"
+        bindinput="input"
+        type="number"
+        placeholder="请输入11位手机号"
+      />
+      <label class="form-label">验证码</label>
+      <view class="row">
+        <input
+          class="input"
+          style="flex: 1; min-width: 0"
+          value="{{code}}"
+          data-field="code"
+          bindinput="input"
+          type="number"
+          placeholder="6位验证码"
+        />
+        <button class="pill" bindtap="sendCode" disabled="{{countdown>0}}">
+          {{countdown?countdown+'秒':'获取验证码'}}
+        </button>
+      </view>
+      <checkbox-group bindchange="consent">
+        <label class="checkline" style="margin-top: 18px">
+          <checkbox value="yes" checked="{{consent}}" />
+          <text>同意服务协议与隐私说明</text>
+        </label>
+      </checkbox-group>
+      <button class="btn" style="margin-top: 22px" bindtap="submit">验证并继续</button>
+      <button class="btn secondary" bindtap="go" data-page="password">返回账号登录</button>
+    </view>
+  </scroll-view>
+</g-shell>

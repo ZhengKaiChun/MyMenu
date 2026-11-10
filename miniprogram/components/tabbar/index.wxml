@@ -1,0 +1,13 @@
+<view class="native-tabbar">
+  <button
+    wx:for="{{tabs}}"
+    wx:key="id"
+    class="native-tab {{active===item.id?'on':''}}"
+    data-id="{{item.id}}"
+    bindtap="go"
+  >
+    <image src="/assets/icons/{{item.icon}}.png" />
+    <text>{{item.text}}</text>
+    <view wx:if="{{active===item.id}}" class="tab-dot" />
+  </button>
+</view>
