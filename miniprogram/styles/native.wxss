@@ -1,0 +1,36 @@
+/* Native renderer alignment and safe areas; design tokens live in design-system.wxss. */
+.row > .btn {
+  flex: 1;
+  width: auto;
+  margin-top: 0;
+}
+.row > .btn + .btn {
+  margin-top: 0;
+}
+.row > .input,
+.two .input {
+  min-width: 0;
+}
+.basket-bar > .btn {
+  flex-shrink: 0;
+  width: auto;
+  min-width: 108px;
+}
+.send-dock > .btn {
+  flex-shrink: 0;
+  width: auto;
+}
+.dock-with-tabs {
+  padding-bottom: 12px;
+}
+.dock-menu {
+  padding: 8px 12px 9px;
+}
+.gift-mini-list .caption {
+  font-size: 9px;
+}
+@media (max-width: 370px) {
+  .basket-bar > .btn {
+    min-width: 91px;
+  }
+}

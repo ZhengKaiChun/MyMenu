@@ -67,9 +67,10 @@ exports.sent = createPage({
   },
 });
 async function loadRequests() {
-  const [orders, changes] = await Promise.all([
+  const [orders, changes, notifications] = await Promise.all([
     api.request(familyPath('/orders')),
     api.request(familyPath('/changes')),
+    api.request('/notifications'),
   ]);
   const mapped = await Promise.all(
     orders.map(async (o) => ({
@@ -86,12 +87,29 @@ async function loadRequests() {
     })),
   );
   this.setData({
+    notifications: notifications
+      .filter((n) => !n.read_at && n.type.startsWith('dissolution'))
+      .slice(0, 10),
     orders: mapped,
     changes: await decorateChanges(changes),
     isCook: session.family.role === 'cook',
   });
 }
-exports.requests = createPage({ data: { orders: [], changes: [] }, reload: loadRequests });
+exports.requests = createPage({
+  data: { orders: [], changes: [], notifications: [] },
+  reload: loadRequests,
+  methods: {
+    async notification(e) {
+      const item = this.data.notifications.find((n) => n.id === e.currentTarget.dataset.id);
+      await api.request('/notifications/' + item.id + '/read', { method: 'POST', body: {} });
+      if (item.type === 'dissolution.complete') {
+        wx.showModal({ title: '小家消息', content: item.body, showCancel: false });
+        return;
+      }
+      go('dissolve', { familyId: item.family_id });
+    },
+  },
+});
 exports.requestDetail = createPage({
   data: { order: null, showReply: false, reply: '', decision: 'accept' },
   async reload() {

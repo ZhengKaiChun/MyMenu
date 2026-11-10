@@ -23,7 +23,7 @@ if (process.env.DATABASE_URL) {
   const dir = resolve(process.env.DATABASE_DIR || '.runtime/postgres');
   let lock;
   try {
-    lock = Number(await readFile(join(dir, '.menu.lock'), 'utf8'));
+    lock = Number(await readFile(dir + '.menu.lock', 'utf8'));
   } catch {
     /* No local server lock. */
   }
@@ -41,6 +41,11 @@ try {
   await cp(resolve(process.env.MEDIA_DIR || '.runtime/media'), join(out, 'media'), {
     recursive: true,
   });
+} catch (e) {
+  if (e.code !== 'ENOENT') throw e;
+}
+try {
+  await cp('.runtime/local-secrets.json', join(out, 'local-secrets.json'));
 } catch (e) {
   if (e.code !== 'ENOENT') throw e;
 }

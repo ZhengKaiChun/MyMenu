@@ -29,6 +29,13 @@ function createPage(options) {
             session.user = await api.request('/me');
             this.setData({ user: session.user });
           }
+          if (this.query.familyId && this.query.familyId !== session.family?.id) {
+            const homes = await api.request('/families');
+            const home = homes.find((f) => f.id === this.query.familyId);
+            if (!home) throw new Error('这个小家已解散或你已离开');
+            session.setFamily(home);
+            this.setData({ family: home });
+          }
           if (options.reload) await options.reload.call(this);
         });
       }
@@ -49,13 +56,24 @@ function createPage(options) {
         this.setData({ loading: true, error: '' });
         return await fn.apply(this, args);
       } catch (e) {
-        if (e.status === 401) {
+        if (e.status === 401 && ['UNAUTHENTICATED', 'SESSION_EXPIRED'].includes(e.code)) {
           session.clear();
           wx.redirectTo({ url: '/pages/login/index' });
           return;
         }
-        this.setData({ error: e.message });
-        wx.showToast({ title: e.message, icon: 'none', duration: 2800 });
+        if (e.errMsg && e.errMsg.includes('cancel')) return;
+        if (e.code === 'FAMILY_NOT_FOUND') {
+          session.family = null;
+          wx.reLaunch({ url: '/pages/home/index' });
+          return;
+        }
+        const message = e.message || '操作暂未完成，请稍后重试';
+        this.setData({ error: message });
+        wx.showToast({
+          title: e.message || '操作暂未完成，请稍后重试',
+          icon: 'none',
+          duration: 2800,
+        });
       } finally {
         this.setData({ loading: false });
       }

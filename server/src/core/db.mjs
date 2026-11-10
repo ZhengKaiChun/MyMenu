@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import pg from 'pg';
 import { readFile, readdir, mkdir, writeFile, unlink } from 'node:fs/promises';
-import { resolve, join } from 'node:path';
+import { resolve } from 'node:path';
 import { digest } from './security.mjs';
 export async function createDatabase(config = {}) {
   if (config.url) {
@@ -33,7 +33,7 @@ export async function createDatabase(config = {}) {
   if (config.directory) {
     const directory = resolve(config.directory);
     await mkdir(directory, { recursive: true, mode: 0o700 });
-    lock = join(directory, '.menu.lock');
+    lock = directory + '.menu.lock';
     try {
       await writeFile(lock, String(process.pid), { flag: 'wx', mode: 0o600 });
     } catch {

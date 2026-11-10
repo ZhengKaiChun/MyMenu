@@ -9,7 +9,7 @@
           <text class="letter-kicker">一封留给你的邀请</text>
           <view class="h2">
             <view>邀请你</view>
-            <view>{{invitation.role==='cook'?'一起打扫猪圈':'加入我的猪圈'}}</view>
+            <view>{{(invitation.role || role)==='cook'?'一起打扫猪圈':'加入我的猪圈'}}</view>
           </view>
           <view class="letter-dear">亲爱的小猪：</view>
           <view class="letter-body">

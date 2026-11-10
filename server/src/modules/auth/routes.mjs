@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { phoneRoutes, smsEnabled } from './phone.mjs';
+import { subscriptionEnabled } from '../notifications/wechat.mjs';
 import { id, token, digest, passwordHash, passwordMatches } from '../../core/security.mjs';
 import { demand } from '../../core/errors.mjs';
 const credentials = z
@@ -32,6 +33,7 @@ export async function authRoutes(app, ctx) {
       sms: smsEnabled(config, ctx.smsSender),
       wechatPhone: !!config.wechatSecret && !!config.phoneKey,
       password: true,
+      subscriptionTemplateId: subscriptionEnabled(config) ? config.subscription.templateId : null,
       devAuth: config.allowDevAuth,
     }),
     { public: true },
@@ -111,6 +113,53 @@ export async function authRoutes(app, ctx) {
     await db.query('DELETE FROM sessions WHERE token_hash=$1', [r.tokenHash]);
     return { ok: true };
   });
+  route(
+    'POST',
+    '/me/wechat',
+    z.object({ code: z.string().min(1).max(256) }).strict(),
+    async (r) => {
+      demand(config.wechatSecret, 503, 'WECHAT_NOT_CONFIGURED', '微信身份绑定尚未配置');
+      const url = new URL('https://api.weixin.qq.com/sns/jscode2session');
+      url.search = new URLSearchParams({
+        appid: config.appid,
+        secret: config.wechatSecret,
+        js_code: r.body.code,
+        grant_type: 'authorization_code',
+      });
+      const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      const out = await response.json();
+      demand(out.openid && !out.errcode, 401, 'WECHAT_CODE', '微信身份授权已过期');
+      await db.transaction(async (tx) => {
+        let existing = (
+          await tx.query("SELECT user_id FROM identities WHERE provider='wechat' AND subject=$1", [
+            out.openid,
+          ])
+        ).rows[0];
+        demand(
+          !existing || existing.user_id === r.user.id,
+          409,
+          'IDENTITY_BOUND',
+          '这个微信身份已绑定其他账号，请先使用原账号登录',
+        );
+        let own = (
+          await tx.query("SELECT subject FROM identities WHERE provider='wechat' AND user_id=$1", [
+            r.user.id,
+          ])
+        ).rows[0];
+        demand(
+          !own || own.subject === out.openid,
+          409,
+          'IDENTITY_BOUND',
+          '此账号已绑定其他微信身份',
+        );
+        await tx.query(
+          "INSERT INTO identities(provider,subject,user_id) VALUES('wechat',$1,$2) ON CONFLICT DO NOTHING",
+          [out.openid, r.user.id],
+        );
+      });
+      return { ok: true };
+    },
+  );
   route('GET', '/me', null, async (r) => ({
     id: r.user.id,
     nickname: r.user.nickname,

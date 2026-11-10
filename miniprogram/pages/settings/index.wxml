@@ -17,6 +17,24 @@
         </view>
       </view>
       <view class="card">
+        <button wx:if="{{capabilities.wechat}}" class="list-row" bindtap="bindWechat">
+          <text>绑定微信身份</text>
+          <text>›</text>
+        </button>
+        <button
+          wx:if="{{capabilities.subscriptionTemplateId}}"
+          class="list-row"
+          bindtap="subscribe"
+        >
+          <text>开饭订阅提醒</text>
+          <text>按需订阅 ›</text>
+        </button>
+        <view wx:else class="list-row">
+          <text>开饭通知</text>
+          <text class="caption">站内回音已开启</text>
+        </view>
+      </view>
+      <view class="card">
         <button class="btn secondary" bindtap="go" data-page="personal" loading="{{actionBusy}}">
           个人现有食材
         </button>

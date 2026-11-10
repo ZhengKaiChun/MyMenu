@@ -61,8 +61,8 @@ export function familyRoutes(app, { db, route }) {
     z.object({ name, version: z.number().int().positive() }).strict(),
     async (r) =>
       db.transaction(async (tx) => {
-        let m = await member(tx, r.user.id, r.params.familyId, 'cook');
         await familyLock(tx, r.params.familyId);
+        let m = await member(tx, r.user.id, r.params.familyId, 'cook');
         demand(m.owner_id === r.user.id, 403, 'OWNER_REQUIRED', '只有创建者可以修改小家名称');
         let changed = await tx.query(
           'UPDATE families SET name=$2,version=version+1 WHERE id=$1 AND version=$3 RETURNING id',
@@ -112,6 +112,13 @@ export function familyRoutes(app, { db, route }) {
       'invitation.accept',
       r.params,
       async (tx) => {
+        const reference = (
+          await tx.query('SELECT family_id FROM invitations WHERE token_hash=$1', [
+            digest(r.params.token),
+          ])
+        ).rows[0];
+        demand(reference, 410, 'INVITATION_EXPIRED', '邀请已失效');
+        await familyLock(tx, reference.family_id);
         let i = (
           await tx.query('SELECT * FROM invitations WHERE token_hash=$1 FOR UPDATE', [
             digest(r.params.token),
@@ -123,7 +130,6 @@ export function familyRoutes(app, { db, route }) {
           'INVITATION_EXPIRED',
           '邀请已失效',
         );
-        await familyLock(tx, i.family_id);
         let family = (await tx.query('SELECT deleted_at FROM families WHERE id=$1', [i.family_id]))
           .rows[0];
         demand(family && !family.deleted_at, 410, 'FAMILY_CLOSED', '这个小家已解散');
@@ -158,8 +164,8 @@ export function familyRoutes(app, { db, route }) {
     z.object({ role }).strict(),
     async (r) =>
       db.transaction(async (tx) => {
-        let m = await member(tx, r.user.id, r.params.familyId, 'cook');
         await familyLock(tx, r.params.familyId);
+        let m = await member(tx, r.user.id, r.params.familyId, 'cook');
         demand(
           m.owner_id === r.user.id && r.params.userId !== m.owner_id,
           403,

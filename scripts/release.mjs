@@ -7,6 +7,9 @@ const pkg = JSON.parse(await readFile('package.json', 'utf8')),
   sha = git('rev-parse', 'HEAD'),
   files = git('ls-files', '-z').split('\0').filter(Boolean),
   checksums = {};
+if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) throw Error('Release needs a stable semantic version');
+if (git('rev-parse', 'v' + pkg.version + '^{commit}') !== sha)
+  throw Error('Tag v' + pkg.version + ' must point to HEAD');
 for (const file of files)
   checksums[file] = createHash('sha256')
     .update(await readFile(file))
@@ -24,6 +27,8 @@ await writeFile(
       node: process.version,
       at: new Date().toISOString(),
       archive: path,
+      archiveSha256: createHash('sha256').update(await readFile(path)).digest('hex'),
+      historySha256: createHash('sha256').update(await readFile('artifacts/menu-history.bundle')).digest('hex'),
       files: checksums,
     },
     null,

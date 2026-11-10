@@ -4,7 +4,7 @@
 
 ## 本地开始
 
-需要 Node.js 24 或更新版本（本机已安装）。在项目目录打开终端：
+本机依赖和测试资料已准备好，可以双击 `start-local.cmd` 启动后端，窗口保持打开。首次在其他电脑使用时，需要 Node.js 24 或更新版本，并在项目目录打开终端：
 
 ```powershell
 npm.cmd ci --ignore-scripts
@@ -18,7 +18,7 @@ npm.cmd run dev
 
 账号登录可直接本地使用；微信登录、微信手机号、短信服务需要在服务端 `.env` 填入相应密钥和服务配置才会显示可用入口，未配置时不会伪造成功。不要把密钥发到聊天或写进小程序端。
 
-详细导入步骤见 [微信开发者工具导入指南](docs/DEVTOOLS.md)，部署见 [部署与备份](docs/DEPLOYMENT.md)。
+详细导入步骤见 [微信开发者工具导入指南](docs/DEVTOOLS.md)，部署见 [部署与备份](docs/DEPLOYMENT.md)，数据分类见 [数据与权限](docs/DATA.md)，本次检查见 [验证记录](docs/VERIFICATION.md)。
 
 ## 工程划分
 
@@ -43,7 +43,7 @@ npm.cmd audit --omit=dev
 npm.cmd run release
 ```
 
-本机 `check` 调用已安装的微信官方 WXML/WXSS 编译器。没有微信工具的CI主机执行结构、JS语法和包体检查。版本由 Git 提交、标签、变更日志、依赖锁文件及发布SHA256清单共同追踪。`release` 要求先提交工作区，并生成源码zip和完整Git历史bundle。
+本机 `check` 调用已安装的微信官方 WXML/WXSS 编译器。没有微信工具的CI主机执行结构、JS语法和包体检查。版本由 Git 提交、标签、变更日志、依赖锁文件及发布SHA256清单共同追踪。`release` 要求工作区已提交、同版本的Git标签指向当前提交，生成源码zip、完整Git历史bundle及文件SHA256清单。
 
 ## 上线边界
 

@@ -1,6 +1,6 @@
 .native-tabbar {
   display: flex;
-  padding: 9px 15px calc(10px + env(safe-area-inset-bottom));
+  padding: 9px 15px max(16px, env(safe-area-inset-bottom));
   background: #fffcf6;
   border-top: 1px solid #e9dfd0;
 }

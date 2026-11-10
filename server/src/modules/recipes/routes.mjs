@@ -63,24 +63,32 @@ export function recipeRoutes(app, { db, route }) {
     demand(d, 404, 'DISH_NOT_FOUND', '菜品不存在');
     return recipeSnapshot(db, d.id);
   });
-  route('POST', '/families/:familyId/collections', z.object({ name }).strict(), async (r) => {
-    await member(db, r.user.id, r.params.familyId, 'cook');
-    let cid = id();
-    await db.query(
-      'INSERT INTO collections(id,family_id,name,sort_order) SELECT $1,$2,$3,COALESCE(MAX(sort_order),0)+1 FROM collections WHERE family_id=$2',
-      [cid, r.params.familyId, r.body.name],
-    );
-    return { id: cid };
-  });
-  route('PATCH', '/families/:familyId/collections/:id', z.object({ name }).strict(), async (r) => {
-    await member(db, r.user.id, r.params.familyId, 'cook');
-    let row = await db.query(
-      'UPDATE collections SET name=$3 WHERE id=$1 AND family_id=$2 RETURNING id',
-      [r.params.id, r.params.familyId, r.body.name],
-    );
-    demand(row.rows.length, 404, 'COLLECTION_NOT_FOUND', '合集不存在');
-    return { ok: true };
-  });
+  route('POST', '/families/:familyId/collections', z.object({ name }).strict(), async (r) =>
+    db.transaction(async (tx) => {
+      await familyLock(tx, r.params.familyId);
+      await member(tx, r.user.id, r.params.familyId, 'cook');
+      let cid = id();
+      await tx.query(
+        'INSERT INTO collections(id,family_id,name,sort_order) SELECT $1,$2,$3,COALESCE(MAX(sort_order),0)+1 FROM collections WHERE family_id=$2',
+        [cid, r.params.familyId, r.body.name],
+      );
+      await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [r.params.familyId]);
+      return { id: cid };
+    }),
+  );
+  route('PATCH', '/families/:familyId/collections/:id', z.object({ name }).strict(), async (r) =>
+    db.transaction(async (tx) => {
+      await familyLock(tx, r.params.familyId);
+      await member(tx, r.user.id, r.params.familyId, 'cook');
+      let row = await tx.query(
+        'UPDATE collections SET name=$3 WHERE id=$1 AND family_id=$2 RETURNING id',
+        [r.params.id, r.params.familyId, r.body.name],
+      );
+      demand(row.rows.length, 404, 'COLLECTION_NOT_FOUND', '合集不存在');
+      await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [r.params.familyId]);
+      return { ok: true };
+    }),
+  );
   route('DELETE', '/families/:familyId/collections/:id', null, async (r) =>
     db.transaction(async (tx) => {
       await familyLock(tx, r.params.familyId);
@@ -96,6 +104,7 @@ export function recipeRoutes(app, { db, route }) {
         'DELETE FROM collections WHERE id=$1 AND family_id=$2 AND NOT EXISTS(SELECT 1 FROM dishes WHERE collection_id=$1)',
         [r.params.id, r.params.familyId],
       );
+      await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [r.params.familyId]);
       return { ok: true };
     }),
   );

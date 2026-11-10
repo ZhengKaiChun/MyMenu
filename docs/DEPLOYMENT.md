@@ -4,7 +4,7 @@
 
 `npm.cmd ci --ignore-scripts` → 可选 `npm.cmd run dev:seed` → `npm.cmd run dev`。
 
-本地数据库位于 `.runtime/postgres`，图片位于 `.runtime/media`。它们独立于小程序页面、未纳入Git；不要在运行时复制数据库目录。数据库同一时间只允许一个本机服务进程使用，种子和备份应先停服务。
+本地数据库位于 `.runtime/postgres`，图片位于 `.runtime/media`，开发用签名密钥保存在 `.runtime/local-secrets.json`，重启不会重新生成。它们独立于小程序页面、未纳入Git；不要在运行时复制数据库目录。数据库同一时间只允许一个本机服务进程使用，种子和备份应先停服务。
 
 ## 正式服务器
 
@@ -22,6 +22,8 @@ Caddy监听80/443并管理HTTPS，数据库和API不直接发布端口。域名�
 
 WECHAT_SECRET仅用于服务端微信code交换。微信手机号还要求后台接口资格；短信配置SMS_SECRET_ID、SMS_SECRET_KEY、SMS_APP_ID、SMS_SIGN_NAME、SMS_TEMPLATE_ID。模板变量为验证码；若模板还含分钟数，设置SMS_WITH_MINUTES=true。实际短信费用和发送量由你自己的服务账号承担；先用测试号码联调。
 
+微信外部提醒另外配置 WECHAT_SUBSCRIPTION_TEMPLATE_ID 和 WECHAT_SUBSCRIPTION_FIELDS；仅在用户已绑定微信并主动同意订阅后发送。发送失败不会删除站内通知。反向代理层级默认关闭；Compose设置TRUST_PROXY_HOPS=1，要求API只接受同一个私网网关的请求，避免客户端伪造来源绕过限流。
+
 ## 数据组织
 
 账号、微信身份与会话；家庭与成员；合集、公开菜品、私有做法；个人/家庭库存；邀请；点餐与来源快照；换菜；菜谱分享与导入回执；解散与逐人投票；通知与审计分别建表。数量按同名同单位汇总，不将“个”和“克”直接相加。已有库存仅代表已录入，仍需核对足量。
@@ -32,6 +34,6 @@ WECHAT_SECRET仅用于服务端微信code交换。微信手机号还要求后台
 
 `npm.cmd run db:backup`：本地在停API后复制数据库与图片；PostgreSQL环境使用pg_dump（需安装客户端），连接凭据从环境传入，不放在命令参数中。备份在 `.runtime/backups`，不得提交或分享。
 
-恢复本地备份：停API，保留原目录副本，将备份postgres目录还原到DATABASE_DIR，将media还原到MEDIA_DIR；先在隔离副本启动并核对用户、家庭、图片和点餐数量，再切换。
+恢复本地备份：停API，保留原目录副本，将备份postgres目录还原到DATABASE_DIR，将media还原到MEDIA_DIR，开发环境同时还原local-secrets.json；先在隔离副本启动并核对用户、家庭、图片和点餐数量，再切换。
 
 PostgreSQL用pg_restore恢复到新的隔离数据库，核对迁移校验、表计数和关键流程，再切换DATABASE_URL。不要直接覆盖唯一生产库。密钥要独立备份，丢失PHONE_ENCRYPTION_KEY会导致手机号不可解密。

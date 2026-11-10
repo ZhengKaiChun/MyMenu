@@ -96,7 +96,7 @@
       </scroll-view>
     </view>
   </view>
-  <view slot="dock" class="dock">
+  <view slot="dock" class="dock dock-menu">
     <view class="basket-bar">
       <button class="basket-count" bindtap="cart"><g-icon name="utensils" size="30" /></button>
       <button class="basket-summary" bindtap="cart">

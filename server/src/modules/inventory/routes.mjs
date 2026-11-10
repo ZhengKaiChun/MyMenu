@@ -23,15 +23,20 @@ export function inventoryRoutes(app, { db, route }) {
         ])
       ).rows;
     });
-    route('POST', path, item, async (r) => {
-      if (scope === 'family') await member(db, r.user.id, r.params.familyId, 'cook');
-      const owner = scope === 'personal' ? r.user.id : r.params.familyId;
-      const out = await db.query(
-        `INSERT INTO inventories(id,${column},name,quantity,unit,category) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(${column},name,unit) WHERE ${column} IS NOT NULL DO UPDATE SET quantity=EXCLUDED.quantity,category=EXCLUDED.category,version=inventories.version+1 RETURNING id`,
-        [id(), owner, r.body.name, r.body.quantity, r.body.unit, r.body.category],
-      );
-      return out.rows[0];
-    });
+    route('POST', path, item, async (r) =>
+      db.transaction(async (tx) => {
+        if (scope === 'family') {
+          await familyLock(tx, r.params.familyId);
+          await member(tx, r.user.id, r.params.familyId, 'cook');
+        }
+        const owner = scope === 'personal' ? r.user.id : r.params.familyId;
+        const out = await tx.query(
+          `INSERT INTO inventories(id,${column},name,quantity,unit,category) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(${column},name,unit) WHERE ${column} IS NOT NULL DO UPDATE SET quantity=EXCLUDED.quantity,category=EXCLUDED.category,version=inventories.version+1 RETURNING id`,
+          [id(), owner, r.body.name, r.body.quantity, r.body.unit, r.body.category],
+        );
+        return out.rows[0];
+      }),
+    );
     route(
       'PUT',
       path + '/:id',
@@ -58,14 +63,19 @@ export function inventoryRoutes(app, { db, route }) {
           return { ok: true };
         }),
     );
-    route('DELETE', path + '/:id', null, async (r) => {
-      if (scope === 'family') await member(db, r.user.id, r.params.familyId, 'cook');
-      await db.query(`DELETE FROM inventories WHERE id=$1 AND ${column}=$2`, [
-        r.params.id,
-        scope === 'personal' ? r.user.id : r.params.familyId,
-      ]);
-      return { ok: true };
-    });
+    route('DELETE', path + '/:id', null, async (r) =>
+      db.transaction(async (tx) => {
+        if (scope === 'family') {
+          await familyLock(tx, r.params.familyId);
+          await member(tx, r.user.id, r.params.familyId, 'cook');
+        }
+        await tx.query(`DELETE FROM inventories WHERE id=$1 AND ${column}=$2`, [
+          r.params.id,
+          scope === 'personal' ? r.user.id : r.params.familyId,
+        ]);
+        return { ok: true };
+      }),
+    );
   }
   route(
     'POST',
@@ -141,6 +151,7 @@ export function inventoryRoutes(app, { db, route }) {
       .strict(),
     async (r) =>
       db.transaction(async (tx) => {
+        await familyLock(tx, r.params.familyId);
         await member(tx, r.user.id, r.params.familyId, 'cook');
         for (const i of r.body.items)
           await tx.query(

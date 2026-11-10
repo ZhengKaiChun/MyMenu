@@ -26,7 +26,7 @@
       </button>
     </view>
   </scroll-view>
-  <view slot="dock" class="dock">
+  <view slot="dock" class="dock dock-with-tabs">
     <button wx:if="{{isCook}}" class="btn" bindtap="add">＋ 添加食材</button>
   </view>
   <g-tabbar slot="tabs" active="pantry" />

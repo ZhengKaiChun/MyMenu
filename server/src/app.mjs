@@ -16,6 +16,7 @@ import { changeRoutes } from './modules/changes/routes.mjs';
 import { shareRoutes } from './modules/shares/routes.mjs';
 import { dissolutionRoutes } from './modules/dissolutions/routes.mjs';
 import { mediaRoutes } from './modules/media/routes.mjs';
+import { notificationRoutes } from './modules/notifications/wechat.mjs';
 export async function buildApp(options = {}) {
   const config = options.config || configFromEnv(),
     db = options.db || (await createDatabase(config.database));
@@ -26,7 +27,7 @@ export async function buildApp(options = {}) {
       redact: ['req.headers.authorization', 'req.url', 'req.body', 'password', 'token'],
     },
     bodyLimit: 512 * 1024,
-    trustProxy: false,
+    trustProxy: config.trustProxyHops || false,
     genReqId: () => id(),
   });
   await app.register(helmet);
@@ -48,13 +49,17 @@ export async function buildApp(options = {}) {
             ? 'VALIDATION'
             : status >= 500
               ? 'INTERNAL'
-              : e.code || 'REQUEST_ERROR',
+              : ['23505', '23503', '23514'].includes(e.code)
+                ? 'DATA_CONFLICT'
+                : e.code || 'REQUEST_ERROR',
         message:
           e instanceof ZodError
             ? '填写内容格式有误，请检查输入'
             : status >= 500
               ? '服务暂时不可用，请稍后重试'
-              : e.message || '操作失败',
+              : ['23505', '23503', '23514'].includes(e.code)
+                ? '数据已变化或名称重复，请刷新后重试'
+                : e.message || '操作失败',
         requestId: r.id,
       },
     });
@@ -104,6 +109,7 @@ export async function buildApp(options = {}) {
     shareRoutes,
     dissolutionRoutes,
     mediaRoutes,
+    notificationRoutes,
   ])
     register(app, ctx);
   route('DELETE', '/me', z.object({ confirm: z.literal(true) }).strict(), async (r) =>

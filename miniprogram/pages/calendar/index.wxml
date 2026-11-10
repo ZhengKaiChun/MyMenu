@@ -70,7 +70,7 @@
       </view>
     </view>
   </scroll-view>
-  <view slot="dock" class="dock">
+  <view slot="dock" class="dock dock-with-tabs">
     <button wx:if="{{isCook}}" class="btn" bindtap="prep">去备菜 · 汇总当天食材</button>
     <button wx:else class="btn" bindtap="go" data-page="menu">我也来点菜</button>
   </view>

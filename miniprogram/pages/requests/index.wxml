@@ -7,6 +7,17 @@
         <view class="h2">{{isCook?'小猪想吃这些':'开饭有回音'}}</view>
         <text class="muted">等你回音 → 这顿安排啦／这次先不做</text>
       </view>
+      <button
+        wx:for="{{notifications}}"
+        wx:key="id"
+        class="change-entry"
+        bindtap="notification"
+        data-id="{{item.id}}"
+      >
+        <g-icon name="envelope" size="24" />
+        <text class="grow">{{item.body}}</text>
+        <text>查看 ›</text>
+      </button>
       <view wx:if="{{changes.length}}">
         <view class="section-title"><text class="h3">换菜的回音</text></view>
         <button

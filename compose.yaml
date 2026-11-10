@@ -6,6 +6,7 @@ services:
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
+      TRUST_PROXY_HOPS: 1
       DATABASE_URL: postgresql://menu:${POSTGRES_PASSWORD}@db:5432/menu
       PUBLIC_ORIGIN: https://${DOMAIN}
     depends_on:

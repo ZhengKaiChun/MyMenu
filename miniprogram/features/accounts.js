@@ -181,6 +181,28 @@ exports.settings = createPage({
     this.setData({ user, capabilities: await api.request('/capabilities') });
   },
   methods: {
+    async bindWechat() {
+      const result = await new Promise((resolve, reject) =>
+        wx.login({ success: resolve, fail: reject }),
+      );
+      await api.request('/me/wechat', { method: 'POST', body: { code: result.code } });
+      wx.showToast({ title: '微信身份已绑定', icon: 'none' });
+    },
+    async subscribe() {
+      const templateId = this.data.capabilities.subscriptionTemplateId;
+      if (!templateId) throw Error('订阅提醒尚未配置，站内通知正常可用');
+      const result = await new Promise((resolve, reject) =>
+        wx.requestSubscribeMessage({ tmplIds: [templateId], success: resolve, fail: reject }),
+      );
+      await api.request('/notifications/subscribe', {
+        method: 'POST',
+        body: { templateId, accepted: result[templateId] === 'accept' },
+      });
+      wx.showToast({
+        title: result[templateId] === 'accept' ? '已开启一次开饭提醒' : '仍可查看站内回音',
+        icon: 'none',
+      });
+    },
     bindPhone() {
       go('sms', { bind: '1' });
     },
