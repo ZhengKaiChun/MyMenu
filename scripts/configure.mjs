@@ -13,7 +13,7 @@ await writeFile(
   'miniprogram/config/index.js',
   'module.exports = ' +
     JSON.stringify(
-      { mode, apiBase: url.origin, version: '0.1.1', appId: 'wx3ab03337b159fadd' },
+      { mode, apiBase: url.origin, version: '0.1.2', appId: 'wx3ab03337b159fadd' },
       null,
       2,
     ) +

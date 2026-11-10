@@ -12,7 +12,7 @@ if (git('rev-parse', 'v' + pkg.version + '^{commit}') !== sha)
   throw Error('Tag v' + pkg.version + ' must point to HEAD');
 for (const file of files)
   checksums[file] = createHash('sha256')
-    .update(execFileSync('git', ['show', 'HEAD:' + file]))
+    .update(execFileSync('git', ['cat-file', '--filters', 'HEAD:' + file]))
     .digest('hex');
 await mkdir('artifacts', { recursive: true });
 const path = 'artifacts/menu-v' + pkg.version + '-' + sha.slice(0, 8) + '.zip';
