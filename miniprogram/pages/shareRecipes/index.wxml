@@ -16,14 +16,17 @@
           <checkbox value="{{item.id}}" checked="{{util.contains(selected,item.id)}}" />
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view>
-            <view class="h4">{{item.name}}</view>
-            <text class="caption">{{item.minutes}}分钟 · 含用料与制作步骤</text>
+            <view class="h4 strong">{{item.name}}</view>
+            <text class="caption copy small-text">{{item.minutes}}分钟 · 含用料与制作步骤</text>
           </view>
         </label>
       </checkbox-group>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">装进信封，预览分享</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="envelope" size="21" tone="light" />
+      装进信封，预览分享
+    </button>
   </view>
 </g-shell>

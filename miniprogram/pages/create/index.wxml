@@ -23,7 +23,7 @@
               type="text"
             />
           </view>
-          <text class="caption">
+          <text class="caption copy small-text">
             创建后默认成为饲养员，称呼为野生小猪。菜谱和食材以后慢慢添加。
           </text>
         </view>
@@ -31,6 +31,9 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">挂好名字牌，创建小家</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="home" size="21" tone="light" />
+      挂好名字牌，创建小家
+    </button>
   </view>
 </g-shell>

@@ -22,7 +22,7 @@
         data-field="password"
         bindinput="input"
         value="{{password}}"
-        placeholder="至少10位，建议使用独特的长密码"
+        placeholder="{{preview?'本机体验，请勿使用真实密码':'至少10位，建议使用独特的长密码'}}"
         password="true"
       />
       <label class="form-label">确认密码</label>
@@ -40,7 +40,10 @@
           <text>已阅读并同意服务协议与隐私说明</text>
         </label>
       </checkbox-group>
-      <button class="btn" bindtap="submit" loading="{{actionBusy}}">注册并进入</button>
+      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+        <g-icon name="user" size="21" tone="light" />
+        注册并进入
+      </button>
     </view>
   </scroll-view>
 </g-shell>

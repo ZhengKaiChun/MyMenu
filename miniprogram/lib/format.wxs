@@ -1,3 +1,8 @@
+function pigIndex(s) {
+  var names = ['猪爸爸', '猪妈妈', '猪大二', '猪二儿', '猪大妞', '猪二妞'];
+  for (var i = 0; i < names.length; i++) if (names[i] === s) return i + 1;
+  return 7;
+}
 function contains(a, v) {
   if (!a) return false;
   for (var i = 0; i < a.length; i++) if (a[i] === v) return true;
@@ -9,4 +14,14 @@ function join(a) {
 function date(s) {
   return (s || '').slice(0, 10);
 }
-module.exports = { contains: contains, join: join, date: date };
+function shortDate(s) {
+  var parts = (s || '').slice(0, 10).split('-');
+  return parts.length === 3 ? parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日' : '';
+}
+module.exports = {
+  pigIndex: pigIndex,
+  shortDate: shortDate,
+  contains: contains,
+  join: join,
+  date: date,
+};

@@ -13,7 +13,14 @@ function filterMenu(page) {
       (page.data.category === 'all' || d.collectionId === page.data.category) &&
       d.name.includes(page.data.search || ''),
   );
-  page.setData({ dishes: list, count: count(), cart: cartRows(page.data.allDishes) });
+  page.setData({
+    dishes: list,
+    count: count(),
+    cart: cartRows(page.data.allDishes),
+    quantities: { ...session.cart },
+    categoryName:
+      page.data.collections.find((c) => c.id === page.data.category)?.name || '全部菜品',
+  });
 }
 exports.menu = createPage({
   data: {

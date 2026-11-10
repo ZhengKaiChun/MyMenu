@@ -1,64 +1,78 @@
-<wxs module="util" src="../../lib/format.wxs" />
 <g-shell title="给我饭" back="{{false}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-home">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="home-top">
         <view>
-          <text class="caption">{{user.nickname || "野生小猪"}}，欢迎回家</text>
+          <text class="copy">{{user.nickname || '野生小猪'}}，欢迎回家</text>
           <view class="h2">
             该吃饭啦
-            <text style="color: #b74f37">。</text>
+            <text class="title-dot">。</text>
           </view>
         </view>
         <button bindtap="go" data-page="settings">
-          <image
-            wx:if="{{user.avatar}}"
-            src="{{user.avatar}}"
-            mode="aspectFill"
-            style="width: 49px; height: 49px; border-radius: 50%"
-          />
-          <g-pig wx:else index="7" size="49" />
+          <view class="avatar">
+            <image wx:if="{{user.avatar}}" src="{{user.avatar}}" mode="aspectFill" />
+            <g-pig wx:else index="7" size="45" />
+          </view>
         </button>
       </view>
-      <view wx:for="{{families}}" wx:key="id" class="house-card" style="margin-bottom: 15px">
+      <view wx:for="{{families}}" wx:key="id" class="house-card">
         <view class="house-topline">
-          <text>我的小家</text>
-          <text class="tag">{{item.role==='cook'?'饲养员':'大懒猪'}}</text>
+          <text>
+            <g-icon name="home" size="18" />
+            我的小家
+          </text>
+          <text class="tag good">{{item.role==='cook'?'饲养员':'大懒猪'}}</text>
         </view>
         <view class="house-main">
           <view>
-            <view class="h3">{{item.name}}</view>
-            <text class="caption">{{item.identity}}</text>
+            <view class="h3 strong">{{item.name}}</view>
+            <view class="house-members"><text>{{item.identity}} · 一起好好吃饭</text></view>
           </view>
-          <g-pig index="0" size="95" />
+          <view class="house-chef"><g-pig index="0" size="95" /></view>
         </view>
         <button class="house-enter" bindtap="enter" data-id="{{item.id}}">
-          <g-icon name="utensils" />
+          <g-icon name="utensils" size="24" />
           <text class="grow">看看今天吃什么</text>
-          <text>↗</text>
+          <text class="strong">↗</text>
         </button>
       </view>
-      <view class="section-title"><view class="h3">有家，就有饭</view></view>
+      <view class="section-title">
+        <view class="h3 strong">有家，就有饭</view>
+        <text class="caption small-text">创建或加入另一个小家</text>
+      </view>
       <view class="two home-entry">
         <button class="card quick" bindtap="go" data-page="create">
           <g-icon name="pot" size="47" />
-          <view class="h3">创建小家</view>
-          <text class="caption">从第一道拿手菜开始</text>
+          <view class="strong">创建小家</view>
+          <text class="small-text">从第一道拿手菜开始</text>
+          <text class="entry-arrow">↗</text>
         </button>
         <button class="card quick" bindtap="go" data-page="join">
           <g-icon name="key" size="47" />
-          <view class="h3">加入小家</view>
-          <text class="caption">拿好TA给你的邀请码</text>
+          <view class="strong">加入小家</view>
+          <text class="small-text">拿好 TA 给你的邀请码</text>
+          <text class="entry-arrow">↗</text>
         </button>
       </view>
-      <view class="section-title"><view class="h3">我的日常</view></view>
-      <button class="btn secondary" bindtap="go" data-page="personal" loading="{{actionBusy}}">
-        个人食材库
-      </button>
-      <button class="btn secondary" bindtap="go" data-page="settings" loading="{{actionBusy}}">
-        账号与设置
-      </button>
+      <view class="section-title personal-title"><view class="h3 strong">我的日常</view></view>
+      <view class="personal-panel home-tools">
+        <button class="list-row" bindtap="go" data-page="personal">
+          <view class="link-label">
+            <g-icon name="basket" size="25" />
+            <text>个人食材库</text>
+          </view>
+          <text class="link-extra">{{personalCount}} 项 ›</text>
+        </button>
+        <button class="list-row" bindtap="go" data-page="settings">
+          <view class="link-label">
+            <g-icon name="settings" size="25" />
+            <text>账号与设置</text>
+          </view>
+          <text class="link-extra">›</text>
+        </button>
+      </view>
     </view>
   </scroll-view>
 </g-shell>

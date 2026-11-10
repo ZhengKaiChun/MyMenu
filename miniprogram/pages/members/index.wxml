@@ -8,10 +8,12 @@
         <view class="muted">家庭称呼与做饭权限分别设置。</view>
       </view>
       <view wx:for="{{members}}" wx:key="user_id" class="card row">
-        <g-pig index="{{item.identity==='猪爸爸'?1:item.identity==='猪妈妈'?2:7}}" size="48" />
+        <g-pig index="{{util.pigIndex(item.identity)}}" size="48" />
         <view class="grow">
-          <view class="h4">{{item.nickname}}</view>
-          <text class="caption">{{item.identity}} · {{item.role==='cook'?'饲养员':'大懒猪'}}</text>
+          <view class="h4 strong">{{item.nickname}}</view>
+          <text class="caption copy small-text">
+            {{item.identity}} · {{item.role==='cook'?'饲养员':'大懒猪'}}
+          </text>
         </view>
         <button wx:if="{{isOwner}}" class="text-btn" data-id="{{item.user_id}}" bindtap="role">
           权限 ›

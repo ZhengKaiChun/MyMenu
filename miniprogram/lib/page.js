@@ -8,7 +8,7 @@ function go(page, query = {}) {
 }
 function createPage(options) {
   const output = {
-    data: { loading: false, error: '', ...options.data },
+    data: { preview: api.isPreview(), loading: false, error: '', ...options.data },
     onLoad(query) {
       this.query = query || {};
       if (options.public !== true && !session.token) {

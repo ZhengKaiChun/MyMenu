@@ -11,13 +11,13 @@
         </text>
       </view>
       <view class="swap-original">
-        <text class="caption">原来点了</text>
+        <text class="caption copy small-text">原来点了</text>
         <view class="row start">
           <image class="food" src="{{source.cover}}" mode="aspectFill" />
-          <view class="h3">{{source.snapshot.name}}</view>
+          <view class="h3 strong">{{source.snapshot.name}}</view>
         </view>
       </view>
-      <view class="section-title"><view class="h3">这次想换成</view></view>
+      <view class="section-title"><view class="h3 strong">这次想换成</view></view>
       <view class="swap-options">
         <button
           wx:for="{{dishes}}"
@@ -39,10 +39,13 @@
         maxlength="300"
         placeholder="今天想换个口味，可以帮我换一道吗？"
       />
-      <text class="caption">等待或未答应时，原来的菜保持不变。</text>
+      <text class="caption copy small-text">等待或未答应时，原来的菜保持不变。</text>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">发送换菜申请</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="utensils" size="21" tone="light" />
+      发送换菜申请
+    </button>
   </view>
 </g-shell>

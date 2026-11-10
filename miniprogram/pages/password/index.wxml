@@ -22,7 +22,7 @@
         data-field="password"
         bindinput="input"
         value="{{password}}"
-        placeholder="请输入密码"
+        placeholder="{{preview?'本机体验，请使用测试密码':'请输入密码'}}"
         password="true"
       />
       <checkbox-group bindchange="consent">
@@ -31,7 +31,10 @@
           <text>已阅读并同意服务协议与隐私说明</text>
         </label>
       </checkbox-group>
-      <button class="btn" bindtap="submit" loading="{{actionBusy}}">登录，回到小家</button>
+      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+        <g-icon name="key" size="21" tone="light" />
+        登录，回到小家
+      </button>
       <button class="btn secondary" bindtap="go" data-page="register" loading="{{actionBusy}}">
         还没有账号？去注册
       </button>

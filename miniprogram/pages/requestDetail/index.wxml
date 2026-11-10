@@ -11,24 +11,24 @@
         <view class="row start" style="margin: 20px 0">
           <g-pig index="7" size="43" />
           <view>
-            <view class="h4">{{order.nickname}}</view>
-            <text class="caption">{{order.identity}} · 发来一条吃饭申请</text>
+            <view class="h4 strong">{{order.nickname}}</view>
+            <text class="caption copy small-text">{{order.identity}} · 发来一条吃饭申请</text>
           </view>
         </view>
         <view wx:for="{{order.items}}" wx:key="id" class="dish">
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
-            <view class="h4">{{item.name}}</view>
-            <text class="caption">{{item.quantity}}份</text>
+            <view class="h4 strong">{{item.name}}</view>
+            <text class="caption copy small-text">{{item.quantity}}份</text>
           </view>
         </view>
-        <view class="section-title"><view class="h3">小猪的留言</view></view>
+        <view class="section-title"><view class="h3 strong">小猪的留言</view></view>
         <view class="quote">{{order.note || '没有留言，也想和你好好吃饭。'}}</view>
         <button wx:if="{{isMine}}" class="change-entry" bindtap="go" data-page="changes">
           想换一道菜？申请更换 ›
         </button>
         <view wx:if="{{order.reply}}" class="card green">
-          <view class="h4">饲养员的回音</view>
+          <view class="h4 strong">饲养员的回音</view>
           <text>{{order.reply}}</text>
         </view>
       </view>
@@ -42,18 +42,23 @@
       </view>
       <button wx:else class="btn ghost" bindtap="cancel">撤回这次点菜</button>
     </view>
-    <button wx:else class="btn" bindtap="go" data-page="today">去看当天菜单</button>
+    <button wx:else class="btn" bindtap="go" data-page="today">
+      <g-icon name="utensils" size="21" tone="light" />
+      去看当天菜单
+    </button>
   </view>
 </g-shell>
 <view wx:if="{{showReply}}" class="modal-mask sheet-mask">
   <view class="sheet">
     <view class="sheet-title">
-      <view class="h3">{{decision==='accept'?'好呀，给你安排上':'这次先不做，也好好说'}}</view>
+      <view class="h3 strong">
+        {{decision==='accept'?'好呀，给你安排上':'这次先不做，也好好说'}}
+      </view>
       <button bindtap="closeReply">×</button>
     </view>
     <label class="form-label">
       回一句话
-      <text class="caption">选填</text>
+      <text class="caption copy small-text">选填</text>
     </label>
     <textarea
       value="{{reply}}"

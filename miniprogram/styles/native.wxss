@@ -1,3 +1,7 @@
+button:not([size='mini']) {
+  width: auto;
+  margin: 0;
+}
 /* Native renderer alignment and safe areas; design tokens live in design-system.wxss. */
 .row > .btn {
   flex: 1;
@@ -33,4 +37,416 @@
   .basket-bar > .btn {
     min-width: 91px;
   }
+}
+
+/* V12 layout parity for native components and typography. */
+g-icon,
+g-pig {
+  display: inline-flex;
+  vertical-align: middle;
+  flex-shrink: 0;
+  line-height: 0;
+}
+.page-menu,
+.page-manage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.menu-mast,
+.menu-schedule,
+.menu-search,
+.menu-heading,
+.manager-head,
+.manager-toolbar,
+.manager-share-line {
+  flex-shrink: 0;
+}
+.menu-catalog {
+  height: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.menu-dishes,
+.menu-rail {
+  height: 100%;
+  min-height: 0;
+}
+.menu-rail {
+  width: 70px;
+  flex: none;
+}
+.menu-dishes {
+  width: 0;
+  flex: 1;
+  box-sizing: border-box;
+}
+.menu-dish-info > .h3 {
+  display: block;
+  text-align: left;
+  min-height: 0;
+}
+.menu-dish-info > .dish-description {
+  margin: 0 0 7px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #997c61;
+}
+.menu-rail .rail-label {
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+.menu-rail button.active:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 19px;
+  bottom: 19px;
+  width: 3px;
+  background: #b74f37;
+  border-radius: 0 4px 4px 0;
+}
+.basket-badge {
+  position: absolute;
+  right: 0;
+  top: -3px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 9px;
+  background: #bd7151;
+  color: #fff;
+  font-size: 9px;
+  line-height: 14px;
+  text-align: center;
+}
+.dish-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.home-entry .quick {
+  height: 178px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+.home-entry .quick g-icon {
+  margin-bottom: 15px;
+  transform: rotate(-6deg);
+}
+.home-entry .quick:nth-child(2) g-icon {
+  transform: rotate(6deg);
+}
+.home-entry .entry-arrow {
+  position: absolute;
+  right: 14px;
+  top: 13px;
+  font-size: 20px;
+  color: #a58669;
+}
+.home-entry .small-text {
+  display: block;
+  font-size: 10px;
+  line-height: 1.8;
+  margin-top: 3px;
+  color: #a18065;
+  white-space: nowrap;
+}
+.home-top .copy {
+  display: block;
+}
+.home-top .avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 49px;
+  height: 49px;
+  overflow: hidden;
+}
+.home-top .avatar image {
+  width: 100%;
+  height: 100%;
+}
+.home-tools .list-row {
+  padding: 14px 0;
+}
+.login-brand .login-slogan {
+  display: block;
+  font-size: 13px;
+  color: #936f53;
+}
+.welcome-visual image {
+  display: block;
+  width: 100%;
+  height: 207px;
+  mix-blend-mode: multiply;
+}
+.page-login {
+  padding: 18px 28px 25px;
+}
+.login-consent checkbox {
+  transform: scale(0.62);
+  transform-origin: left top;
+  width: 18px;
+  height: 18px;
+  margin: 4px 0 0;
+  flex-shrink: 0;
+}
+.consent-copy {
+  font-size: 10px;
+  line-height: 2;
+  text-align: left;
+  color: #9c8268;
+}
+.consent-copy .small-text {
+  display: block;
+  font-size: 10px;
+  color: #ad957b;
+}
+.consent-copy text {
+  display: inline;
+}
+.page-content .row > .btn {
+  margin: 0;
+}
+.dock > .btn + .btn {
+  margin-top: 10px;
+}
+.preview-switch {
+  border-bottom: 1px dashed #d8c6ae;
+  padding: 12px 0;
+}
+.preview-switch > .caption {
+  margin-bottom: 8px;
+}
+checkbox {
+  flex-shrink: 0;
+  transform: scale(0.72);
+  width: 23px;
+  height: 23px;
+}
+textarea {
+  min-height: 100px;
+  line-height: 1.65;
+}
+@media (max-width: 370px) {
+  .menu-rail {
+    width: 59px;
+  }
+  .home-entry .quick {
+    height: 166px;
+  }
+  .welcome-visual image {
+    height: 185px;
+  }
+  .home-entry .small-text {
+    font-size: 9px;
+  }
+}
+
+/* WeChat style v2 adds a 184px default button width; explicit component layouts win. */
+button.btn {
+  width: 100%;
+  box-sizing: border-box;
+}
+.login-actions > button.btn {
+  width: 100%;
+  margin: 0;
+}
+.row > button.btn {
+  width: 0;
+  flex: 1;
+  margin: 0;
+}
+.basket-bar > button.btn,
+.send-dock > button.btn {
+  width: auto;
+  flex: none;
+}
+button.text-btn {
+  width: auto;
+  margin: 0;
+}
+button.list-row {
+  width: 100%;
+}
+.home-entry > button.quick {
+  width: 100%;
+  min-width: 0;
+}
+.menu-dish-info > button.h3 {
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  margin: 0;
+}
+.menu-rail button {
+  width: 100%;
+  margin: 0;
+}
+.menu-heading > button {
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+.menu-schedule .meal-switch > button {
+  width: auto;
+  margin: 0;
+}
+button.menu-photo {
+  width: 108px;
+  margin: 0;
+  padding: 0;
+}
+button.menu-inbox {
+  width: 41px;
+  margin: 0;
+  padding: 0;
+}
+button.dish-add {
+  width: auto;
+  margin: 0 0 0 auto;
+  padding: 7px 10px;
+}
+button.basket-summary,
+button.basket-count {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+button.basket-summary {
+  flex: 1;
+}
+.invite-role-grid > button {
+  width: 100%;
+}
+
+.two > button,
+.identity-grid > button,
+.copy-modes > button {
+  width: 100%;
+  min-width: 0;
+}
+
+.card.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pantry-item {
+  min-height: 84px;
+  padding: 16px 12px;
+  margin: 8px 0;
+  border-color: #ead8c1;
+  background: #fffefa;
+}
+.pantry-item .avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 43px;
+  height: 46px;
+  flex-shrink: 0;
+  background: #f1e6d0;
+  border: 1px solid #e5d2af;
+  border-radius: 12px;
+}
+.pantry-item .h4 {
+  margin: 0 0 3px;
+  font-size: 14px;
+}
+.pantry-item .caption {
+  font-size: 10px;
+  color: #aa8260;
+}
+.pantry-item .text-btn {
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.page-pantry .search,
+.page-personal .search {
+  margin: 15px 0 13px;
+}
+.page-pantry > .row,
+.page-personal > .row {
+  margin: 0 0 1px;
+}
+.today-summary > .strong {
+  font-size: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.today-summary .small-text {
+  font-size: 10px;
+  font-weight: 400;
+}
+.orderer-chip {
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.orderer-chip > text {
+  font-size: 9px;
+}
+.today-dish .text-btn {
+  font-size: 10px;
+}
+.history-calendar button {
+  width: 100%;
+  margin: 0;
+}
+.datebar .date {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+}
+.datebar {
+  gap: 5px;
+}
+.history-empty {
+  padding: 25px 10px;
+  color: #a78d72;
+  font-size: 12px;
+  text-align: center;
+}
+
+.house-enter > .strong {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.house-card + .house-card {
+  margin-top: 14px;
+}
+.page-calendar .today-meal {
+  border: 1px solid #e4d1b1;
+  border-radius: 13px;
+  overflow: hidden;
+  margin-top: 20px;
+  background: #fffefa;
+}
+.page-calendar .today-meal > .row {
+  padding: 11px 13px;
+  background: #efe4cd;
+  border: 0 !important;
+}
+.page-calendar .today-dish {
+  padding: 13px 12px;
+}
+.page-calendar .today-empty {
+  padding: 14px 12px 16px;
 }

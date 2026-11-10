@@ -38,6 +38,13 @@ exports.login = createPage({
       this.setData({ consent: e.detail.value.length > 0 });
     },
     async wechat() {
+      if (api.isPreview()) {
+        if (!this.data.consent) throw Error('请先阅读并同意服务协议与隐私说明');
+        await afterLogin(
+          await api.request('/auth/preview', { method: 'POST', body: { role: 'cook' } }),
+        );
+        return;
+      }
       if (!this.data.consent) throw Error('请先阅读并同意服务协议与隐私说明');
       const out = await new Promise((resolve, reject) =>
         wx.login({ success: resolve, fail: reject }),
@@ -181,6 +188,13 @@ exports.settings = createPage({
     this.setData({ user, capabilities: await api.request('/capabilities') });
   },
   methods: {
+    async previewRole(e) {
+      const role = e.currentTarget.dataset.role;
+      const result = await api.request('/auth/preview', { method: 'POST', body: { role } });
+      session.clear();
+      session.saveAuth(result);
+      wx.reLaunch({ url: '/pages/home/index' });
+    },
     async bindWechat() {
       const result = await new Promise((resolve, reject) =>
         wx.login({ success: resolve, fail: reject }),

@@ -1,6 +1,8 @@
 const config = require('../config/index'),
   session = require('./session');
 const imageCache = {};
+const isPreview = () => config.mode === 'preview';
+const preview = () => require('../preview/index');
 function uuid() {
   return (
     'op-' +
@@ -42,10 +44,12 @@ function send(path, options) {
 }
 async function request(path, options = {}) {
   if (options.method && options.method !== 'GET' && !options.key) options.key = uuid();
+  if (isPreview()) return preview().request(path, options, session.token);
   return send(path, options);
 }
 async function image(id, fallback = '/assets/food-placeholder.png', shareToken) {
   if (!id) return fallback;
+  if (isPreview()) return preview().image(id, fallback);
   if (imageCache[id] && imageCache[id].expires > Date.now()) return imageCache[id].url;
   try {
     let out = await request('/media/' + id + '/url', {
@@ -59,6 +63,7 @@ async function image(id, fallback = '/assets/food-placeholder.png', shareToken) 
   }
 }
 async function upload(path) {
+  if (isPreview()) return preview().upload(path);
   return new Promise((resolve, reject) =>
     wx.uploadFile({
       url: config.apiBase + '/media',
@@ -79,4 +84,4 @@ async function upload(path) {
     }),
   );
 }
-module.exports = { request, image, upload, uuid };
+module.exports = { request, image, upload, uuid, isPreview };

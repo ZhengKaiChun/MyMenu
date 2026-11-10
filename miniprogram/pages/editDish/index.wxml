@@ -24,7 +24,7 @@
         <text wx:else>＋ 添加菜品图片</text>
       </button>
       <view class="row">
-        <text class="caption">相机或相册上传</text>
+        <text class="caption copy small-text">相机或相册上传</text>
         <button class="text-btn" bindtap="ai">✧ AI优化图片 · 预留</button>
       </view>
       <label class="form-label">所属合集</label>
@@ -65,7 +65,7 @@
         placeholder="比如：酸酸甜甜，家的味道"
       />
       <view class="section-title">
-        <view class="h3">用料</view>
+        <view class="h3 strong">用料</view>
         <button class="text-btn" bindtap="addIngredient">＋ 一行</button>
       </view>
       <view wx:for="{{ingredients}}" wx:key="index" class="row" style="margin: 8px 0; gap: 7px">
@@ -103,8 +103,8 @@
         <button class="text-btn" data-index="{{index}}" bindtap="removeIngredient">×</button>
       </view>
       <view class="section-title">
-        <view class="h3">制作步骤</view>
-        <text class="caption">步骤图选填</text>
+        <view class="h3 strong">制作步骤</view>
+        <text class="caption copy small-text">步骤图选填</text>
       </view>
       <view wx:for="{{steps}}" wx:key="index" class="step">
         <view class="row">
@@ -136,6 +136,9 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="save" loading="{{actionBusy}}">保存到小家菜单</button>
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">
+      <g-icon name="book" size="21" tone="light" />
+      保存到小家菜单
+    </button>
   </view>
 </g-shell>

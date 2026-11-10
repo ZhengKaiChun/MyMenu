@@ -11,14 +11,21 @@
         </view>
         <text>{{receipt.name}} · 已收下{{receipt.count}}道菜</text>
         <view class="copy-result-card">
-          <view class="h4">可独立编辑 · 用料步骤一起保存</view>
-          <text class="caption">新增{{receipt.added}}道，替换{{receipt.replaced}}道</text>
-          <text class="caption">不会修改分享者的小家，也不会复制TA的成员或点餐记录。</text>
+          <view class="h4 strong">可独立编辑 · 用料步骤一起保存</view>
+          <text class="caption copy small-text">
+            新增{{receipt.added}}道，替换{{receipt.replaced}}道
+          </text>
+          <text class="caption copy small-text">
+            不会修改分享者的小家，也不会复制TA的成员或点餐记录。
+          </text>
         </view>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="open" loading="{{actionBusy}}">去这个小家，看看菜谱</button>
+    <button class="btn" bindtap="open" loading="{{actionBusy}}">
+      <g-icon name="home" size="21" tone="light" />
+      去这个小家，看看菜谱
+    </button>
   </view>
 </g-shell>

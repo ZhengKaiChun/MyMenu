@@ -2,12 +2,16 @@ const { createPage, go, session, api, familyPath } = require('../lib/page');
 exports.home = createPage({
   data: { families: [] },
   async reload() {
-    const [user, families] = await Promise.all([api.request('/me'), api.request('/families')]);
+    const [user, families, inventory] = await Promise.all([
+      api.request('/me'),
+      api.request('/families'),
+      api.request('/inventory'),
+    ]);
     user.avatar = user.avatarId ? await api.image(user.avatarId, '') : '';
     session.user = user;
     let family = families.find((f) => f.id === session.family?.id) || null;
     if (!family) session.family = null;
-    this.setData({ user, families, family });
+    this.setData({ user, families, family, personalCount: inventory.length });
   },
   methods: {
     enter(e) {
@@ -149,9 +153,24 @@ exports.members = createPage({
 });
 exports.invite = createPage({
   data: { role: 'eater', invitation: null, showCode: false },
+  async reload() {
+    if (!this.data.invitation)
+      this.setData({
+        invitation: await api.request(familyPath('/invitations'), {
+          method: 'POST',
+          body: { role: this.data.role },
+        }),
+      });
+  },
   methods: {
-    chooseRole(e) {
+    async chooseRole(e) {
       this.setData({ role: e.currentTarget.dataset.role, invitation: null });
+      this.setData({
+        invitation: await api.request(familyPath('/invitations'), {
+          method: 'POST',
+          body: { role: this.data.role },
+        }),
+      });
     },
     async prepare() {
       const invitation = await api.request(familyPath('/invitations'), {
@@ -206,7 +225,7 @@ exports.identity = createPage({
         body: { identity: this.data.selected },
       });
       session.family.identity = this.data.selected;
-      wx.setStorageSync('menu.family', session.family);
+      session.setFamily(session.family);
       wx.navigateBack();
     },
   },

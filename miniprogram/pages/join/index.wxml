@@ -20,6 +20,9 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">看看是哪位小猪</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="key" size="21" tone="light" />
+      看看是哪位小猪
+    </button>
   </view>
 </g-shell>

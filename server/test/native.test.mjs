@@ -40,6 +40,8 @@ function nativeRuntime(app) {
   function load(file) {
     file = resolve(file);
     if (!file.endsWith('.js')) file += '.js';
+    if (file === resolve(root, 'config/index.js'))
+      return { mode: 'development', apiBase: 'http://127.0.0.1:3000' };
     if (cache.has(file)) return cache.get(file).exports;
     const module = { exports: {} };
     cache.set(file, module);

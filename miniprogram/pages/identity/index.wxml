@@ -22,6 +22,9 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">保存我的家庭称呼</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="user" size="21" tone="light" />
+      保存我的家庭称呼
+    </button>
   </view>
 </g-shell>

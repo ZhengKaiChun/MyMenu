@@ -16,7 +16,7 @@
           />
           <g-pig wx:else index="7" size="80" />
         </button>
-        <text class="caption">点这里选择头像</text>
+        <text class="caption copy small-text">点这里选择头像</text>
       </view>
       <label class="form-label">昵称</label>
       <input
@@ -30,6 +30,9 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">保存头像与昵称</button>
+    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <g-icon name="user" size="21" tone="light" />
+      保存头像与昵称
+    </button>
   </view>
 </g-shell>

@@ -1,67 +1,59 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="三个月的吃饭记录" back="{{true}}">
+<g-shell title="三个月的好好吃饭" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-history">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="today-heading">
-        <view>
-          <text class="caption">OUR DAILY TABLE</text>
-          <view class="h2">回味那些，好好吃饭的日子</view>
-        </view>
-        <button class="text-btn" bindtap="go" data-page="history">回味 ›</button>
+      <view class="page-intro">
+        <view class="overline">TASTE THE MEMORIES</view>
+        <view class="h2">有些日子，一想就很香</view>
+        <text class="copy muted">仅保留最近 3 个自然月的餐次记录。</text>
       </view>
-      <picker mode="date" value="{{date}}" bindchange="date">
-        <view class="today-date">
-          <g-icon name="calendar" size="22" />
-          <text class="grow">{{date}}</text>
-          <text>换一天 ⌄</text>
+      <view class="card">
+        <view class="row">
+          <button class="text-btn" data-dir="-1" bindtap="month">‹</button>
+          <text class="strong">{{calendarYear}} 年 {{calendarMonth}} 月</text>
+          <button class="text-btn" data-dir="1" bindtap="month">›</button>
         </view>
-      </picker>
-      <view class="today-summary">
-        <text>{{total}}道菜已安排</text>
-        <text>{{quantity}}份点菜</text>
+        <view class="calendar history-calendar">
+          <view wx:for="{{weekLabels}}" wx:key="*this" class="weekday">{{item}}</view>
+          <block wx:for="{{cells}}" wx:key="id">
+            <view wx:if="{{item.blank}}" />
+            <button
+              wx:else
+              class="{{item.on?'on':''}} {{item.dot?'dot':''}}"
+              data-date="{{item.date}}"
+              bindtap="selectDate"
+            >
+              {{item.day}}
+            </button>
+          </block>
+        </view>
       </view>
-      <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" class="today-meal">
-        <view class="row" style="border-bottom: 1px solid #ddc7a4; padding-bottom: 9px">
-          <g-icon
-            name="{{meal.slot==='早餐'?'bowl':meal.slot==='午餐'?'utensils':'pot'}}"
-            size="23"
-          />
-          <view class="h3 grow">{{meal.slot}}</view>
-          <text class="caption">{{meal.dishes.length}}道菜</text>
-        </view>
-        <view wx:for="{{meal.dishes}}" wx:key="dishId" class="today-dish">
+      <view class="row">
+        <view class="h3 strong">{{calendarMonth}} 月 {{calendarDay}} 日 · 饭桌回忆</view>
+        <text class="tag good">已吃到</text>
+      </view>
+      <block wx:for="{{sections}}" wx:key="slot" wx:for-item="meal">
+        <view wx:for="{{meal.dishes}}" wx:key="dishId" class="dish">
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
-            <view class="h4">{{item.snapshot.name}}</view>
-            <view class="orderer-list">
-              <view wx:for="{{item.sources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
-                <g-pig index="{{source.pig}}" size="26" />
-                <text>{{source.identity}} · {{source.nickname}} {{source.quantity}}份</text>
-                <button
-                  wx:if="{{isCook}}"
-                  class="text-btn"
-                  style="font-size: 9px"
-                  data-id="{{source.id}}"
-                  bindtap="done"
-                >
-                  {{source.done?'已吃到':'标记做好'}}
-                </button>
-              </view>
-            </view>
-            <text class="caption">合计{{item.quantity}}份</text>
+            <view class="h4 strong">{{item.snapshot.name}}</view>
+            <text class="caption copy small-text">{{item.quantity}}份 · 一起好好吃饭</text>
+            <text class="tag">{{meal.slot}}</text>
           </view>
           <button
             wx:if="{{isCook}}"
             class="text-btn"
-            bindtap="go"
             data-page="recipe"
             data-id="{{item.dishId}}"
+            bindtap="go"
           >
             做法 ›
           </button>
         </view>
-        <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没有吃饭记录。</view>
+      </block>
+      <view wx:if="{{!total}}" class="history-empty">
+        这一天还没有标记“已吃到”的菜，留一点期待。
       </view>
     </view>
   </scroll-view>

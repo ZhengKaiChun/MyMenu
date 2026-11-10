@@ -7,7 +7,8 @@ const pkg = JSON.parse(await readFile('package.json', 'utf8')),
   sha = git('rev-parse', 'HEAD'),
   files = git('ls-files', '-z').split('\0').filter(Boolean),
   checksums = {};
-if (!/^\d+\.\d+\.\d+$/.test(pkg.version)) throw Error('Release needs a stable semantic version');
+if (!/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/.test(pkg.version))
+  throw Error('Release needs a semantic version');
 if (git('rev-parse', 'v' + pkg.version + '^{commit}') !== sha)
   throw Error('Tag v' + pkg.version + ' must point to HEAD');
 for (const file of files)

@@ -26,17 +26,24 @@
         </view>
         <view class="letter-envelope-edge" />
       </view>
-      <view class="section-title"><view class="h3">信里装着{{gift.dishes.length}}道菜</view></view>
+      <view class="section-title">
+        <view class="h3 strong">信里装着{{gift.dishes.length}}道菜</view>
+      </view>
       <view class="gift-mini-list">
         <view wx:for="{{gift.dishes}}" wx:key="id">
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <text>{{item.name}}</text>
-          <text class="caption">{{item.ingredients.length}}项用料 · {{item.steps.length}}步</text>
+          <text class="caption copy small-text">
+            {{item.ingredients.length}}项用料 · {{item.steps.length}}步
+          </text>
         </view>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="save" loading="{{actionBusy}}">收下这份味道 · 保存到小家</button>
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">
+      <g-icon name="check" size="21" tone="light" />
+      收下这份味道 · 保存到小家
+    </button>
   </view>
 </g-shell>

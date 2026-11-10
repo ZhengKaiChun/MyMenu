@@ -11,13 +11,16 @@
           <text class="tag">{{dish.minutes}} 分钟</text>
           <text class="tag">{{dish.servings}} 人份</text>
         </view>
-        <view class="h3">想吃就加入菜篮吧</view>
-        <text class="caption">选好日期和餐次，把想吃的告诉TA。</text>
+        <view class="h3 strong">想吃就加入菜篮吧</view>
+        <text class="caption copy small-text">选好日期和餐次，把想吃的告诉TA。</text>
         <button wx:if="{{isCook}}" class="btn secondary" bindtap="recipe">查看用料与做法</button>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="add" loading="{{actionBusy}}">＋ 加入我的菜篮</button>
+    <button class="btn" bindtap="add" loading="{{actionBusy}}">
+      <g-icon name="plus" size="21" tone="light" />
+      加入我的菜篮
+    </button>
   </view>
 </g-shell>

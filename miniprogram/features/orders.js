@@ -8,7 +8,7 @@ const labels = {
 };
 const identityIndex = { 猪爸爸: 1, 猪妈妈: 2, 猪大二: 3, 猪二儿: 4, 猪大妞: 5, 猪二妞: 6 };
 exports.checkout = createPage({
-  data: { items: [], count: 0, note: '', date: '', slot: '晚餐' },
+  data: { items: [], count: 0, note: '', date: '', slot: '晚餐', showDate: false },
   async reload() {
     const menu = await api.request(familyPath('/menu'));
     const dishes = await decorate(menu.dishes);
@@ -23,6 +23,12 @@ exports.checkout = createPage({
     });
   },
   methods: {
+    openDate() {
+      this.setData({ showDate: true });
+    },
+    closeDate() {
+      this.setData({ showDate: false });
+    },
     async quantity(e) {
       const id = e.currentTarget.dataset.id,
         dir = Number(e.currentTarget.dataset.dir);
@@ -180,11 +186,81 @@ async function loadToday() {
     date,
     sections,
     total: dishes.length,
+    memberCount: [...new Set(dishes.flatMap((d) => d.sources.map((s) => s.userId)))].length,
     quantity: dishes.reduce((n, d) => n + d.quantity, 0),
     isCook: session.family.role === 'cook',
   });
+  if (this.calendarPage || this.historyOnly) {
+    const selected = new Date(date + 'T12:00:00+08:00'),
+      year = selected.getUTCFullYear(),
+      month = selected.getUTCMonth();
+    const start = new Date(Date.UTC(year, month, 1)),
+      end = new Date(Date.UTC(year, month + 1, 0));
+    const first = start.toISOString().slice(0, 10),
+      last = end.toISOString().slice(0, 10);
+    const days = await api.request(
+      familyPath('/meal-dates') +
+        '?from=' +
+        first +
+        '&to=' +
+        last +
+        (this.historyOnly ? '&done=1' : ''),
+    );
+    const dots = days.map((x) => x.date),
+      offset = (start.getUTCDay() + 6) % 7;
+    const cells = [
+      ...Array.from({ length: offset }, (_, i) => ({ id: 'blank-' + i, blank: true })),
+      ...Array.from({ length: end.getUTCDate() }, (_, i) => {
+        const value =
+          year + '-' + String(month + 1).padStart(2, '0') + '-' + String(i + 1).padStart(2, '0');
+        return {
+          id: value,
+          date: value,
+          day: i + 1,
+          on: value === date,
+          dot: dots.includes(value),
+        };
+      }),
+    ];
+    const beginning = new Date(selected);
+    beginning.setUTCDate(beginning.getUTCDate() - ((beginning.getUTCDay() + 6) % 7));
+    const weekDays = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(beginning);
+      d.setUTCDate(d.getUTCDate() + i);
+      const value = d.toISOString().slice(0, 10);
+      return {
+        date: value,
+        day: d.getUTCDate(),
+        label:
+          value === new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
+            ? '今天'
+            : ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i],
+        on: value === date,
+      };
+    });
+    this.setData({
+      calendarYear: year,
+      calendarMonth: month + 1,
+      calendarDay: selected.getUTCDate(),
+      cells,
+      weekDays,
+      weekLabels: ['一', '二', '三', '四', '五', '六', '日'],
+    });
+  }
 }
 const todayMethods = {
+  async selectDate(e) {
+    this.setData({ date: e.currentTarget.dataset.date });
+    session.mealDate = this.data.date;
+    await loadToday.call(this);
+  },
+  async month(e) {
+    const d = new Date(this.data.date + 'T12:00:00Z');
+    d.setUTCDate(1);
+    d.setUTCMonth(d.getUTCMonth() + Number(e.currentTarget.dataset.dir));
+    this.setData({ date: d.toISOString().slice(0, 10) });
+    await loadToday.call(this);
+  },
   async date(e) {
     this.setData({ date: e.detail.value });
     session.mealDate = e.detail.value;
@@ -204,7 +280,14 @@ exports.today = createPage({
   reload: loadToday,
   methods: todayMethods,
 });
-exports.calendar = exports.today;
+exports.calendar = createPage({
+  data: { date: '', sections: [], weekDays: [] },
+  init() {
+    this.calendarPage = true;
+  },
+  reload: loadToday,
+  methods: todayMethods,
+});
 exports.history = createPage({
   data: { date: '', sections: [] },
   init() {

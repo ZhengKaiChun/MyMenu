@@ -28,6 +28,7 @@
             看看开饭回音
           </button>
           <button class="btn secondary" bindtap="go" data-page="today" loading="{{actionBusy}}">
+            <g-icon name="utensils" size="21" tone="" />
             看看全家今日菜单
           </button>
         </view>

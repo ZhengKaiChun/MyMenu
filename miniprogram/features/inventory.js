@@ -3,6 +3,8 @@ function inventoryPage(personal) {
   return createPage({
     data: {
       items: [],
+      allItems: [],
+      query: '',
       personal,
       isCook: false,
       showImport: false,
@@ -13,14 +15,21 @@ function inventoryPage(personal) {
       const path = personal ? '/inventory' : familyPath('/inventory');
       const items = await api.request(path);
       this.setData({
-        items: items.map((i) => ({
+        allItems: items.map((i) => ({
           ...i,
           icon: { 番茄: 'tomato', 鸡蛋: 'egg', 牛奶: 'milk', 西兰花: 'leaf' }[i.name] || 'basket',
         })),
         isCook: personal || session.family?.role === 'cook',
       });
+      this.setData({ items: this.data.allItems.filter((i) => i.name.includes(this.data.query)) });
     },
     methods: {
+      search(e) {
+        this.setData({
+          query: e.detail.value,
+          items: this.data.allItems.filter((i) => i.name.includes(e.detail.value)),
+        });
+      },
       add() {
         go('ingredientEdit', { scope: personal ? 'personal' : 'family' });
       },

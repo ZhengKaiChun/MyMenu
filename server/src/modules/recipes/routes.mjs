@@ -46,6 +46,11 @@ export function recipeRoutes(app, { db, route }) {
         name: m.name,
         role: m.role,
         identity: m.identity,
+        memberCount: (
+          await db.query('SELECT count(*)::int AS total FROM members WHERE family_id=$1', [
+            m.family_id,
+          ])
+        ).rows[0].total,
         version: m.version,
       },
       collections,

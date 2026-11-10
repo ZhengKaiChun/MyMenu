@@ -37,7 +37,10 @@
           <text>同意服务协议与隐私说明</text>
         </label>
       </checkbox-group>
-      <button class="btn" style="margin-top: 22px" bindtap="submit">验证并继续</button>
+      <button class="btn" style="margin-top: 22px" bindtap="submit">
+        <g-icon name="phone" size="21" tone="light" />
+        验证并继续
+      </button>
       <button class="btn secondary" bindtap="go" data-page="password">返回账号登录</button>
     </view>
   </scroll-view>

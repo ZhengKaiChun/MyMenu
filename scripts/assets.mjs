@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { mkdir, copyFile } from 'node:fs/promises';
+import { mkdir, copyFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 const source =
     process.env.DESIGN_ASSETS ||
@@ -75,3 +75,14 @@ await sharp({ create: { width: 360, height: 360, channels: 4, background: '#f3e8
   ])
   .png()
   .toFile(out + '/food-placeholder.png');
+
+for (const n of names) {
+  const svg = (await readFile(join(source, 'icons', n + '.svg'), 'utf8')).replace(
+    'stroke="#78543b"',
+    'stroke="#fff6e5"',
+  );
+  await sharp(Buffer.from(svg))
+    .resize(64, 64)
+    .png()
+    .toFile(out + '/icons/' + n + '-light.png');
+}

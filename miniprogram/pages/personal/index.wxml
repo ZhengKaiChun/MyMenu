@@ -7,30 +7,42 @@
         <view class="h2">个人食材库</view>
         <text class="muted">属于你自己；导入小家后各自独立维护。</text>
       </view>
-      <view class="row"><text class="caption">共 {{items.length}} 种食材</text></view>
+      <view class="row">
+        <text class="caption copy small-text">共 {{items.length}} 种食材</text>
+      </view>
+      <view class="search row">
+        <g-icon name="search" size="20" />
+        <input placeholder="找找冰箱里的食材" value="{{query}}" bindinput="search" />
+      </view>
       <view wx:for="{{items}}" wx:key="id" class="card row pantry-item">
         <view class="avatar"><g-icon name="{{item.icon}}" size="29" /></view>
         <view class="grow">
-          <view class="h4">{{item.name}}</view>
-          <text class="caption">{{item.quantity}} {{item.unit}} · {{item.category}}</text>
+          <view class="h4 strong">{{item.name}}</view>
+          <text class="caption copy small-text">
+            {{item.quantity}} {{item.unit}} · {{item.category}}
+          </text>
         </view>
         <button wx:if="{{isCook}}" class="text-btn" data-id="{{item.id}}" bindtap="edit">
           编辑
         </button>
       </view>
       <button wx:if="{{isCook}}" class="btn secondary" bindtap="go" data-page="match">
+        <g-icon name="basket" size="21" tone="" />
         看看这些食材能做什么
       </button>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button wx:if="{{isCook}}" class="btn" bindtap="add">＋ 添加食材</button>
+    <button wx:if="{{isCook}}" class="btn" bindtap="add">
+      <g-icon name="plus" size="21" tone="light" />
+      添加食材
+    </button>
   </view>
 </g-shell>
 <view wx:if="{{showImport}}" class="modal-mask sheet-mask">
   <view class="sheet">
     <view class="sheet-title">
-      <view class="h3">带上我的现有食材</view>
+      <view class="h3 strong">带上我的现有食材</view>
       <button bindtap="closeImport">×</button>
     </view>
     <text class="muted">复制后各自独立维护，同名食材保留小家已有数量。</text>
@@ -41,6 +53,9 @@
         <text>{{item.quantity}} {{item.unit}}</text>
       </label>
     </checkbox-group>
-    <button class="btn" bindtap="importItems" loading="{{actionBusy}}">复制到当前小家</button>
+    <button class="btn" bindtap="importItems" loading="{{actionBusy}}">
+      <g-icon name="basket" size="21" tone="light" />
+      复制到当前小家
+    </button>
   </view>
 </view>

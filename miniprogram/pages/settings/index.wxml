@@ -16,8 +16,19 @@
           <button class="text-btn" bindtap="go" data-page="profile">修改头像与昵称 ›</button>
         </view>
       </view>
+      <view wx:if="{{capabilities.preview}}" class="preview-switch">
+        <text class="caption">本机体验 · 数据仅在当前设备保存</text>
+        <view class="row">
+          <button class="pill" bindtap="previewRole" data-role="cook">体验饲养员</button>
+          <button class="pill" bindtap="previewRole" data-role="eater">体验大懒猪</button>
+        </view>
+      </view>
       <view class="card">
-        <button wx:if="{{capabilities.wechat}}" class="list-row" bindtap="bindWechat">
+        <button
+          wx:if="{{capabilities.wechat && !capabilities.preview}}"
+          class="list-row"
+          bindtap="bindWechat"
+        >
           <text>绑定微信身份</text>
           <text>›</text>
         </button>
@@ -31,11 +42,12 @@
         </button>
         <view wx:else class="list-row">
           <text>开饭通知</text>
-          <text class="caption">站内回音已开启</text>
+          <text class="caption copy small-text">站内回音已开启</text>
         </view>
       </view>
       <view class="card">
         <button class="btn secondary" bindtap="go" data-page="personal" loading="{{actionBusy}}">
+          <g-icon name="basket" size="21" tone="" />
           个人现有食材
         </button>
         <button class="btn secondary" bindtap="go" data-page="history" loading="{{actionBusy}}">

@@ -9,12 +9,12 @@
       </view>
       <text class="muted">{{dish.minutes}} 分钟 · {{dish.servings}} 人份</text>
       <image wx:if="{{!textOnly}}" src="{{dish.cover}}" class="food mid" mode="aspectFill" />
-      <view class="section-title"><view class="h3">用料</view></view>
+      <view class="section-title"><view class="h3 strong">用料</view></view>
       <view wx:for="{{dish.ingredients}}" wx:key="index" class="list-row">
         <text>{{item.name}}</text>
         <text>{{item.quantity}} {{item.unit}}</text>
       </view>
-      <view class="section-title"><view class="h3">一步一步，把爱煮好</view></view>
+      <view class="section-title"><view class="h3 strong">一步一步，把爱煮好</view></view>
       <view class="steps">
         <view wx:for="{{dish.steps}}" wx:key="index" class="step">
           <text class="step-num">STEP {{index+1}}</text>

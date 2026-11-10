@@ -30,8 +30,8 @@
           bindtap="chooseRole"
         >
           <g-icon name="bowl" />
-          <view class="h4">大懒猪</view>
-          <text class="caption">负责点菜，好好吃饭</text>
+          <view class="h4 strong">大懒猪</view>
+          <text class="caption copy small-text">负责点菜，好好吃饭</text>
         </button>
         <button
           class="rolebox {{role==='cook'?'selected':''}}"
@@ -39,24 +39,31 @@
           bindtap="chooseRole"
         >
           <g-icon name="pot" />
-          <view class="h4">饲养员</view>
-          <text class="caption">一起做饭，管理菜谱</text>
+          <view class="h4 strong">饲养员</view>
+          <text class="caption copy small-text">一起做饭，管理菜谱</text>
         </button>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button wx:if="{{!invitation}}" class="btn" bindtap="prepare">封好邀请，准备分享</button>
-    <button wx:else class="btn" open-type="share">分享给微信好友</button>
-    <button class="btn secondary" bindtap="code">生成邀请码</button>
+    <view class="row">
+      <button class="btn" open-type="share" disabled="{{!invitation}}">
+        <g-icon tone="light" name="envelope" size="21" />
+        微信邀请
+      </button>
+      <button class="btn secondary" bindtap="code">
+        <g-icon name="key" size="21" />
+        生成邀请码
+      </button>
+    </view>
   </view>
 </g-shell>
 <view wx:if="{{showCode}}" class="modal-mask">
   <view class="modal">
-    <view class="h3">凭这张邀请，回家吃饭</view>
+    <view class="h3 strong">凭这张邀请，回家吃饭</view>
     <view class="invite-pass">
       <view class="pass-top">给我饭 · 小家通行证</view>
-      <view class="h3">{{family.name}}</view>
+      <view class="h3 strong">{{family.name}}</view>
       <view
         class="pass-code"
         style="font-size: 15px; letter-spacing: 1px; word-break: break-all; padding: 0 14px"
@@ -66,7 +73,10 @@
       <view class="pass-tear" />
       <view class="pass-bottom">7天有效 · 仅限一位新成员</view>
     </view>
-    <button class="btn" bindtap="copyCode" loading="{{actionBusy}}">复制邀请码</button>
+    <button class="btn" bindtap="copyCode" loading="{{actionBusy}}">
+      <g-icon name="key" size="21" tone="light" />
+      复制邀请码
+    </button>
     <button class="btn secondary" bindtap="closeCode" loading="{{actionBusy}}">收好这张邀请</button>
   </view>
 </view>

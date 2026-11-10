@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 const [mode = 'development', base = 'http://127.0.0.1:3000'] = process.argv.slice(2);
-if (!['development', 'production'].includes(mode)) throw Error('Choose development or production');
+if (!['preview', 'development', 'production'].includes(mode))
+  throw Error('Choose preview, development or production');
 const url = new URL(base);
 if (
   mode === 'production' &&
@@ -13,7 +14,7 @@ await writeFile(
   'miniprogram/config/index.js',
   'module.exports = ' +
     JSON.stringify(
-      { mode, apiBase: url.origin, version: '0.1.2', appId: 'wx3ab03337b159fadd' },
+      { mode, apiBase: url.origin, version: '0.2.0-rc.1', appId: 'wx3ab03337b159fadd' },
       null,
       2,
     ) +

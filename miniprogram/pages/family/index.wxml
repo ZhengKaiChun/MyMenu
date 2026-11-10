@@ -32,9 +32,11 @@
       </view>
       <view wx:if="{{family.role==='cook'}}" class="card">
         <button class="btn secondary" bindtap="go" data-page="invite" loading="{{actionBusy}}">
+          <g-icon name="envelope" size="21" tone="" />
           邀请小猪回家
         </button>
         <button class="btn secondary" bindtap="go" data-page="manage" loading="{{actionBusy}}">
+          <g-icon name="book" size="21" tone="" />
           菜谱与合集管理
         </button>
         <button
@@ -43,6 +45,7 @@
           data-page="shareRecipes"
           loading="{{actionBusy}}"
         >
+          <g-icon name="share" size="21" tone="" />
           把拿手菜分享出去
         </button>
       </view>

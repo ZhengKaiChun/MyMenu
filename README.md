@@ -1,10 +1,20 @@
 # 给我饭 · 微信原生小程序
 
-原生 WXML/WXSS/JS 页面 + 独立 Node.js 服务端 + PostgreSQL 数据库。以设计 V12 为视觉基准，保留暖白配色、原版小猪、手写菜谱信、备菜便签和双角色功能。不是网页套壳，业务数据不保存在页面本机假数据中。
+原生WXML/WXSS/JS界面，按已确认的V12设计稿修订。47个页面，暖白配色、原版小猪、手绘物件、邀请信与备菜便签。后端按业务分模块，账号、家庭、菜谱、食材与点餐分别组织。
 
-## 本地开始
+## 直接导入并体验
 
-本机依赖和测试资料已准备好，可以双击 `start-local.cmd` 启动后端，窗口保持打开。首次在其他电脑使用时，需要 Node.js 24 或更新版本，并在项目目录打开终端：
+打开微信开发者工具，导入本项目根目录（包含project.config.json的menu目录），AppID已经填写。点击编译，在登录页勾选协议，点“直接体验小厨房”即可。
+
+**默认本机体验无需启动后台、安装npm依赖或关闭合法域名校验。** 菜图随包提供，体验数据仅保存在当前设备。设置页可切换饲养员和大懒猪，体验点菜、回音、换菜、食材、复制菜谱与全员解散。也可注册一个本机测试账号，从野生小猪和空小家开始；请勿使用真实密码。
+
+本机体验不是真实微信登录，不会发送真实短信、微信订阅消息，也不能在两台设备间同步。微信分享卡片可以展示界面，但体验邀请与菜谱数据只在发出它的设备上；跨设备接收需要配置正式后端。体验存储与正式登录状态分开，正式发布环境禁止使用体验存储。
+
+详见[导入指南](docs/DEVTOOLS.md)。
+
+## 真实独立后端与数据库
+
+配置后可切换到服务端数据，原有真实业务实现保留。需要Node.js24或更新版本。在根目录运行：
 
 ```powershell
 npm.cmd ci --ignore-scripts
@@ -12,41 +22,18 @@ npm.cmd run dev:seed
 npm.cmd run dev
 ```
 
-`dev:seed` 可选，仅本地开发可执行，创建带真实菜图的两个测试账户；随机密码保存在 `.runtime/demo-accounts.json`，不会提交到 Git。若不需要演示资料，可以直接启动后自己注册。
+另一个终端运行`node scripts/configure.mjs development http://127.0.0.1:3000`，仅此本地联网方式需要在微信工具中临时关闭合法域名校验。可选的dev:seed生成两个本机测试账号，随机密码在.runtime/demo-accounts.json，不进入Git。默认开发数据库位于.runtime/postgres，使用独立服务端的持久化PGlite PostgreSQL引擎；生产配置DATABASE_URL使用独立PostgreSQL。
 
-打开微信开发者工具，导入**项目根目录**（包含 project.config.json），AppID 已设为 `wx3ab03337b159fadd`。本地联调时在开发者工具“详情 → 本地设置”临时勾选“不校验合法域名、web-view、TLS版本及HTTPS证书”。前端默认连接 `http://127.0.0.1:3000`。不要在正式环境关闭域名或证书校验。
+正式部署HTTPS后，运行`node scripts/configure.mjs production https://你的后端域名`，再配置微信合法域名、AppSecret、隐私声明和实际使用的短信/订阅服务。密钥仅在服务端.env，不能写入小程序或Git。详见[部署与备份](docs/DEPLOYMENT.md)。
 
-账号登录可直接本地使用；微信登录、微信手机号、短信服务需要在服务端 `.env` 填入相应密钥和服务配置才会显示可用入口，未配置时不会伪造成功。不要把密钥发到聊天或写进小程序端。
+## 工程与验证
 
-详细导入步骤见 [微信开发者工具导入指南](docs/DEVTOOLS.md)，部署见 [部署与备份](docs/DEPLOYMENT.md)，数据分类见 [数据与权限](docs/DATA.md)，本次检查见 [验证记录](docs/VERIFICATION.md)。
+- miniprogram/pages、features、components：页面、业务控制器和通用组件。
+- miniprogram/preview：独立本机体验传输与数据，正式接口不调用它。
+- server/src/modules、core：独立后端、权限、校验、数据库事务与身份安全。
+- server/migrations：带内容校验的数据库版本；design/baseline.json记录设计来源。
+- server/test：真实数据库、原生控制器、本机体验及权限测试。
 
-## 工程划分
+运行`npm.cmd run lint`、`npm.cmd run check`、`npm.cmd test`和`npm.cmd audit --omit=dev`。本机check使用微信官方模板/样式编译器；无微信工具的CI检查结构与语法。发布采用Git提交、版本标签、依赖锁定、源码zip、历史bundle和SHA256清单。
 
-- `miniprogram/pages/`：47个原生页面，各有 WXML/WXSS/JS/JSON。
-- `miniprogram/features/`：账号、家庭、菜谱、点餐、食材、分享的页面控制逻辑。
-- `miniprogram/components/`：导航、物件图标、小猪、隐私授权等可复用组件。
-- `server/src/modules/`：按业务域拆分的API，校验和权限由服务端实施。
-- `server/src/core/`：身份会话、数据库事务、输入校验、幂等、错误处理。
-- `server/migrations/`：带内容校验的版本化SQL迁移，不修改已执行的迁移。
-- `server/test/`：真实数据库和原生控制器集成测试。
-- `design/baseline.json`：设计V12的源文件校验值及本机参考位置。
-
-本地数据库是持久化在独立服务端的 PGlite PostgreSQL 引擎，文件位于 `.runtime/postgres`；正式部署使用 `DATABASE_URL` 连接独立 PostgreSQL。两者使用相同SQL迁移，数据库不嵌在微信客户端里。
-
-## 检查与版本
-
-```powershell
-npm.cmd run lint
-npm.cmd run check
-npm.cmd test
-npm.cmd audit --omit=dev
-npm.cmd run release
-```
-
-本机 `check` 调用已安装的微信官方 WXML/WXSS 编译器。没有微信工具的CI主机执行结构、JS语法和包体检查。版本由 Git 提交、标签、变更日志、依赖锁文件及发布SHA256清单共同追踪。`release` 要求工作区已提交、同版本的Git标签指向当前提交，生成源码zip、完整Git历史bundle及文件SHA256清单。
-
-## 上线边界
-
-当前版本可本地联调；真实微信登录/短信、正式HTTPS域名、隐私声明、订阅消息模板、生产数据库与备份，需要运营者配置。上传脚本会拒绝开发地址；微信工具的上传不等于审核通过或公开发布。
-
-已经实施权限隔离、参数化SQL、输入校验、会话哈希、scrypt密码哈希、手机号加密、限流、上传重编码、事务与并发版本校验。不能承诺绝对不受攻击；正式上线还需真机与视觉验收、基础设施配置核验和安全评估，见 [安全说明](docs/SECURITY.md)。
+[数据与权限](docs/DATA.md) · [安全边界](docs/SECURITY.md) · [验证记录](docs/VERIFICATION.md)

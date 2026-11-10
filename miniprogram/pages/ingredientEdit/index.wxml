@@ -16,7 +16,7 @@
           <view class="fridge-handle" />
           <text style="font-size: 8px; color: #929e71">OUR LITTLE FRIDGE</text>
           <view class="h2" style="font-size: 24px; color: #6e7f52">今天，收好一点新鲜</view>
-          <text class="caption">
+          <text class="caption copy small-text">
             {{scope==='personal'?'存入我的个人食材库':'存入当前小家食材库'}}
           </text>
         </view>
@@ -58,12 +58,15 @@
           <picker range="{{categories}}" bindchange="category">
             <view class="select">{{category}}</view>
           </picker>
-          <text class="caption">写清数量和单位，下次开饭心里有数。</text>
+          <text class="caption copy small-text">写清数量和单位，下次开饭心里有数。</text>
         </view>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="save" loading="{{actionBusy}}">放进冰箱并保存</button>
+    <button class="btn" bindtap="save" loading="{{actionBusy}}">
+      <g-icon name="basket" size="21" tone="light" />
+      放进冰箱并保存
+    </button>
   </view>
 </g-shell>

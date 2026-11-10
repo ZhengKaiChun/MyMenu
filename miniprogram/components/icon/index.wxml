@@ -1,5 +1,5 @@
 <image
-  src="/assets/icons/{{name}}.png"
+  src="/assets/icons/{{name}}{{tone==='light'?'-light':''}}.png"
   style="width:{{size}}px;height:{{size}}px;display:block"
   mode="aspectFit"
 />
