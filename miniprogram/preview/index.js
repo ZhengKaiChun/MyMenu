@@ -157,7 +157,11 @@ function request(path, options = {}, token) {
         S.demand(f.name, '请填写小家名称');
         f.version++;
         out = { ok: true };
-      } else if (section === 'cooking-records')
+      } else if (section === 'cooking-claims')
+        out = require('./cooking').claim(db, user, fid, body);
+      else if (section === 'cooking-reminders')
+        out = require('./cooking').detail(db, user, fid, rid);
+      else if (section === 'cooking-records')
         out = require('./personal').cooking(db, user, fid, method, method === 'GET' ? query : body);
       else if (section === 'menu')
         out = {
@@ -548,6 +552,7 @@ function request(path, options = {}, token) {
               '请先处理换菜申请',
               409,
             );
+            S.demand(o.meal_date >= today(), '这一天已经结束，菜单已结算', 409);
             o.status = body.decision === 'accept' ? 'accepted' : 'rejected';
             o.reply = body.reply || '';
             S.notify(db, fid, 'order.reply', o.id, o.reply || '饲养员回复了你的点菜', [o.user_id]);
@@ -598,8 +603,12 @@ function request(path, options = {}, token) {
           '找不到这道已安排的菜',
           404,
         );
-        o.items.find((l) => l.id === rid).done = true;
-        out = { ok: true };
+        out = require('./cooking').claim(db, user, fid, {
+          date: o.meal_date,
+          slot: o.slot,
+          dishId: o.items.find((l) => l.id === rid).dish_id,
+          done: true,
+        });
       } else if (section === 'changes')
         out = changes(db, user, fid, m, method, rid, parts[4], body);
       else if (section === 'shares') {
@@ -705,7 +714,7 @@ function request(path, options = {}, token) {
     else S.fail('此功能需配置正式后台服务', 400);
   }
   S.demand(out !== undefined, '这个操作暂不可用');
-  if (method !== 'GET' && options.key)
+  if (method !== 'GET' && operationKey)
     db.operations[operationKey] = {
       path,
       body: JSON.stringify(body),
@@ -837,6 +846,7 @@ function changes(db, user, fid, m, method, rid, action, b) {
       409,
     ),
     l = o.items.find((l) => l.id === c.line_id);
+  S.demand(o.meal_date >= today(), '这一天已经结束，菜单已结算', 409);
   S.demand(
     o.version === c.line_version && !l.done && ['pending', 'accepted'].includes(o.status),
     '点菜已变化，请重新申请',
@@ -909,6 +919,13 @@ function dissolve(db, user, fid, method, rid, action, b) {
     p.status = 'completed';
     db.families.find((f) => f.id === fid).deleted_at = new Date().toISOString();
     db.cookingRecords = db.cookingRecords.filter((c) => c.familyId !== fid);
+    db.cookingRecordsLegacy = (db.cookingRecordsLegacy || []).filter((c) => c.familyId !== fid);
+    db.cookingReminders = db.cookingReminders.filter((c) => c.familyId !== fid);
+    for (const n of db.notifications)
+      if (n.family_id === fid && n.type === 'cooking.reminder') {
+        n.invalidated_at = new Date().toISOString();
+        n.read_at = n.read_at || n.invalidated_at;
+      }
     for (const [key, row] of Object.entries(db.achievementTotals))
       if (row.familyId === fid) delete db.achievementTotals[key];
     for (const i of db.invitations) if (i.family_id === fid) i.revoked = true;

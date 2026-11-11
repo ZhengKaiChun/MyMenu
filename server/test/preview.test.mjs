@@ -308,10 +308,10 @@ test('standalone import preview runs without HTTP and preserves separate device-
       slot: '晚餐',
       items: [{ dishId: d.id, quantity: 3 }],
     });
-    const b = { date: today(), slot: '晚餐', dishIds: [d.id] };
-    await call('PUT', path + '/cooking-records', u, b);
-    await call('PUT', path + '/cooking-records', u, b);
-    assert.equal((await call('GET', '/me/achievements', u)).cooked, 1);
+    const b = { date: today(), slot: '晚餐', dishId: d.id, done: true };
+    await call('POST', path + '/cooking-claims', u, b);
+    await call('POST', path + '/cooking-claims', u, b);
+    assert.equal((await call('GET', '/me/achievements', u)).cooked, 0);
     const key = 'geiwofan.preview.database.v1',
       db = storage.get(key),
       dates = require('../../miniprogram/lib/dates.js'),
@@ -338,10 +338,74 @@ test('standalone import preview runs without HTTP and preserves separate device-
       },
       'credential-secret-retry',
     );
+    assert.equal(JSON.stringify(storage.get(key)).includes('changed-preview-password'), false);
     await assert.rejects(call('GET', '/me', u));
     assert.equal((await call('GET', '/me/security', changed)).username, 'changed_preview');
     assert.equal(JSON.stringify(storage.get(key)).includes('changed-preview-password'), false);
   });
+  await t.test(
+    'missed cooking reminders go to all cooks, expire on first claim and record the history author',
+    async () => {
+      const a = await call('POST', '/auth/register', null, {
+          username: 'claim_preview_a',
+          password: 'claim-preview-password',
+        }),
+        b = await call('POST', '/auth/register', null, {
+          username: 'claim_preview_b',
+          password: 'claim-preview-password',
+        });
+      const f = await call('POST', '/families', a, { name: '跨日认领' }),
+        path = '/families/' + f.id;
+      const inv = await call('POST', path + '/invitations', a, { role: 'cook' });
+      await call('POST', '/invitations/' + inv.token + '/accept', b, {});
+      const m = await call('GET', path + '/menu', a),
+        d = await call('POST', path + '/dishes', a, {
+          name: '煎蛋',
+          collectionId: m.collections[0].id,
+          minutes: 5,
+          servings: 1,
+          ingredients: [],
+          steps: [],
+        });
+      await call('POST', path + '/orders', a, {
+        date: today(),
+        slot: '晚餐',
+        items: [{ dishId: d.id, quantity: 2 }],
+      });
+      assert.equal((await call('GET', '/me/achievements', a)).ordered, 0);
+      const key = 'geiwofan.preview.database.v1',
+        fixture = storage.get(key),
+        date = require('../../miniprogram/lib/dates.js').shift(today(), -1);
+      fixture.orders.filter((o) => o.family_id === f.id).forEach((o) => (o.meal_date = date));
+      storage.set(key, fixture);
+      const n1 = (await call('GET', '/notifications', a)).filter(
+          (n) => n.family_id === f.id && n.type === 'cooking.reminder',
+        ),
+        n2 = (await call('GET', '/notifications', b)).filter(
+          (n) => n.family_id === f.id && n.type === 'cooking.reminder',
+        );
+      assert.equal(n1.length, 1);
+      assert.equal(n2.length, 1);
+      const body = { date, slot: '晚餐', dishId: d.id, done: true };
+      await call('POST', path + '/cooking-claims', b, body);
+      await assert.rejects(
+        call('POST', path + '/cooking-claims', a, body),
+        (e) => e.code === 'COOK_CLAIMED',
+      );
+      const detail = await call('GET', path + '/cooking-reminders/' + n1[0].entity_id, a);
+      assert.equal(detail.claimable, false);
+      assert.equal(detail.cooker.userId, b.user.id);
+      assert.ok(
+        (await call('GET', '/notifications', a)).find((n) => n.id === n1[0].id).invalidated_at,
+      );
+      assert.equal((await call('GET', '/me/achievements', a)).ordered, 2);
+      assert.equal((await call('GET', '/me/achievements', a)).cooked, 0);
+      assert.equal((await call('GET', '/me/achievements', b)).cooked, 1);
+      const history = await call('GET', path + '/history?date=' + date, a);
+      assert.equal(history.dishes[0].cooker.userId, b.user.id);
+      await assert.rejects(call('POST', path + '/cooking-claims', b, { ...body, done: false }));
+    },
+  );
   await t.test('formal releases reject the device-local transport', async () => {
     env = 'release';
     await assert.rejects(call('GET', '/capabilities'), (e) => e.code === 'PREVIEW_NOT_PRODUCTION');

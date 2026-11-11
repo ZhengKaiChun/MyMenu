@@ -18,6 +18,7 @@
         </view>
       </picker>
 
+      <view wx:if="{{isCook && isToday}}" class="cooking-inline-hint"><g-icon name="check" size="16"/><text>勾选自己做完的菜，明天计入成就</text></view>
       <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" class="today-meal">
         <view
           class="row section-head"
@@ -46,16 +47,13 @@
                 <text>{{source.identity}}{{source.quantity>1?'×'+source.quantity:''}}</text>
               </view>
             </view>
-            <text class="caption copy small-text">合计{{item.quantity}}份</text>
+            <text class="caption copy small-text">合计{{item.quantity}}份</text><view wx:if="{{item.cooker}}" class="cooker-credit"><g-icon name="pot" size="14"/><text>{{item.cooker.identity}}做的</text></view>
           </view>
-          <button hover-class="none"
-            wx:if="{{item.ownLineId}}"
-            class="text-btn swap-button"
-            catchtap="swapDish"
-            data-id="{{item.ownLineId}}"
-          >
-            换菜
-          </button>
+          <view class="today-dish-actions">
+            <button hover-class="none" wx:if="{{item.canMark}}" class="cook-check {{item.cooker?'checked':''}}" catchtap="toggleCook" data-id="{{item.dishId}}" data-slot="{{meal.slot}}"><view class="cook-check-box">{{item.cooker?'✓':''}}</view><text>{{item.cooker?'已做完':'我做完了'}}</text></button>
+            <view wx:elif="{{item.cooker}}" class="cook-completed"><g-icon name="check" size="18"/><text>已做完</text></view>
+            <button hover-class="none" wx:if="{{item.ownLineId && !item.cooker}}" class="text-btn swap-button" catchtap="swapDish" data-id="{{item.ownLineId}}">换菜</button>
+          </view>
         </view>
         <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没安排，去点一道吧。</view>
       </view>

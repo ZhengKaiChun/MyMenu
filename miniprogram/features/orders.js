@@ -115,7 +115,12 @@ async function loadRequests() {
                 .slice(0, 16)
                 .replace('T', ' ')
             : '',
-          status: labels[order?.status || change?.status] || '',
+          status:
+            n.type === 'cooking.reminder'
+              ? n.invalidated_at
+                ? '提醒已失效'
+                : '等你确认做菜人'
+              : labels[order?.status || change?.status] || '',
           meal: order
             ? order.meal_date + ' · ' + order.slot
             : change
@@ -189,6 +194,10 @@ exports.requests = createPage({
         await loadRequests.call(this);
         return;
       }
+      if (item.type === 'cooking.reminder') {
+        go('cookingReminder', { id: item.entity_id, familyId: item.family_id });
+        return;
+      }
       if (item.type.startsWith('order.')) go('requestDetail', { id: item.entity_id });
       else if (item.type.startsWith('change.')) go('changeDetail', { id: item.entity_id });
       else go('dissolve', { familyId: item.family_id });
@@ -258,6 +267,11 @@ async function loadToday() {
           ...s,
           pig: identityIndex[s.identity] || 7,
         })),
+        canMark:
+          date === require('../lib/dates').today() &&
+          session.family.role === 'cook' &&
+          (!d.cooker || d.cooker.userId === session.user.id),
+        cookedByMe: d.cooker?.userId === session.user.id,
         ownLineId:
           date >= new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
             ? d.sources.find((s) => s.userId === session.user.id && !s.done)?.id
@@ -271,9 +285,25 @@ async function loadToday() {
     memberCount: [...new Set(dishes.flatMap((d) => d.sources.map((s) => s.userId)))].length,
     quantity: dishes.reduce((n, d) => n + d.quantity, 0),
     isCook: session.family.role === 'cook',
+    isToday: date === require('../lib/dates').today(),
   });
 }
 const todayMethods = {
+  async toggleCook(e) {
+    const { id, slot } = e.currentTarget.dataset;
+    const d = this.data.sections.find((m) => m.slot === slot)?.dishes.find((d) => d.dishId === id);
+    if (!d?.canMark) return;
+    try {
+      await api.request(familyPath('/cooking-claims'), {
+        method: 'POST',
+        body: { date: this.data.date, slot, dishId: id, done: !d.cooker },
+      });
+    } catch (error) {
+      await loadToday.call(this);
+      throw error;
+    }
+    await loadToday.call(this);
+  },
   openRecipe(e) {
     if (session.family.role !== 'cook') return;
     go('recipe', { id: e.currentTarget.dataset.id });

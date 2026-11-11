@@ -8,6 +8,7 @@ import { digest, id } from './core/security.mjs';
 import { demand } from './core/errors.mjs';
 import { configFromEnv } from './config.mjs';
 import { accountSettingsRoutes } from './modules/auth/account-settings.mjs';
+import { cookingRoutes } from './modules/meals/cooking.mjs';
 import { achievementRoutes } from './modules/meals/achievements.mjs';
 import { authRoutes } from './modules/auth/routes.mjs';
 import { familyRoutes } from './modules/families/routes.mjs';
@@ -105,6 +106,7 @@ export async function buildApp(options = {}) {
   for (const register of [
     accountSettingsRoutes,
     achievementRoutes,
+    cookingRoutes,
     familyRoutes,
     recipeRoutes,
     mealRoutes,
@@ -134,6 +136,7 @@ export async function buildApp(options = {}) {
         "UPDATE dissolutions SET status='invalidated' WHERE status='pending' AND family_id IN(SELECT family_id FROM members WHERE user_id=$1)",
         [r.user.id],
       );
+      await tx.query('DELETE FROM cooking_records_legacy WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM cooking_records WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM achievement_totals WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM members WHERE user_id=$1', [r.user.id]);
@@ -151,7 +154,7 @@ export async function buildApp(options = {}) {
       return { ok: true };
     }),
   );
-  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.9' }));
+  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.10' }));
   app.addHook('onClose', async () => {
     if (!options.db) await db.close();
   });

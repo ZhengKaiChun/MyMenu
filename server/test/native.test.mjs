@@ -171,6 +171,18 @@ test('native controllers register, create household, save a real recipe and subm
   today.onLoad({});
   await today.onShow();
   assert.equal(today.data.total, 1);
+  const cookEvent = { currentTarget: { dataset: { id: menu.data.dishes[0].id, slot: '晚餐' } } };
+  await today.toggleCook(cookEvent);
+  assert.equal(today.data.error, '');
+  assert.equal(today.data.sections[2].dishes[0].cooker.userId, session.user.id);
+  assert.equal(
+    (await runtime.load(resolve(runtime.root, 'lib/api.js')).request('/me/achievements')).cooked,
+    0,
+    'today is not settled yet',
+  );
+  await today.toggleCook(cookEvent);
+  assert.equal(today.data.sections[2].dishes[0].cooker, null);
+
   assert.equal(today.data.sections[2].dishes[0].snapshot.name, '原生番茄炒蛋');
   const api = runtime.load(resolve(runtime.root, 'lib/api.js'));
   const a = await api.request('/inventory', {

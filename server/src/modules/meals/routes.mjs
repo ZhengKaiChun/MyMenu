@@ -1,3 +1,4 @@
+import { claimCooking, syncCompletedLines } from './cooking.mjs';
 import { z } from 'zod';
 import { id } from '../../core/security.mjs';
 import { member, familyLock, atomic, notify, audit, dateAllowed } from '../../core/policy.mjs';
@@ -56,6 +57,7 @@ export function mealRoutes(app, { db, route }) {
               [id(), oid, dish.id, item.quantity, JSON.stringify(snapshot)],
             );
           }
+          await syncCompletedLines(tx, oid);
           if (status === 'pending')
             await notify(tx, m.family_id, 'order.pending', oid, '您小猪发来了一条吃饭申请');
           await notify(
@@ -106,12 +108,13 @@ export function mealRoutes(app, { db, route }) {
           await familyLock(tx, r.params.familyId);
           await member(tx, r.user.id, r.params.familyId, 'cook');
           const o = (
-            await tx.query('SELECT * FROM orders WHERE id=$1 AND family_id=$2 FOR UPDATE', [
-              r.params.id,
-              r.params.familyId,
-            ])
+            await tx.query(
+              'SELECT *,meal_date::text AS date FROM orders WHERE id=$1 AND family_id=$2 FOR UPDATE',
+              [r.params.id, r.params.familyId],
+            )
           ).rows[0];
           demand(o && o.status === 'pending', 409, 'ORDER_RESOLVED', '这份点菜已处理');
+          demand(dateAllowed(o.date), 409, 'DAY_CLOSED', '这一天已经结束，菜单已结算');
           const c = (
             await tx.query(
               "SELECT c.id FROM changes c JOIN order_lines l ON l.id=c.line_id WHERE l.order_id=$1 AND c.status='pending'",
@@ -124,6 +127,7 @@ export function mealRoutes(app, { db, route }) {
             r.body.decision === 'accept' ? 'accepted' : 'rejected',
             r.body.reply,
           ]);
+          await syncCompletedLines(tx, o.id);
           await notify(
             tx,
             o.family_id,
@@ -204,19 +208,38 @@ export function mealRoutes(app, { db, route }) {
           done: l.done,
         });
       }
-      return { date, dishes: [...grouped.values()] };
+      const claims = (
+        await db.query(
+          'SELECT c.dish_id,c.slot,c.user_id AS "userId",u.nickname,COALESCE(m.identity,\'野生小猪\') AS identity FROM cooking_records c JOIN users u ON u.id=c.user_id LEFT JOIN members m ON m.family_id=c.family_id AND m.user_id=c.user_id WHERE c.family_id=$1 AND c.meal_date=$2',
+          [r.params.familyId, date],
+        )
+      ).rows;
+      return {
+        date,
+        dishes: [...grouped.values()].map((d) => ({
+          ...d,
+          cooker: claims.find((c) => c.dish_id === d.dishId && c.slot === d.slot) || null,
+        })),
+      };
     });
   }
   route('POST', '/families/:familyId/lines/:id/done', z.object({}).strict(), async (r) =>
     db.transaction(async (tx) => {
       await familyLock(tx, r.params.familyId);
       await member(tx, r.user.id, r.params.familyId, 'cook');
-      const row = await tx.query(
-        "UPDATE order_lines SET done=true WHERE id=$1 AND order_id IN(SELECT id FROM orders WHERE family_id=$2 AND status='accepted') RETURNING id",
-        [r.params.id, r.params.familyId],
-      );
-      demand(row.rows.length, 404, 'LINE_NOT_FOUND', '找不到这道已安排的菜');
-      return { ok: true };
+      const row = (
+        await tx.query(
+          "SELECT o.meal_date::text AS date,o.slot,l.dish_id FROM order_lines l JOIN orders o ON o.id=l.order_id WHERE l.id=$1 AND o.family_id=$2 AND o.status='accepted'",
+          [r.params.id, r.params.familyId],
+        )
+      ).rows[0];
+      demand(row, 404, 'LINE_NOT_FOUND', '找不到这道已安排的菜');
+      return claimCooking(tx, r.params.familyId, r.user.id, {
+        date: row.date,
+        slot: row.slot,
+        dishId: row.dish_id,
+        done: true,
+      });
     }),
   );
   route('GET', '/families/:familyId/my-lines', null, async (r) => {

@@ -7,3 +7,4 @@
 @import './styles/manage-profile.wxss';
 @import './styles/collection-picker.wxss';
 @import './styles/personal-center.wxss';
+@import './styles/cooking-claims.wxss';

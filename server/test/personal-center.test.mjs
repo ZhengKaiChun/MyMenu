@@ -125,10 +125,10 @@ test('personal achievements aggregate by home, survive history pruning once and 
       items: [{ dishId: d.id, quantity: i + 2 }],
     });
     assert.equal(order.status, 200);
-    const b = { date, slot: '晚餐', dishIds: [d.id] };
-    assert.equal((await call('PUT', base + '/cooking-records', u, b)).status, 200);
-    assert.equal((await call('PUT', base + '/cooking-records', u, b)).status, 200);
-    assert.equal((await call('PUT', base + '/cooking-records', outsider, b)).status, 404);
+    const b = { date, slot: '晚餐', dishId: d.id, done: true };
+    assert.equal((await call('POST', base + '/cooking-claims', u, b)).status, 200);
+    assert.equal((await call('POST', base + '/cooking-claims', u, b)).status, 200);
+    assert.equal((await call('POST', base + '/cooking-claims', outsider, b)).status, 404);
     assert.equal(
       (
         await call(
@@ -142,30 +142,32 @@ test('personal achievements aggregate by home, survive history pruning once and 
     fixtures.push({ f, d, base, order });
   }
   let stats = await call('GET', '/me/achievements', u);
-  assert.equal(stats.cooked, 2);
-  assert.equal(stats.ordered, 5);
+  assert.equal(stats.cooked, 0);
+  assert.equal(stats.ordered, 0);
   assert.equal(stats.families.length, 2);
   assert.equal((await call('GET', '/me/achievements', outsider)).cooked, 0);
   const f0 = fixtures[0];
   assert.equal(
     (
-      await call('PUT', f0.base + '/cooking-records', u, {
+      await call('POST', f0.base + '/cooking-claims', u, {
         date: '2099-01-01',
         slot: '晚餐',
-        dishIds: [f0.d.id],
+        dishId: f0.d.id,
+        done: true,
       })
     ).status,
     400,
   );
   assert.equal(
     (
-      await call('PUT', f0.base + '/cooking-records', u, {
+      await call('POST', f0.base + '/cooking-claims', u, {
         date,
         slot: '晚餐',
-        dishIds: [fixtures[1].d.id],
+        dishId: fixtures[1].d.id,
+        done: true,
       })
     ).status,
-    400,
+    404,
   );
   // Pending and rejected requests never become personal ordered achievements.
   const invite = await call('POST', f0.base + '/invitations', u, { role: 'eater' });
@@ -180,13 +182,14 @@ test('personal achievements aggregate by home, survive history pruning once and 
     decision: 'accept',
     reply: '',
   });
-  assert.equal((await call('GET', '/me/achievements', outsider)).ordered, 7);
+  assert.equal((await call('GET', '/me/achievements', outsider)).ordered, 0);
   assert.equal(
     (
-      await call('PUT', f0.base + '/cooking-records', outsider, {
+      await call('POST', f0.base + '/cooking-claims', outsider, {
         date,
         slot: '午餐',
-        dishIds: [f0.d.id],
+        dishId: f0.d.id,
+        done: true,
       })
     ).status,
     403,

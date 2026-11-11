@@ -1,7 +1,7 @@
 <g-shell id="page-shell" title="我的开饭成就" back="{{true}}"><scroll-view scroll-y class="scroll"><view class="page-content page-achievements"><view wx:if="{{error}}" class="error-tip">{{error}}</view>
 <view class="achievement-pass"><g-icon name="star" size="32"/><text class="achievement-kicker">把每一餐，变成小小成就</text><view class="achievement-numbers"><view><text>{{cooked}}</text><text>累计做菜 / 道</text></view><view><text>{{ordered}}</text><text>累计点菜 / 份</text></view></view></view>
 <view class="section-title"><view class="h3">每个小家的足迹</view><text class="caption">{{families.length}} 个小家</text></view>
-<view wx:for="{{families}}" wx:key="id" class="family-achievement"><view class="row"><g-icon name="home" size="24"/><text class="grow strong">{{item.name}}</text><button hover-class="none" wx:if="{{item.role==='cook'}}" class="record-cooking-btn" bindtap="record" data-id="{{item.id}}">记录掌勺 ↗</button></view><view class="family-achievement-counts"><text>做了 <text class="strong">{{item.cooked}}</text> 道菜</text><text>点了 <text class="strong">{{item.ordered}}</text> 份菜</text></view></view>
+<view wx:for="{{families}}" wx:key="id" class="family-achievement"><view class="row"><g-icon name="home" size="24"/><text class="grow strong">{{item.name}}</text><button hover-class="none" wx:if="{{item.role==='cook'}}" class="record-cooking-btn" bindtap="record" data-id="{{item.id}}">去今日菜单 ↗</button></view><view class="family-achievement-counts"><text>做了 <text class="strong">{{item.cooked}}</text> 道菜</text><text>点了 <text class="strong">{{item.ordered}}</text> 份菜</text></view></view>
 <view wx:if="{{!families.length}}" class="empty"><g-icon name="home" size="43"/><view>小家的第一餐，等你开启</view></view>
-<view class="achievement-rules"><text>做菜按本人掌勺记录，每道菜每餐计一次；点菜按已安排的份数统计。成就从保留的记录开始累计，小家解散后，其成就会删除并从总数扣除。</text></view>
+<view class="achievement-rules"><text>按已经结束的日期统计：做菜每道每餐计一次，只记给确认的做菜人；点菜按当天最终菜单中本人点的份数统计。成就从保留的记录开始累计，小家解散后，其成就会删除并从总数扣除。</text></view>
 </view></scroll-view></g-shell>

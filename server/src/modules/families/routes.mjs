@@ -1,3 +1,4 @@
+import { queueCookingReminders } from '../meals/cooking.mjs';
 import { z } from 'zod';
 import { id, token, digest } from '../../core/security.mjs';
 import { member, familyLock, atomic, audit } from '../../core/policy.mjs';
@@ -222,18 +223,15 @@ export function familyRoutes(app, { db, route }) {
       return { ok: true };
     }),
   );
-  route(
-    'GET',
-    '/notifications',
-    null,
-    async (r) =>
-      (
-        await db.query(
-          'SELECT n.* FROM notifications n LEFT JOIN families f ON f.id=n.family_id WHERE n.user_id=$1 AND (n.family_id IS NULL OR f.deleted_at IS NULL OR n.type=$2) ORDER BY n.created_at DESC LIMIT 100',
-          [r.user.id, 'dissolution.complete'],
-        )
-      ).rows,
-  );
+  route('GET', '/notifications', null, async (r) => {
+    await queueCookingReminders(db, r.user.id);
+    return (
+      await db.query(
+        'SELECT n.* FROM notifications n LEFT JOIN families f ON f.id=n.family_id WHERE n.user_id=$1 AND (n.family_id IS NULL OR f.deleted_at IS NULL OR n.type=$2) ORDER BY n.created_at DESC LIMIT 100',
+        [r.user.id, 'dissolution.complete'],
+      )
+    ).rows;
+  });
   route(
     'POST',
     '/notifications/delete',

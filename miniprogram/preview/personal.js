@@ -61,7 +61,11 @@ function archive(db, cutoff) {
     db.achievementTotals[key] = row;
   };
   for (const o of db.orders)
-    if (o.meal_date < cutoff && o.status === 'accepted')
+    if (
+      o.meal_date < cutoff &&
+      o.status === 'accepted' &&
+      o.meal_date < require('../lib/dates').today()
+    )
       add(
         o.user_id,
         o.family_id,
@@ -80,11 +84,20 @@ function achievements(db, user) {
       role: f.role,
       cooked:
         bank.cooked +
-        db.cookingRecords.filter((c) => c.userId === user.id && c.familyId === f.id).length,
+        db.cookingRecords.filter(
+          (c) =>
+            c.userId === user.id && c.familyId === f.id && c.date < require('../lib/dates').today(),
+        ).length,
       ordered:
         bank.ordered +
         db.orders
-          .filter((o) => o.user_id === user.id && o.family_id === f.id && o.status === 'accepted')
+          .filter(
+            (o) =>
+              o.user_id === user.id &&
+              o.family_id === f.id &&
+              o.status === 'accepted' &&
+              o.meal_date < require('../lib/dates').today(),
+          )
           .reduce((n, o) => n + o.items.reduce((n, l) => n + l.quantity, 0), 0),
     };
   });
@@ -108,37 +121,6 @@ function cooking(db, user, fid, method, body) {
         )
         .map((c) => c.dishId),
     };
-  const dates = require('../lib/dates');
-  S.demand(
-    body.date >= dates.bounds().min && body.date <= dates.today(),
-    '只能记录今天及最近三个月已过去的餐次',
-  );
-  S.demand(
-    ['早餐', '午餐', '晚餐'].includes(body.slot) &&
-      Array.isArray(body.dishIds) &&
-      body.dishIds.length <= 100 &&
-      new Set(body.dishIds).size === body.dishIds.length,
-    '请选择有效餐次及菜品',
-  );
-  const allowed = S.meals(db, fid, body.date)
-    .dishes.filter((d) => d.slot === body.slot)
-    .map((d) => d.dishId);
-  S.demand(
-    body.dishIds.every((id) => allowed.includes(id)),
-    '只能记录该餐次已安排的菜',
-  );
-  db.cookingRecords = db.cookingRecords.filter(
-    (c) =>
-      !(c.userId === user.id && c.familyId === fid && c.date === body.date && c.slot === body.slot),
-  );
-  for (const dishId of body.dishIds)
-    db.cookingRecords.push({
-      familyId: fid,
-      userId: user.id,
-      date: body.date,
-      slot: body.slot,
-      dishId,
-    });
-  return { ok: true, count: body.dishIds.length };
+  S.fail('请在当日菜单逐道勾选已做完', 410, 'COOK_FLOW_CHANGED');
 }
 module.exports = { security, credentials, archive, achievements, cooking };

@@ -1,5 +1,4 @@
-const { createPage, api, go, session, decorate, familyPath } = require('../lib/page');
-const dates = require('../lib/dates');
+const { createPage, api, go, session, familyPath } = require('../lib/page');
 exports.accountSecurity = createPage({
   data: { username: '', currentPassword: '', newPassword: '', confirm: '', security: {} },
   async reload() {
@@ -37,76 +36,40 @@ exports.achievements = createPage({
   },
   methods: {
     record(e) {
-      go('cookingRecord', { familyId: e.currentTarget.dataset.id });
+      go('today', { familyId: e.currentTarget.dataset.id });
     },
   },
 });
-async function loadCooking() {
-  const [menu, record] = await Promise.all([
-    api.request(familyPath('/meals') + '?date=' + this.data.date),
-    api.request(
-      familyPath('/cooking-records') +
-        '?date=' +
-        this.data.date +
-        '&slot=' +
-        encodeURIComponent(this.data.slot),
-    ),
-  ]);
-  const dishes = await decorate(
-    menu.dishes
-      .filter((d) => d.slot === this.data.slot)
-      .map((d) => ({ ...d.snapshot, id: d.dishId })),
-  );
-  this.setData({
-    dishes,
-    selected: record.dishIds,
-    all: dishes.length > 0 && dishes.every((d) => record.dishIds.includes(d.id)),
-  });
-}
+// Keep older entry links pointed at the daily menu.
 exports.cookingRecord = createPage({
-  data: {
-    date: dates.today(),
-    minDate: dates.bounds().min,
-    maxDate: dates.today(),
-    slot: '晚餐',
-    dishes: [],
-    selected: [],
-    all: false,
-  },
   async reload() {
-    if (session.family?.role !== 'cook') {
-      go('forbidden');
-      return;
-    }
-    await loadCooking.call(this);
+    go('today', this.query, { replace: true });
+  },
+});
+exports.cookingReminder = createPage({
+  data: { reminder: null },
+  async reload() {
+    const r = await api.request(familyPath('/cooking-reminders/') + this.query.id);
+    this.setData({ reminder: { ...r, cover: await api.image(r.coverId) } });
   },
   methods: {
-    async date(e) {
-      this.setData({ date: e.detail.value });
-      await loadCooking.call(this);
+    async claim() {
+      const r = this.data.reminder;
+      if (!r?.claimable) return;
+      try {
+        await api.request(familyPath('/cooking-claims'), {
+          method: 'POST',
+          body: { date: r.date, slot: r.slot, dishId: r.dishId, done: true },
+        });
+      } catch (error) {
+        await this.onShow();
+        throw error;
+      }
+      await this.onShow();
+      wx.showToast({ title: '已记为你做的', icon: 'none' });
     },
-    async meal(e) {
-      this.setData({ slot: e.currentTarget.dataset.slot });
-      await loadCooking.call(this);
-    },
-    select(e) {
-      const selected = e.detail.value;
-      this.setData({
-        selected,
-        all: this.data.dishes.length > 0 && this.data.dishes.every((d) => selected.includes(d.id)),
-      });
-    },
-    all() {
-      const all = !this.data.all;
-      this.setData({ all, selected: all ? this.data.dishes.map((d) => d.id) : [] });
-    },
-    async submit() {
-      await api.request(familyPath('/cooking-records'), {
-        method: 'PUT',
-        body: { date: this.data.date, slot: this.data.slot, dishIds: this.data.selected },
-      });
-      wx.showToast({ title: '掌勺记录已保存', icon: 'none' });
-      go('achievements', {}, { replace: true });
+    notMine() {
+      go('requests', {}, { replace: true });
     },
   },
 });

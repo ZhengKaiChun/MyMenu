@@ -96,7 +96,10 @@ export function wechatNotificationSender(config) {
         body: JSON.stringify({
           touser: note.openid,
           template_id: config.subscription.templateId,
-          page: 'pages/requests/index?familyId=' + note.family_id,
+          page:
+            note.type === 'cooking.reminder'
+              ? 'pages/cookingReminder/index?familyId=' + note.family_id + '&id=' + note.entity_id
+              : 'pages/requests/index?familyId=' + note.family_id,
           data,
           miniprogram_state: 'formal',
           lang: 'zh_CN',
@@ -118,7 +121,7 @@ export async function deliverNotifications(db, config, sender) {
     const result = await db.transaction(async (tx) => {
       const note = (
         await tx.query(
-          "SELECT n.*,u.notifications_enabled,i.subject AS openid,g.remaining FROM notifications n JOIN users u ON u.id=n.user_id LEFT JOIN identities i ON i.user_id=n.user_id AND i.provider='wechat' LEFT JOIN subscription_grants g ON g.user_id=n.user_id AND g.template_id=$1 WHERE n.delivery_status IN('pending','failed') AND n.delivery_attempts<3 AND n.created_at>now()-interval '1 day' ORDER BY n.created_at LIMIT 1 FOR UPDATE OF n SKIP LOCKED",
+          "SELECT n.*,u.notifications_enabled,i.subject AS openid,g.remaining FROM notifications n JOIN users u ON u.id=n.user_id LEFT JOIN identities i ON i.user_id=n.user_id AND i.provider='wechat' LEFT JOIN subscription_grants g ON g.user_id=n.user_id AND g.template_id=$1 WHERE n.invalidated_at IS NULL AND n.delivery_status IN('pending','failed') AND n.delivery_attempts<3 AND n.created_at>now()-interval '1 day' ORDER BY n.created_at LIMIT 1 FOR UPDATE OF n SKIP LOCKED",
           [config.subscription.templateId],
         )
       ).rows[0];

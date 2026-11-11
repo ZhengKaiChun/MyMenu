@@ -42,7 +42,8 @@ const parents = {
   history: 'today',
   accountSecurity: 'settings',
   achievements: 'settings',
-  cookingRecord: 'achievements',
+  cookingRecord: 'today',
+  cookingReminder: 'requests',
 };
 let trail = [];
 function snapshot(page) {

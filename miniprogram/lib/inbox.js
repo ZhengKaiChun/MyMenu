@@ -1,9 +1,11 @@
 const tabs = [
   { id: 'order', name: '点菜通知' },
   { id: 'change', name: '换菜通知' },
+  { id: 'cooking', name: '做菜确认' },
   { id: 'family', name: '小家通知' },
 ];
 function category(note) {
+  if (note.type === 'cooking.reminder') return 'cooking';
   return note.type.startsWith('order.')
     ? 'order'
     : note.type.startsWith('change.')

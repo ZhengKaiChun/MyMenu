@@ -2,6 +2,13 @@ import { archiveAchievements } from '../modules/meals/achievements.mjs';
 export async function pruneHistory(db) {
   return db.transaction(async (tx) => {
     const cutoff = "(now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months'";
+    await tx.query(
+      "UPDATE notifications SET invalidated_at=now(),read_at=COALESCE(read_at,now()),delivery_status='skipped' WHERE type='cooking.reminder' AND entity_id IN(SELECT id FROM cooking_reminders WHERE meal_date<" +
+        cutoff +
+        ')',
+    );
+    await tx.query('DELETE FROM cooking_reminders WHERE meal_date<' + cutoff);
+    await tx.query('DELETE FROM cooking_records_legacy WHERE meal_date<' + cutoff);
     await archiveAchievements(tx, cutoff);
     await tx.query(
       `DELETE FROM changes WHERE line_id IN(SELECT l.id FROM order_lines l JOIN orders o ON o.id=l.order_id WHERE o.meal_date<${cutoff})`,

@@ -1,0 +1,148 @@
+.cooking-inline-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px dashed #c8c7a3;
+  background: #f2f0df;
+  color: #91946e;
+  border-radius: 12px;
+  font-size: 11px;
+  margin: 12px 0 4px;
+}
+.today-dish-actions {
+  flex: none;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.today-dish-actions .cook-check {
+  width: 72px;
+  min-height: 57px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 3px !important;
+  border: 1px solid #d8c8ad;
+  border-radius: 12px;
+  background: #fff9ec;
+  color: #a28a67;
+  font-size: 10px;
+}
+.cook-check-box {
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid #c9b38b;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  background: #fffdf7;
+}
+.today-dish-actions .cook-check.checked {
+  background: #ebedda;
+  color: #778052;
+  border-color: #b5bd92;
+}
+.cook-check.checked .cook-check-box {
+  background: #969f71;
+  border-color: #969f71;
+  color: #fffdf4;
+}
+.cook-completed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #90976e;
+  font-size: 10px;
+  padding: 5px;
+}
+.cooker-credit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #92966b;
+  margin-top: 5px;
+}
+.today-dish-actions .swap-button {
+  min-height: 26px;
+  padding: 3px 8px !important;
+  margin: 0;
+  font-size: 10px;
+  text-align: center;
+}
+.diary-cooker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #8c946c;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.diary-orderers .diary-credit-label {
+  color: #b39a76;
+  margin-right: 4px;
+}
+.diary-dish > image {
+  height: 55%;
+}
+.cooking-letter {
+  padding: 23px 20px;
+  border: 1px solid #d8bd94;
+  border-radius: 20px 20px 9px 9px;
+  background: repeating-linear-gradient(#fff9ec, #fff9ec 31px, #eee2ca 32px);
+  box-shadow: 0 5px 0 #e7d6b6;
+  text-align: center;
+}
+.letter-eyebrow {
+  font-size: 11px;
+  color: #ad8a5d;
+  margin-bottom: 12px;
+}
+.cooking-letter .h2 {
+  font-size: 23px;
+  margin-bottom: 7px;
+}
+.cooking-letter > image {
+  width: 100%;
+  height: 190px;
+  border-radius: 17px;
+  margin: 18px 0 12px;
+}
+.cooking-letter .btn {
+  margin-top: 17px;
+}
+.claim-help {
+  display: block;
+  color: #a38965;
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 13px;
+}
+.claim-resolved {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #e9ecd6;
+  color: #808b5b;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 15px;
+  font-size: 12px;
+}
+.inbox-tabs button {
+  min-width: 0;
+  flex: 1;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  font-size: 11px;
+}

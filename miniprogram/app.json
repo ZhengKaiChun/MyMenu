@@ -50,7 +50,8 @@
     "pages/privacy/index",
     "pages/accountSecurity/index",
     "pages/achievements/index",
-    "pages/cookingRecord/index"
+    "pages/cookingRecord/index",
+    "pages/cookingReminder/index"
   ],
   "window": {
     "navigationStyle": "custom",

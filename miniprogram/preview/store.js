@@ -44,9 +44,47 @@ function read() {
   }
   for (const d of db.dishes) if (!d.collectionIds?.length) d.collectionIds = [d.collectionId];
   db.sessionTimes = db.sessionTimes || {};
+  if (!db.cookingVersion10) {
+    const records = db.cookingRecords || [];
+    db.cookingRecordsLegacy = clone(records);
+    db.cookingRecords = records.filter(
+      (c) =>
+        records.filter(
+          (x) =>
+            x.familyId === c.familyId &&
+            x.date === c.date &&
+            x.slot === c.slot &&
+            x.dishId === c.dishId,
+        ).length === 1,
+    );
+    db.cookingVersion10 = true;
+  }
   const cutoff = require('../lib/dates').bounds().min;
   require('./personal').archive(db, cutoff);
   db.orders = db.orders.filter((o) => o.meal_date >= cutoff);
+  db.cookingRecordsLegacy = (db.cookingRecordsLegacy || []).filter((c) => c.date >= cutoff);
+  for (const r of db.cookingReminders || [])
+    if (r.date < cutoff)
+      for (const n of db.notifications)
+        if (n.type === 'cooking.reminder' && n.entity_id === r.id) {
+          n.invalidated_at = new Date().toISOString();
+          n.read_at = n.read_at || n.invalidated_at;
+        }
+  db.cookingReminders = (db.cookingReminders || []).filter((r) => r.date >= cutoff);
+  require('./cooking').queue(db);
+  for (const o of db.orders)
+    if (o.status === 'accepted')
+      for (const l of o.items)
+        if (
+          db.cookingRecords.some(
+            (c) =>
+              c.familyId === o.family_id &&
+              c.date === o.meal_date &&
+              c.slot === o.slot &&
+              c.dishId === l.dish_id,
+          )
+        )
+          l.done = true;
   const orderIds = new Set(db.orders.map((o) => o.id)),
     lineIds = new Set(db.orders.flatMap((o) => o.items.map((l) => l.id)));
   db.changes = db.changes.filter((c) => lineIds.has(c.line_id));
@@ -169,6 +207,19 @@ function meals(db, fid, date) {
           snapshot: publicDish(l.snapshot),
           quantity: 0,
           sources: [],
+          cooker: (() => {
+            const c = (db.cookingRecords || []).find(
+              (c) =>
+                c.familyId === fid &&
+                c.date === date &&
+                c.slot === o.slot &&
+                c.dishId === l.dish_id,
+            );
+            if (!c) return null;
+            const u = db.users.find((u) => u.id === c.userId),
+              m = db.members.find((m) => m.family_id === fid && m.user_id === c.userId);
+            return { userId: c.userId, nickname: u.nickname, identity: m?.identity || '野生小猪' };
+          })(),
         };
       const u = db.users.find((u) => u.id === o.user_id),
         m = db.members.find((m) => m.family_id === fid && m.user_id === o.user_id);

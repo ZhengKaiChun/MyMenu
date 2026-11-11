@@ -1,3 +1,4 @@
+import { syncCompletedLines } from '../meals/cooking.mjs';
 import { z } from 'zod';
 import { id } from '../../core/security.mjs';
 import { member, familyLock, atomic, notify, dateAllowed, isoDate } from '../../core/policy.mjs';
@@ -121,6 +122,7 @@ export function changeRoutes(app, { db, route }) {
             JSON.stringify(c.new_snapshot),
           ]);
           await tx.query('UPDATE orders SET version=version+1 WHERE id=$1', [c.order_id]);
+          await syncCompletedLines(tx, c.order_id);
         }
         await tx.query('UPDATE changes SET status=$2,reply=$3 WHERE id=$1', [
           c.id,
