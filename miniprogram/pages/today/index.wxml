@@ -47,12 +47,14 @@
                 <text>{{source.identity}}{{source.quantity>1?'×'+source.quantity:''}}</text>
               </view>
             </view>
-            <text class="caption copy small-text">合计{{item.quantity}}份</text><view wx:if="{{item.cooker}}" class="cooker-credit"><g-icon name="pot" size="14"/><text>{{item.cooker.identity}}做的</text></view>
+            <text class="caption copy small-text">合计{{item.quantity}}份</text>
           </view>
           <view class="today-dish-actions">
-            <button hover-class="none" wx:if="{{item.canMark}}" class="cook-check {{item.cooker?'checked':''}}" catchtap="toggleCook" data-id="{{item.dishId}}" data-slot="{{meal.slot}}"><view class="cook-check-box">{{item.cooker?'✓':''}}</view><text>{{item.cooker?'已做完':'我做完了'}}</text></button>
-            <view wx:elif="{{item.cooker}}" class="cook-completed"><g-icon name="check" size="18"/><text>已做完</text></view>
-            <button hover-class="none" wx:if="{{item.ownLineId && !item.cooker}}" class="text-btn swap-button" catchtap="swapDish" data-id="{{item.ownLineId}}">换菜</button>
+            <view class="today-complete-slot">
+              <button hover-class="none" wx:if="{{item.canMark}}" class="cook-check {{item.cooker?'checked':''}}" catchtap="toggleCook" data-id="{{item.dishId}}" data-slot="{{meal.slot}}"><view class="cook-check-box">{{item.cooker?'✓':''}}</view><text>已做完</text></button>
+              <view wx:elif="{{item.cooker}}" class="cook-completed"><view class="cook-check-box">✓</view><text>已做完</text></view>
+            </view>
+            <view class="today-swap-slot"><button hover-class="none" wx:if="{{item.ownLineId && !item.cooker}}" class="text-btn swap-button" catchtap="swapDish" data-id="{{item.ownLineId}}">换菜</button></view>
           </view>
         </view>
         <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没安排，去点一道吧。</view>

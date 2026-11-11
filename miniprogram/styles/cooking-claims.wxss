@@ -12,71 +12,78 @@
 }
 .today-dish-actions {
   flex: none;
-  width: 72px;
+  width: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 2px;
 }
-.today-dish-actions .cook-check {
-  width: 72px;
-  min-height: 57px;
+.today-complete-slot {
+  width: 60px;
+  height: 30px;
+  flex: none;
+}
+.today-swap-slot {
+  width: 60px;
+  height: 26px;
+  flex: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 7px 3px !important;
-  border: 1px solid #d8c8ad;
-  border-radius: 12px;
-  background: #fff9ec;
-  color: #a28a67;
+}
+.today-dish-actions .cook-check,
+.today-dish-actions .cook-completed {
+  width: 60px;
+  height: 30px;
+  min-height: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #ad9675;
   font-size: 10px;
+  line-height: 16px;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 .cook-check-box {
-  width: 21px;
-  height: 21px;
-  border: 1.5px solid #c9b38b;
-  border-radius: 7px;
+  width: 15px;
+  height: 15px;
+  flex: none;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  border: 1px solid #c9b58e;
+  border-radius: 5px;
+  background: #fffcf5;
+  font-size: 11px;
   line-height: 1;
-  background: #fffdf7;
+  color: transparent;
 }
-.today-dish-actions .cook-check.checked {
-  background: #ebedda;
-  color: #778052;
-  border-color: #b5bd92;
+.today-dish-actions .cook-check.checked,
+.today-dish-actions .cook-completed {
+  color: #8b9569;
 }
-.cook-check.checked .cook-check-box {
-  background: #969f71;
-  border-color: #969f71;
+.cook-check.checked .cook-check-box,
+.cook-completed .cook-check-box {
+  background: #98a276;
+  border-color: #98a276;
   color: #fffdf4;
 }
-.cook-completed {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  color: #90976e;
-  font-size: 10px;
-  padding: 5px;
-}
-.cooker-credit {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: #92966b;
-  margin-top: 5px;
-}
 .today-dish-actions .swap-button {
+  height: 26px;
   min-height: 26px;
   padding: 3px 8px !important;
-  margin: 0;
+  margin: 0 !important;
   font-size: 10px;
+  line-height: 20px;
   text-align: center;
 }
 .diary-cooker {
