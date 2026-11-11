@@ -15,6 +15,7 @@
         </view>
       </view>
       <view class="section-title"><view class="h3 strong">这次想换成</view></view>
+      <view class="search row"><g-icon name="search" size="20"/><input placeholder="搜索想换的菜" value="{{query}}" bindinput="search"/></view><view wx:if="{{!dishes.length}}" class="empty">没有找到这道菜</view>
       <view class="swap-options">
         <button hover-class="none"
           wx:for="{{dishes}}"

@@ -1,4 +1,6 @@
-const prefix = require('../config/index').mode === 'preview' ? 'menu.preview' : 'menu';
+const config = require('../config/index');
+const prefix =
+  config.mode === 'preview' ? config.previewSessionNamespace || 'menu.preview' : 'menu';
 const state = { user: null, token: '', family: null, cart: {}, pendingLink: null };
 module.exports = Object.assign(state, {
   restore() {

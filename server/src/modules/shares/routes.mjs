@@ -158,7 +158,7 @@ export function shareRoutes(app, { db, route }) {
           did = match.id;
           replaced++;
           await tx.query(
-            'UPDATE dishes SET collection_id=$2,intro=$3,cover_id=$4,minutes=$5,servings=$6,version=version+1 WHERE id=$1',
+            'UPDATE dishes SET collection_id=$2,intro=$3,cover_id=$4,minutes=$5,servings=$6,featured=$7,spice_level=$8,meat_type=$9,version=version+1 WHERE id=$1',
             [
               did,
               category.id,
@@ -166,6 +166,9 @@ export function shareRoutes(app, { db, route }) {
               source.coverId || null,
               source.minutes,
               source.servings,
+              source.featured || false,
+              source.spiceLevel || 1,
+              source.meatType || (source.category === '肉类' ? '其他' : ''),
             ],
           );
         } else {
@@ -175,7 +178,7 @@ export function shareRoutes(app, { db, route }) {
               name = source.name + '（分享' + (n++ === 1 ? '' : n - 1) + '）';
           }
           await tx.query(
-            'INSERT INTO dishes(id,family_id,collection_id,name,intro,cover_id,minutes,servings) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
+            'INSERT INTO dishes(id,family_id,collection_id,name,intro,cover_id,minutes,servings,featured,spice_level,meat_type) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
             [
               did,
               fid,
@@ -185,6 +188,9 @@ export function shareRoutes(app, { db, route }) {
               source.coverId || null,
               source.minutes,
               source.servings,
+              source.featured || false,
+              source.spiceLevel || 1,
+              source.meatType || (source.category === '肉类' ? '其他' : ''),
             ],
           );
           before.push({ id: did, name });

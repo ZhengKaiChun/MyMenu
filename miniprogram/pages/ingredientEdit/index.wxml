@@ -56,6 +56,7 @@
           <picker range="{{categories}}" bindchange="category">
             <view class="select">{{category}}</view>
           </picker>
+          <view wx:if="{{category==='肉类'}}"><label class="form-label">肉类小分类 *</label><view class="meat-fixed-tabs"><button hover-class="none" wx:for="{{meatTypes}}" wx:key="*this" bindtap="meat" data-type="{{item}}" class="{{meatType===item?'active':''}}">{{item}}</button></view></view>
           <text class="caption copy small-text">写清数量和单位，下次开饭心里有数。</text>
         </view>
       </view>

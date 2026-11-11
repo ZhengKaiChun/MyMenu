@@ -135,6 +135,8 @@ test('native controllers register, create household, save a real recipe and subm
   editor.setData({
     name: '原生番茄炒蛋',
     intro: '今晚一起吃',
+    featured: true,
+    spiceLevel: 3,
     ingredients: [{ name: '番茄', quantity: 2, unit: '个' }],
     steps: [{ text: '洗净番茄，切块炒熟。', imageId: null }],
   });
@@ -155,6 +157,8 @@ test('native controllers register, create household, save a real recipe and subm
   menu.onLoad({});
   await menu.onShow();
   assert.equal(menu.data.dishes.length, 1);
+  assert.equal(menu.data.dishes[0].featured, true);
+  assert.equal(menu.data.dishes[0].spiceLevel, 3);
   await menu.add({ currentTarget: { dataset: { id: menu.data.dishes[0].id } } });
   const checkout = runtime.instance('checkout');
   checkout.onLoad({});
@@ -175,7 +179,7 @@ test('native controllers register, create household, save a real recipe and subm
   });
   const b = await api.request('/inventory', {
     method: 'POST',
-    body: { name: '鸡肉', category: '肉禽', quantity: 1, unit: '斤' },
+    body: { name: '鸡肉', category: '肉类', meatType: '鸡', quantity: 1, unit: '斤' },
   });
   const pantry = runtime.instance('pantry');
   pantry.onLoad({});
@@ -183,7 +187,7 @@ test('native controllers register, create household, save a real recipe and subm
   await pantry.showImport();
   await pantry.importCategory({ currentTarget: { dataset: { id: '蔬菜' } } });
   await pantry.selectImport({ detail: { value: [a.id] } });
-  await pantry.importCategory({ currentTarget: { dataset: { id: '肉禽' } } });
+  await pantry.importCategory({ currentTarget: { dataset: { id: '肉类' } } });
   await pantry.selectImport({ detail: { value: [b.id] } });
   assert.equal(pantry.data.importIds.length, 2, 'selection must survive category changes');
   await pantry.allImport();
@@ -206,5 +210,50 @@ test('native controllers register, create household, save a real recipe and subm
     (await api.request('/families/' + session.family.id + '/orders')).length,
     1,
     'inbox deletion must retain orders',
+  );
+  const previousUpload = api.upload,
+    previousImage = api.image;
+  let uploaded = [];
+  api.upload = async (path, opts) => {
+    uploaded.push({ path, opts });
+    return { id: 'test-image' };
+  };
+  api.image = async () => '/tmp/full-image';
+  runtime.wx.chooseMedia = (o) =>
+    o.success({ tempFiles: [{ tempFilePath: '/tmp/wide-original' }] });
+  runtime.wx.showActionSheet = (o) => o.success({ tapIndex: 0 });
+  await editor.picture({ currentTarget: { dataset: { kind: 'step', index: 0 } } });
+  assert.equal(uploaded[0].path, '/tmp/wide-original');
+  assert.equal(uploaded[0].opts.crop, false);
+  runtime.wx.showActionSheet = (o) => o.success({ tapIndex: 1 });
+  runtime.wx.editImage = (o) => o.success({ tempFilePath: '/tmp/free-crop' });
+  await editor.picture({ currentTarget: { dataset: { kind: 'step', index: 0 } } });
+  assert.equal(uploaded[1].path, '/tmp/free-crop');
+  assert.equal(uploaded[1].opts.crop, false);
+  api.upload = previousUpload;
+  api.image = previousImage;
+  await api.request('/families/' + session.family.id + '/dishes', {
+    method: 'POST',
+    body: { name: '蒸鸡蛋', collectionId: menu.data.collections[0].id, minutes: 5, servings: 2 },
+  });
+  const swap = runtime.instance('swap');
+  swap.onLoad({ id: today.data.sections[2].dishes[0].sources[0].id });
+  await swap.onShow();
+  assert.equal(swap.data.error, '');
+  swap.search({ type: 'input', detail: { value: '鸡蛋' } });
+  assert.equal(swap.data.dishes.length, 1);
+  swap.search({ type: 'input', detail: { value: '找不到' } });
+  assert.equal(swap.data.dishes.length, 0);
+  const sharing = runtime.instance('shareRecipes');
+  sharing.onLoad({});
+  await sharing.onShow();
+  await sharing.select({ detail: { value: [menu.data.dishes[0].id] } });
+  sharing.search({ type: 'input', detail: { value: '鸡蛋' } });
+  assert.equal(sharing.data.dishes.length, 1);
+  await sharing.all();
+  assert.equal(
+    sharing.data.selected.length,
+    2,
+    'share search keeps previously selected hidden dishes',
   );
 });

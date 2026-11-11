@@ -46,7 +46,8 @@
     "pages/noResult/index",
     "pages/offline/index",
     "pages/forbidden/index",
-    "pages/expired/index"
+    "pages/expired/index",
+    "pages/privacy/index"
   ],
   "window": {
     "navigationStyle": "custom",

@@ -75,9 +75,7 @@
         class="{{slot===item?'active':''}}"
         data-slot="{{item}}"
         bindtap="meal"
-      >
-        {{item}}
-      </button>
+      ><text>{{item}}</text></button>
     </view>
     <button hover-class="none" class="btn" bindtap="closeDate">
       <g-icon tone="light" name="check" size="22" />

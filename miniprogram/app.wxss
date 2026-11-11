@@ -1,2 +1,6 @@
 @import './styles/design-system.wxss';
 @import './styles/native.wxss';
+@import './styles/catalog.wxss';
+@import './styles/recipe-editor.wxss';
+@import './styles/diary.wxss';
+@import './styles/legal.wxss';

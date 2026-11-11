@@ -23,18 +23,13 @@
           class="{{slot===item?'active':''}}"
           bindtap="meal"
           data-slot="{{item}}"
-        >
-          {{item}}
-        </button>
+        ><text>{{item}}</text></button>
       </view>
       <button hover-class="none" class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
     </view>
+    <view wx:if="{{showMeatTabs}}" class="meat-fixed-tabs"><button hover-class="none" wx:for="{{meatTypes}}" wx:key="*this" bindtap="meatCategory" data-type="{{item}}" class="{{meatType===item?'active':''}}">{{item}}</button></view>
     <view class="menu-catalog">
       <scroll-view class="menu-rail" scroll-y>
-        <button hover-class="none" class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
-          <g-icon name="utensils" size="27" />
-          <text class="strong rail-label">全部</text>
-        </button>
         <button hover-class="none"
           wx:for="{{collections}}"
           wx:key="id"
@@ -51,7 +46,7 @@
           <text>{{category==='all'?'全部菜品':categoryName}}</text>
           <text>{{dishes.length}} 道</text>
         </view>
-        <view wx:for="{{dishes}}" wx:key="id" class="menu-dish">
+        <view wx:for="{{dishes}}" wx:key="id" class="menu-dish"><g-icon wx:if="{{item.featured}}" class="featured-star" name="star" size="20"/>
           <button hover-class="none" class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
             <image class="food" src="{{item.cover}}" mode="aspectFill" />
           </button>
@@ -64,6 +59,7 @@
               <text class="tag">{{item.minutes}} 分钟</text>
               <text class="tag">{{item.servings}} 人份</text>
             </view>
+            <view class="dish-spice"><g-icon wx:for="{{[1,2,3]}}" wx:for-item="level" wx:key="*this" name="{{level<=item.spiceLevel?'chili':'chili-outline'}}" size="15"/></view>
             <view class="dish-bottom">
               <button hover-class="none" class="dish-add" bindtap="add" data-id="{{item.id}}">
                 <text wx:if="{{quantities[item.id]}}" class="strong">{{quantities[item.id]}}</text>
@@ -87,8 +83,8 @@
   <view slot="dock" class="dock dock-menu">
     <view class="basket-bar">
       <button hover-class="none" class="basket-count" bindtap="cart">
-        <g-icon name="utensils" size="30" />
-        <text class="basket-badge">{{count}}</text>
+        <g-icon name="basket" size="28" tone="light" />
+        <text wx:if="{{count}}" class="basket-badge">{{count}}</text>
       </button>
       <button hover-class="none" class="basket-summary" bindtap="cart">
         <text class="strong">{{count?'已选 '+count+' 份':'选几道想吃的菜'}}</text>

@@ -199,6 +199,35 @@ test('standalone import preview runs without HTTP and preserves separate device-
     assert.equal((await call('GET', '/notifications', cook)).length, before);
     await call('PATCH', '/notifications/preferences', cook, { enabled: true });
   });
+  await t.test('diary excludes today and purges expired device-local history', async () => {
+    const dates = require('../../miniprogram/lib/dates.js'),
+      key = 'geiwofan.preview.database.v1';
+    const original = JSON.parse(JSON.stringify(storage.get(key))),
+      fixture = JSON.parse(JSON.stringify(original));
+    const source = fixture.orders.find(
+      (o) => o.family_id === 'preview-home' && o.status === 'accepted',
+    );
+    const clone = (id, date) => ({
+      ...JSON.parse(JSON.stringify(source)),
+      id,
+      meal_date: date,
+      items: source.items.map((l, i) => ({ ...l, id: id + '-' + i, done: true })),
+    });
+    const yesterday = dates.shift(today(), -1),
+      expired = dates.shift(dates.bounds().min, -1);
+    fixture.orders.push(clone('history-yesterday', yesterday), clone('history-expired', expired));
+    fixture.checks['preview-home' + expired] = [];
+    storage.set(key, fixture);
+    assert.equal((await call('GET', base + '/history?date=' + today(), cook)).dishes.length, 0);
+    assert.ok((await call('GET', base + '/history?date=' + yesterday, cook)).dishes.length > 0);
+    const saved = storage.get(key);
+    assert.equal(
+      saved.orders.some((o) => o.id === 'history-expired'),
+      false,
+    );
+    assert.equal(saved.checks['preview-home' + expired], undefined);
+    storage.set(key, original);
+  });
   await t.test('formal releases reject the device-local transport', async () => {
     env = 'release';
     await assert.rejects(call('GET', '/capabilities'), (e) => e.code === 'PREVIEW_NOT_PRODUCTION');

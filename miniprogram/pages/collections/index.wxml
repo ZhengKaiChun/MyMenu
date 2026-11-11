@@ -24,23 +24,14 @@
           class="manager-category {{category===item.id?'active':''}}"
         >
           <button hover-class="none" data-id="{{item.id}}" bindtap="category">
-            <view
-              class="drag-grip"
-              data-id="{{item.id}}"
-              data-type="collections"
-              bindtouchstart="dragStart"
-              catchtouchmove="noop"
-              bindtouchend="dragEnd"
-            >
-              ⠿
-            </view>
+
             <text>{{item.name}}</text>
           </button>
           <view class="cat-actions">
             <button hover-class="none" data-id="{{item.id}}" bindtap="renameCollection">✎</button>
             <button hover-class="none" data-id="{{item.id}}" data-dir="-1" data-type="collections" bindtap="move">
               ↑
-            </button>
+            </button><button hover-class="none" data-id="{{item.id}}" data-dir="1" data-type="collections" bindtap="move">↓</button>
             <button hover-class="none" data-id="{{item.id}}" bindtap="deleteCollection">×</button>
           </view>
         </view>
@@ -48,15 +39,7 @@
       <scroll-view class="menu-dishes manager-dishes" scroll-y>
         <view class="catalog-label">{{dishes.length}} 道菜</view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish manager-dish">
-          <view
-            class="dish-drag drag-grip"
-            data-id="{{item.id}}"
-            bindtouchstart="dragStart"
-            catchtouchmove="noop"
-            bindtouchend="dragEnd"
-          >
-            ⠿
-          </view>
+
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h3 strong">{{item.name}}</view>

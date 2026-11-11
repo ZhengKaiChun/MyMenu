@@ -1,16 +1,6 @@
 <wxs module="util" src="../../lib/format.wxs" />
 <g-shell id="page-shell" title="把拿手菜，寄给朋友" back="{{true}}">
-  <scroll-view class="scroll" scroll-y>
-    <view class="page-content page-shareRecipes">
-      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="page-intro">
-        <view class="h2">这几道，想分享给你</view>
-        <text class="muted">选中菜品的用料与步骤会一起寄出。</text>
-      </view>
-      <view class="share-selection-top">
-        <text>{{selected.length}}／{{dishes.length}}道已选</text>
-        <button hover-class="none" bindtap="all">{{all?'取消全选':'一键全选'}}</button>
-      </view>
+  <view class="share-fixed-page"><view class="share-fixed-head"><view class="h2">挑几道，装进信封</view><text class="caption">菜谱的用料和做法会一起分享</text><view class="search row"><g-icon name="search" size="20"/><input placeholder="搜索想分享的菜" value="{{query}}" bindinput="search"/></view><scroll-view scroll-x class="category-tabs"><view><button hover-class="none" bindtap="category" data-id="all" class="{{category==='all'?'active':''}}">全部</button><button hover-class="none" wx:for="{{collections}}" wx:key="id" bindtap="category" data-id="{{item.id}}" class="{{category===item.id?'active':''}}">{{item.name}}</button></view></scroll-view><view class="share-selection-top"><text>已选 {{selected.length}} / {{allDishes.length}} 道</text><button hover-class="none" bindtap="all">{{all?'取消本栏':'全选本栏'}}</button></view></view><view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}}</view><scroll-view scroll-y class="share-list-scroll"><view class="share-list-content">
       <checkbox-group bindchange="select">
         <label wx:for="{{dishes}}" wx:key="id" class="recipe-share-row">
           <checkbox value="{{item.id}}" checked="{{util.contains(selected,item.id)}}" />
@@ -21,8 +11,7 @@
           </view>
         </label>
       </checkbox-group>
-    </view>
-  </scroll-view>
+<view wx:if="{{!dishes.length}}" class="empty">没有找到这道菜，换个名字试试</view></view></scroll-view></view>
   <view slot="dock" class="dock">
     <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
       <g-icon name="envelope" size="21" tone="light" />

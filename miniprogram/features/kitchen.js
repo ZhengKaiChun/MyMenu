@@ -10,8 +10,14 @@ function cartRows(dishes) {
 function filterMenu(page) {
   const list = page.data.allDishes.filter(
     (d) =>
-      (page.data.category === 'all' || d.collectionId === page.data.category) &&
-      d.name.includes(page.data.search || ''),
+      ((page.data.isOrdering && (page.data.search || '').trim()) ||
+        page.data.category === 'all' ||
+        d.collectionId === page.data.category) &&
+      d.name.includes(page.data.search || '') &&
+      (!page.data.isOrdering ||
+        !page.data.showMeatTabs ||
+        (page.data.search || '').trim() ||
+        (d.meatType || '其他') === page.data.meatType),
   );
   page.setData({
     dishes: list,
@@ -19,7 +25,9 @@ function filterMenu(page) {
     cart: cartRows(page.data.allDishes),
     quantities: { ...session.cart },
     categoryName:
-      page.data.collections.find((c) => c.id === page.data.category)?.name || '全部菜品',
+      page.data.isOrdering && (page.data.search || '').trim()
+        ? '搜索结果'
+        : page.data.collections.find((c) => c.id === page.data.category)?.name || '全部菜品',
   });
 }
 exports.menu = createPage({
@@ -30,6 +38,10 @@ exports.menu = createPage({
     category: 'all',
     search: '',
     count: 0,
+    isOrdering: true,
+    meatType: '猪',
+    meatTypes: require('../lib/inventory-types').meatTypes,
+    showMeatTabs: false,
     date: '',
     slot: '晚餐',
     showCart: false,
@@ -43,11 +55,27 @@ exports.menu = createPage({
       allDishes: await decorate(out.dishes),
       date: this.data.date || new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
     });
+    if (!out.collections.some((c) => c.id === this.data.category))
+      this.setData({ category: out.collections[0]?.id || '' });
+    this.setData({
+      showMeatTabs: ['肉类', '肉禽', '荤菜'].includes(
+        out.collections.find((c) => c.id === this.data.category)?.name,
+      ),
+    });
     filterMenu(this);
   },
   methods: {
+    meatCategory(e) {
+      this.setData({ meatType: e.currentTarget.dataset.type });
+      filterMenu(this);
+    },
     category(e) {
-      this.setData({ category: e.currentTarget.dataset.id });
+      const id = e.currentTarget.dataset.id;
+      const showMeatTabs = ['肉类', '肉禽', '荤菜'].includes(
+        this.data.collections.find((c) => c.id === id)?.name,
+      );
+      const first = this.data.allDishes.find((d) => d.collectionId === id);
+      this.setData({ category: id, showMeatTabs, meatType: first?.meatType || '其他' });
       filterMenu(this);
     },
     search(e) {
@@ -227,29 +255,6 @@ const manageMethods = {
     [list[i], list[j]] = [list[j], list[i]];
     changed(this);
   },
-  dragStart(e) {
-    this.drag = {
-      id: e.currentTarget.dataset.id,
-      type: e.currentTarget.dataset.type || 'dishes',
-      y: e.touches[0].clientY,
-    };
-  },
-  dragEnd(e) {
-    if (!this.drag) return;
-    const d = this.drag;
-    this.drag = null;
-    const list =
-      d.type === 'collections' ? session.menuDraft.collections : session.menuDraft.dishes;
-    const from = list.findIndex((x) => x.id === d.id),
-      to = Math.max(
-        0,
-        Math.min(list.length - 1, from + Math.round((e.changedTouches[0].clientY - d.y) / 110)),
-      );
-    if (from !== to) {
-      list.splice(to, 0, list.splice(from, 1)[0]);
-      changed(this);
-    }
-  },
   async saveMenu() {
     const d = session.menuDraft;
     this.setData({ saving: true });
@@ -294,6 +299,11 @@ exports.editDish = createPage({
     collections: [],
     coverId: null,
     cover: '',
+    featured: false,
+    meatType: '',
+    needsMeatType: false,
+    meatTypes: require('../lib/inventory-types').meatTypes,
+    spiceLevel: 1,
     ingredients: [{ name: '', quantity: 1, unit: '个' }],
     steps: [{ text: '', imageId: null }],
     version: null,
@@ -312,6 +322,7 @@ exports.editDish = createPage({
       collections: menu.collections,
       collectionId: menu.collections[0]?.id || '',
       collectionName: menu.collections[0]?.name || '',
+      needsMeatType: ['肉类', '肉禽', '荤菜'].includes(menu.collections[0]?.name),
     });
     if (this.query.id) {
       const d =
@@ -322,6 +333,9 @@ exports.editDish = createPage({
       this.setData({
         ...d,
         collectionName: menu.collections.find((c) => c.id === d.collectionId)?.name || '',
+        needsMeatType: ['肉类', '肉禽', '荤菜'].includes(
+          menu.collections.find((c) => c.id === d.collectionId)?.name,
+        ),
         cover: d.coverId ? await api.image(d.coverId, '') : '',
         steps: await Promise.all(
           d.steps.map(async (s) => ({
@@ -334,10 +348,23 @@ exports.editDish = createPage({
     this.loaded = true;
   },
   methods: {
+    meat(e) {
+      this.setData({ meatType: e.currentTarget.dataset.type });
+    },
+    featured(e) {
+      this.setData({ featured: e.detail.value });
+    },
+    spice(e) {
+      this.setData({ spiceLevel: Number(e.currentTarget.dataset.level) });
+    },
     collection(e) {
       this.setData({
         collectionId: this.data.collections[Number(e.detail.value)].id,
         collectionName: this.data.collections[Number(e.detail.value)].name,
+        needsMeatType: ['肉类', '肉禽', '荤菜'].includes(
+          this.data.collections[Number(e.detail.value)].name,
+        ),
+        meatType: '',
       });
     },
     field(e) {
@@ -380,7 +407,25 @@ exports.editDish = createPage({
           fail: reject,
         }),
       );
-      const out = await api.upload(picked.tempFiles[0].tempFilePath);
+      const isStep = e.currentTarget.dataset.kind === 'step';
+      let file = picked.tempFiles[0].tempFilePath;
+      if (isStep) {
+        const choice = await new Promise((resolve, reject) =>
+          wx.showActionSheet({
+            itemList: ['完整使用原图', '自由裁剪 / 编辑后使用'],
+            success: resolve,
+            fail: reject,
+          }),
+        );
+        if (choice.tapIndex === 1 && wx.editImage) {
+          const edited = await new Promise((resolve, reject) =>
+            wx.editImage({ src: file, success: resolve, fail: reject }),
+          );
+          file = edited.tempFilePath;
+        } else if (choice.tapIndex === 1)
+          wx.showToast({ title: '此版本不支持编辑，将使用完整原图', icon: 'none' });
+      }
+      const out = await api.upload(file, { crop: !isStep });
       const url = await api.image(out.id, '');
       if (e.currentTarget.dataset.kind === 'cover') this.setData({ coverId: out.id, cover: url });
       else {
@@ -393,9 +438,13 @@ exports.editDish = createPage({
     },
     async save() {
       const d = this.data;
+      if (d.needsMeatType && !d.meatType) throw Error('请选择菜品的肉类小分类');
       const body = {
         name: d.name,
         intro: d.intro,
+        featured: !!d.featured,
+        spiceLevel: d.spiceLevel || 1,
+        meatType: d.needsMeatType ? d.meatType : '',
         collectionId: d.collectionId,
         coverId: d.coverId || null,
         minutes: Number(d.minutes),
@@ -408,8 +457,8 @@ exports.editDish = createPage({
             unit: i.unit,
           })),
         steps: d.steps
-          .filter((s) => s.text.trim())
-          .map((s) => ({ text: s.text, imageId: s.imageId || null })),
+          .filter((s) => s.text?.trim() || s.imageId)
+          .map((s) => ({ text: s.text || '', imageId: s.imageId || null })),
         ...(d.version ? { version: d.version } : {}),
       };
       if (session.menuDraft) {

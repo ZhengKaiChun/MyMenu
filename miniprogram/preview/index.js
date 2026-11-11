@@ -113,6 +113,14 @@ function request(path, options = {}, token) {
           409,
         );
         user.deleted_at = new Date().toISOString();
+        user.nickname = '已注销小猪';
+        delete user.username;
+        delete user.passwordHash;
+        user.avatarId = null;
+        db.inventories = db.inventories.filter((i) => i.user_id !== user.id);
+        db.notifications = db.notifications.filter((n) => n.user_id !== user.id);
+        for (const s of db.shares) if (s.sender_id === user.id) s.revoked = true;
+        for (const i of db.invitations) if (i.creator_id === user.id) i.revoked = true;
         db.members = db.members.filter((m) => m.user_id !== user.id);
         out = { ok: true };
       } else S.fail('此功能需要正式后台服务');
@@ -223,7 +231,7 @@ function request(path, options = {}, token) {
           out = { ok: true };
         }
       } else if (section === 'identity') {
-        const names = ['野生小猪', '猪爸爸', '猪妈妈', '猪大二', '猪二儿', '猪大妞', '猪二妞'];
+        const names = ['野生小猪', '猪爸爸', '猪妈妈', '猪大儿', '猪二儿', '猪大妞', '猪二妞'];
         S.demand(names.includes(body.identity), '请选择家庭身份');
         db.members.find((x) => x.family_id === fid && x.user_id === user.id).identity =
           body.identity;
@@ -291,6 +299,12 @@ function request(path, options = {}, token) {
           } else {
             S.demand(body.name?.trim(), '请填写菜名');
             S.demand(
+              Number.isInteger(body.spiceLevel || 1) &&
+                (body.spiceLevel || 1) >= 1 &&
+                (body.spiceLevel || 1) <= 3,
+              '请选择有效辣度',
+            );
+            S.demand(
               body.ingredients.every(
                 (i) =>
                   i.name?.trim() &&
@@ -301,7 +315,7 @@ function request(path, options = {}, token) {
               '请完整填写用料',
             );
             S.demand(
-              body.steps.every((s) => s.text?.trim()),
+              body.steps.every((s) => s.text?.trim() || s.imageId),
               '请填写每一步做法',
             );
             S.demand(
@@ -312,6 +326,8 @@ function request(path, options = {}, token) {
             if (old) S.demand(old.version === body.version, '菜品已更新，请刷新', 409);
             const d = {
               ...body,
+              featured: !!body.featured,
+              spiceLevel: body.spiceLevel || 1,
               id: old?.id || S.id(),
               family_id: fid,
               version: (old?.version || 0) + 1,
@@ -498,13 +514,21 @@ function request(path, options = {}, token) {
                   o.status === 'accepted' &&
                   o.meal_date >= query.from &&
                   o.meal_date <= query.to &&
-                  (query.done !== '1' || o.meal_date < today() || o.items.some((l) => l.done)),
+                  (query.done !== '1' || o.meal_date < today() || o.items.some((l) => l.done)) &&
+                  (query.history !== '1' ||
+                    (o.meal_date < today() && o.meal_date >= require('../lib/dates').bounds().min)),
               )
               .map((o) => o.meal_date),
           ),
         ]
           .sort()
           .map((date) => ({ date }));
+      } else if (section === 'history') {
+        const limits = require('../lib/dates').bounds();
+        out =
+          query.date >= limits.min && query.date <= limits.max
+            ? S.meals(db, fid, query.date)
+            : { date: query.date, dishes: [] };
       } else if (section === 'meals') out = S.meals(db, fid, query.date);
       else if (section === 'my-lines') out = S.eligible(db, user, fid);
       else if (section === 'lines') {
@@ -618,7 +642,12 @@ function request(path, options = {}, token) {
   }
   S.demand(out !== undefined, '这个操作暂不可用');
   if (method !== 'GET' && options.key)
-    db.operations[operationKey] = { path, body: JSON.stringify(body), result: S.clone(out) };
+    db.operations[operationKey] = {
+      path,
+      body: JSON.stringify(body),
+      result: S.clone(out),
+      at: Date.now(),
+    };
   // Save initialization too, so all pages share one deterministic device-local store.
   S.save(db);
   return Promise.resolve(S.clone(out));
@@ -661,9 +690,14 @@ function inventory(db, user, fid, method, parts, b, cook) {
     b.name?.trim() && b.unit?.trim() && Number.isFinite(b.quantity) && b.quantity >= 0,
     '请完整填写食材名称、数量和单位',
   );
+  S.demand(
+    b.category !== '肉类' || ['猪', '鸡', '牛', '鱼', '海鲜', '其他'].includes(b.meatType),
+    '请选择肉类小分类',
+  );
   if (method === 'PUT') S.demand(current.version === b.version, '食材已更新，请刷新后编辑', 409);
   const entry = {
     ...b,
+    meatType: b.category === '肉类' ? b.meatType : '',
     id: current?.id || S.id(),
     version: (current?.version || 0) + 1,
     ...(fid ? { family_id: fid } : { user_id: user.id }),

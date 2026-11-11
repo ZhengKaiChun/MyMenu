@@ -41,9 +41,9 @@
           <view class="grow">
             <view class="h4 strong">{{item.snapshot.name}}</view>
             <view class="orderer-list">
-              <view wx:for="{{item.sources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
+              <view wx:for="{{item.displaySources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
                 <g-pig index="{{source.pig}}" size="26" />
-                <text>{{source.identity}}</text>
+                <text>{{source.identity}}{{source.quantity>1?'×'+source.quantity:''}}</text>
               </view>
             </view>
             <text class="caption copy small-text">合计{{item.quantity}}份</text>

@@ -3,7 +3,7 @@
   <scroll-view scroll-y class="scroll">
     <view class="page-content page-editDish">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="h2">把这道菜，教给小家。</view>
+      <view class="h2">写下小家的拿手菜</view>
       <label class="form-label">菜品名称 *</label>
       <input
         class="input"
@@ -13,24 +13,21 @@
         type="text"
         placeholder="例如：番茄炒蛋"
       />
-      <label class="form-label">菜品封面</label>
-      <button hover-class="none" class="upload" bindtap="picture" data-kind="cover" style="width: 100%">
+      <view class="cover-heading"><label class="form-label">菜品封面</label><button hover-class="none" class="text-btn" bindtap="ai">✧ AI优化图片</button></view>
+      <button hover-class="none" class="upload cover-upload" bindtap="picture" data-kind="cover" style="width: 100%">
         <image
           wx:if="{{cover}}"
           src="{{cover}}"
           mode="aspectFill"
           style="width: 100%; height: 144px"
         />
-        <text wx:else>＋ 添加菜品图片</text>
+        <view wx:else class="upload-placeholder"><g-icon name="image" size="29"/><text>添加菜品图片</text></view>
       </button>
-      <view class="row">
-        <text class="caption copy small-text">相机或相册上传</text>
-        <button hover-class="none" class="text-btn" bindtap="ai">✧ AI优化图片 · 预留</button>
-      </view>
       <label class="form-label">所属合集</label>
       <picker range="{{collections}}" range-key="name" bindchange="collection">
         <view class="select">选择合集：{{collectionName || '点击选择'}}</view>
       </picker>
+      <view wx:if="{{needsMeatType}}" class="editor-meat"><label class="form-label">肉类小分类 *</label><view class="meat-fixed-tabs"><button hover-class="none" wx:for="{{meatTypes}}" wx:key="*this" bindtap="meat" data-type="{{item}}" class="{{meatType===item?'active':''}}">{{item}}</button></view></view>
       <view class="two">
         <view>
           <label class="form-label">用时／分钟</label>
@@ -55,6 +52,7 @@
           />
         </view>
       </view>
+      <view class="dish-preferences"><view class="featured-toggle"><view><text class="strong">设为招牌菜</text><text>在小家菜单里亮一颗星</text></view><switch color="#caab58" checked="{{featured}}" bindchange="featured"/></view><view class="spice-heading"><text class="strong">这道菜的辣度</text><text>默认微辣</text></view><view class="spice-options"><button hover-class="none" wx:for="{{['微辣','中辣','特辣']}}" wx:key="*this" class="{{spiceLevel===index+1?'active':''}}" bindtap="spice" data-level="{{index+1}}"><g-icon name="chili" size="18"/><text>{{item}}</text></button></view></view>
       <label class="form-label">一句话介绍</label>
       <input
         class="input"
@@ -66,7 +64,7 @@
       />
       <view class="section-title">
         <view class="h3 strong">用料</view>
-        <button hover-class="none" class="text-btn" bindtap="addIngredient">＋ 一行</button>
+        <button hover-class="none" class="add-row-btn" bindtap="addIngredient">＋ 添加用料</button>
       </view>
       <view wx:for="{{ingredients}}" wx:key="index" class="row" style="margin: 8px 0; gap: 7px">
         <input
@@ -118,8 +116,8 @@
           data-index="{{index}}"
           style="width: 100%"
         >
-          <image wx:if="{{item.image}}" class="step-photo" src="{{item.image}}" mode="aspectFill" />
-          <text wx:else>＋ 步骤图（可选）</text>
+          <image wx:if="{{item.image}}" class="step-photo" src="{{item.image}}" mode="scaleToFill" />
+          <view wx:else class="upload-placeholder"><g-icon name="image" size="26"/><text>添加步骤图 · 选填</text></view>
         </button>
         <textarea
           class="native-textarea"
@@ -132,7 +130,7 @@
           style="margin-top: 10px"
         />
       </view>
-      <button hover-class="none" class="list-row" bindtap="addStep">＋ 添加下一步</button>
+      <button hover-class="none" class="add-step-btn" bindtap="addStep">＋ 添加下一步</button>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">

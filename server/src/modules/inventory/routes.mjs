@@ -8,7 +8,8 @@ const item = z
     name: z.string().trim().min(1).max(40),
     quantity: z.number().min(0).max(100000),
     unit: z.string().trim().min(1).max(12),
-    category: z.string().max(20).default('其他'),
+    category: z.enum(['蔬菜', '肉类', '蛋奶', '主食', '调味', '其他']).default('其他'),
+    meatType: z.enum(['', '猪', '鸡', '牛', '鱼', '海鲜', '其他']).default(''),
   })
   .strict();
 export function inventoryRoutes(app, { db, route }) {
@@ -18,9 +19,10 @@ export function inventoryRoutes(app, { db, route }) {
     route('GET', path, null, async (r) => {
       if (scope === 'family') await member(db, r.user.id, r.params.familyId);
       return (
-        await db.query(`SELECT * FROM inventories WHERE ${column}=$1 ORDER BY category,name`, [
-          scope === 'personal' ? r.user.id : r.params.familyId,
-        ])
+        await db.query(
+          `SELECT *,meat_type AS "meatType" FROM inventories WHERE ${column}=$1 ORDER BY category,name`,
+          [scope === 'personal' ? r.user.id : r.params.familyId],
+        )
       ).rows;
     });
     route('POST', path, item, async (r) =>
@@ -29,10 +31,24 @@ export function inventoryRoutes(app, { db, route }) {
           await familyLock(tx, r.params.familyId);
           await member(tx, r.user.id, r.params.familyId);
         }
+        demand(
+          r.body.category !== '肉类' || !!r.body.meatType,
+          400,
+          'MEAT_TYPE',
+          '请选择肉类小分类',
+        );
         const owner = scope === 'personal' ? r.user.id : r.params.familyId;
         const out = await tx.query(
-          `INSERT INTO inventories(id,${column},name,quantity,unit,category) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(${column},name,unit) WHERE ${column} IS NOT NULL DO UPDATE SET quantity=EXCLUDED.quantity,category=EXCLUDED.category,version=inventories.version+1 RETURNING id`,
-          [id(), owner, r.body.name, r.body.quantity, r.body.unit, r.body.category],
+          `INSERT INTO inventories(id,${column},name,quantity,unit,category,meat_type) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(${column},name,unit) WHERE ${column} IS NOT NULL DO UPDATE SET quantity=EXCLUDED.quantity,category=EXCLUDED.category,meat_type=EXCLUDED.meat_type,version=inventories.version+1 RETURNING id`,
+          [
+            id(),
+            owner,
+            r.body.name,
+            r.body.quantity,
+            r.body.unit,
+            r.body.category,
+            r.body.category === '肉类' ? r.body.meatType : '',
+          ],
         );
         return out.rows[0];
       }),
@@ -47,8 +63,14 @@ export function inventoryRoutes(app, { db, route }) {
             await familyLock(tx, r.params.familyId);
             await member(tx, r.user.id, r.params.familyId);
           }
+          demand(
+            r.body.category !== '肉类' || !!r.body.meatType,
+            400,
+            'MEAT_TYPE',
+            '请选择肉类小分类',
+          );
           let out = await tx.query(
-            `UPDATE inventories SET name=$3,quantity=$4,unit=$5,category=$6,version=version+1 WHERE id=$1 AND ${column}=$2 AND version=$7 RETURNING id`,
+            `UPDATE inventories SET name=$3,quantity=$4,unit=$5,category=$6,meat_type=$8,version=version+1 WHERE id=$1 AND ${column}=$2 AND version=$7 RETURNING id`,
             [
               r.params.id,
               scope === 'personal' ? r.user.id : r.params.familyId,
@@ -57,6 +79,7 @@ export function inventoryRoutes(app, { db, route }) {
               r.body.unit,
               r.body.category,
               r.body.version,
+              r.body.category === '肉类' ? r.body.meatType : '',
             ],
           );
           demand(out.rows.length, 409, 'INVENTORY_VERSION', '食材已变化，请刷新后重新编辑');
@@ -91,8 +114,8 @@ export function inventoryRoutes(app, { db, route }) {
           ).rows[0];
           demand(i, 400, 'INVENTORY_OWNER', '只能导入你自己的个人食材');
           await tx.query(
-            'INSERT INTO inventories(id,family_id,name,quantity,unit,category) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(family_id,name,unit) WHERE family_id IS NOT NULL DO NOTHING',
-            [id(), r.params.familyId, i.name, i.quantity, i.unit, i.category],
+            'INSERT INTO inventories(id,family_id,name,quantity,unit,category,meat_type) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(family_id,name,unit) WHERE family_id IS NOT NULL DO NOTHING',
+            [id(), r.params.familyId, i.name, i.quantity, i.unit, i.category, i.meat_type],
           );
         }
         return { ok: true };

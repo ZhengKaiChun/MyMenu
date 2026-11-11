@@ -62,8 +62,8 @@ async function image(id, fallback = '/assets/food-placeholder.png', shareToken) 
     return fallback;
   }
 }
-async function upload(path) {
-  if (wx.cropImage) {
+async function upload(path, options = {}) {
+  if (options.crop !== false && wx.cropImage) {
     const out = await new Promise((resolve, reject) =>
       wx.cropImage({ src: path, cropScale: '1:1', success: resolve, fail: reject }),
     );

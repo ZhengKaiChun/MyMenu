@@ -13,6 +13,9 @@ export const publicDish = (d) => ({
   servings: d.servings,
   version: d.version,
   sortOrder: d.sort_order,
+  featured: d.featured,
+  meatType: d.meat_type,
+  spiceLevel: d.spice_level,
 });
 export async function recipeSnapshot(db, dishId) {
   const r = (
@@ -303,12 +306,15 @@ export function recipeRoutes(app, { db, route }) {
 }
 async function saveDish(tx, user, family, dishId, b) {
   let c = (
-    await tx.query('SELECT id FROM collections WHERE id=$1 AND family_id=$2', [
+    await tx.query('SELECT id,name FROM collections WHERE id=$1 AND family_id=$2', [
       b.collectionId,
       family,
     ])
   ).rows[0];
   demand(c, 400, 'INVALID_COLLECTION', '请选择当前小家的合集');
+  const meat = ['肉类', '肉禽', '荤菜'].includes(c.name);
+  demand(!meat || !!b.meatType, 400, 'MEAT_TYPE', '请选择菜品的肉类小分类');
+  const meatType = meat ? b.meatType : '';
   for (const mediaId of [b.coverId, ...b.steps.map((s) => s.imageId)].filter(Boolean)) {
     let media = (
       await tx.query('SELECT id FROM media WHERE id=$1 AND owner_id=$2', [mediaId, user])
@@ -337,7 +343,7 @@ async function saveDish(tx, user, family, dishId, b) {
   let did = dishId || id();
   if (dishId) {
     let changed = await tx.query(
-      'UPDATE dishes SET name=$3,intro=$4,cover_id=$5,minutes=$6,servings=$7,collection_id=$8,version=version+1 WHERE id=$1 AND family_id=$2 AND version=$9 AND NOT archived RETURNING id',
+      'UPDATE dishes SET name=$3,intro=$4,cover_id=$5,minutes=$6,servings=$7,collection_id=$8,featured=$10,spice_level=$11,meat_type=$12,version=version+1 WHERE id=$1 AND family_id=$2 AND version=$9 AND NOT archived RETURNING id',
       [
         did,
         family,
@@ -348,13 +354,28 @@ async function saveDish(tx, user, family, dishId, b) {
         b.servings,
         b.collectionId,
         b.version || 0,
+        b.featured,
+        b.spiceLevel,
+        meatType,
       ],
     );
     demand(changed.rows.length, 409, 'DISH_VERSION', '菜品已经更新，请重新打开编辑');
   } else
     await tx.query(
-      'INSERT INTO dishes(id,family_id,collection_id,name,intro,cover_id,minutes,servings) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
-      [did, family, b.collectionId, b.name, b.intro, b.coverId || null, b.minutes, b.servings],
+      'INSERT INTO dishes(id,family_id,collection_id,name,intro,cover_id,minutes,servings,featured,spice_level,meat_type) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)',
+      [
+        did,
+        family,
+        b.collectionId,
+        b.name,
+        b.intro,
+        b.coverId || null,
+        b.minutes,
+        b.servings,
+        b.featured,
+        b.spiceLevel,
+        meatType,
+      ],
     );
   await tx.query(
     'INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps',

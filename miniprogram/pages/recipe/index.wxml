@@ -22,9 +22,9 @@
             wx:if="{{!textOnly ? item.image : false}}"
             src="{{item.image}}"
             class="step-photo"
-            mode="aspectFill"
+            mode="scaleToFill"
           />
-          <view style="font-size: 14px; line-height: 1.95; margin-top: 10px">{{item.text}}</view>
+          <view style="font-size: 14px; line-height: 1.95; margin-top: 10px">{{item.text || (textOnly?'这一步是图片说明，请切换图文版查看':'')}}</view>
         </view>
       </view>
     </view>

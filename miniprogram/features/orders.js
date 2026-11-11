@@ -6,7 +6,7 @@ const labels = {
   cancelled: '已撤回',
   obsolete: '点菜有变化，请重新选择',
 };
-const identityIndex = { 猪爸爸: 1, 猪妈妈: 2, 猪大二: 3, 猪二儿: 4, 猪大妞: 5, 猪二妞: 6 };
+const identityIndex = { 猪爸爸: 1, 猪妈妈: 2, 猪大儿: 3, 猪二儿: 4, 猪大妞: 5, 猪二妞: 6 };
 exports.checkout = createPage({
   data: { items: [], count: 0, note: '', date: '', slot: '晚餐', showDate: false },
   async reload() {
@@ -247,16 +247,6 @@ async function loadToday() {
     new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
   let meal = await api.request(familyPath('/meals') + '?date=' + date);
   let dishes = await decorate(meal.dishes.map((d) => ({ ...d, ...d.snapshot })));
-  if (this.historyOnly)
-    dishes = dishes
-      .map((d) => ({
-        ...d,
-        sources: d.sources.filter(
-          (s) => s.done || date < new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
-        ),
-      }))
-      .filter((d) => d.sources.length)
-      .map((d) => ({ ...d, quantity: d.sources.reduce((n, s) => n + s.quantity, 0) }));
   const sections = ['早餐', '午餐', '晚餐'].map((slot) => ({
     slot,
     dishes: dishes
@@ -264,6 +254,10 @@ async function loadToday() {
       .map((d) => ({
         ...d,
         sources: d.sources.map((s) => ({ ...s, pig: identityIndex[s.identity] || 7 })),
+        displaySources: require('../lib/orderers')(d.sources).map((s) => ({
+          ...s,
+          pig: identityIndex[s.identity] || 7,
+        })),
         ownLineId:
           date >= new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
             ? d.sources.find((s) => s.userId === session.user.id && !s.done)?.id
@@ -278,63 +272,6 @@ async function loadToday() {
     quantity: dishes.reduce((n, d) => n + d.quantity, 0),
     isCook: session.family.role === 'cook',
   });
-  if (this.calendarPage || this.historyOnly) {
-    const selected = new Date(date + 'T12:00:00+08:00'),
-      year = selected.getUTCFullYear(),
-      month = selected.getUTCMonth();
-    const start = new Date(Date.UTC(year, month, 1)),
-      end = new Date(Date.UTC(year, month + 1, 0));
-    const first = start.toISOString().slice(0, 10),
-      last = end.toISOString().slice(0, 10);
-    const days = await api.request(
-      familyPath('/meal-dates') +
-        '?from=' +
-        first +
-        '&to=' +
-        last +
-        (this.historyOnly ? '&done=1' : ''),
-    );
-    const dots = days.map((x) => x.date),
-      offset = (start.getUTCDay() + 6) % 7;
-    const cells = [
-      ...Array.from({ length: offset }, (_, i) => ({ id: 'blank-' + i, blank: true })),
-      ...Array.from({ length: end.getUTCDate() }, (_, i) => {
-        const value =
-          year + '-' + String(month + 1).padStart(2, '0') + '-' + String(i + 1).padStart(2, '0');
-        return {
-          id: value,
-          date: value,
-          day: i + 1,
-          on: value === date,
-          dot: dots.includes(value),
-        };
-      }),
-    ];
-    const beginning = new Date(selected);
-    beginning.setUTCDate(beginning.getUTCDate() - ((beginning.getUTCDay() + 6) % 7));
-    const weekDays = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(beginning);
-      d.setUTCDate(d.getUTCDate() + i);
-      const value = d.toISOString().slice(0, 10);
-      return {
-        date: value,
-        day: d.getUTCDate(),
-        label:
-          value === new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
-            ? '今天'
-            : ['周一', '周二', '周三', '周四', '周五', '周六', '周日'][i],
-        on: value === date,
-      };
-    });
-    this.setData({
-      calendarYear: year,
-      calendarMonth: month + 1,
-      calendarDay: selected.getUTCDate(),
-      cells,
-      weekDays,
-      weekLabels: ['一', '二', '三', '四', '五', '六', '日'],
-    });
-  }
 }
 const todayMethods = {
   openRecipe(e) {
@@ -375,22 +312,8 @@ exports.today = createPage({
   reload: loadToday,
   methods: todayMethods,
 });
-exports.calendar = createPage({
-  data: { date: '', sections: [], weekDays: [] },
-  init() {
-    this.calendarPage = true;
-  },
-  reload: loadToday,
-  methods: todayMethods,
-});
-exports.history = createPage({
-  data: { date: '', sections: [] },
-  init() {
-    this.historyOnly = true;
-  },
-  reload: loadToday,
-  methods: todayMethods,
-});
+exports.calendar = require('./diary');
+exports.history = exports.calendar;
 async function decorateChanges(list) {
   return Promise.all(
     list.map(async (c) => ({
@@ -426,7 +349,7 @@ exports.changes = createPage({
   },
 });
 exports.swap = createPage({
-  data: { source: null, dishes: [], selected: '', reason: '' },
+  data: { source: null, dishes: [], allDishes: [], query: '', selected: '', reason: '' },
   async reload() {
     const lines = await api.request(familyPath('/my-lines'));
     const source = lines.find((l) => l.id === this.query.id);
@@ -434,10 +357,17 @@ exports.swap = createPage({
     const menu = await api.request(familyPath('/menu'));
     this.setData({
       source: { ...source, cover: await api.image(source.snapshot.coverId) },
-      dishes: await decorate(menu.dishes.filter((d) => d.id !== source.dish_id)),
+      allDishes: await decorate(menu.dishes.filter((d) => d.id !== source.dish_id)),
     });
+    this.setData({ dishes: this.data.allDishes.filter((d) => d.name.includes(this.data.query)) });
   },
   methods: {
+    search(e) {
+      this.setData({
+        query: e.detail.value,
+        dishes: this.data.allDishes.filter((d) => d.name.includes(e.detail.value)),
+      });
+    },
     pick(e) {
       this.setData({ selected: e.currentTarget.dataset.id });
     },

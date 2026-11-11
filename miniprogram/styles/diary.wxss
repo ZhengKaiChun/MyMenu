@@ -1,0 +1,252 @@
+/* A fixed, past-only diary: calendar above, horizontal meal cards below. */
+.diary-page {
+  height: 100%;
+  min-height: 0;
+  padding: 10px 18px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+.diary-calendar {
+  flex: 0 0 55%;
+  min-height: 218px;
+  min-width: 0;
+  background: #faf1df;
+  border: 1px solid #dec7a1;
+  border-radius: 21px 21px 7px 21px;
+  padding: 14px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 3px 0 #e8dcc6;
+}
+.diary-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: none;
+}
+.diary-eyebrow {
+  font-size: 8px;
+  color: #b1956d;
+  letter-spacing: 1px;
+}
+.diary-intro .h2 {
+  font-size: 21px;
+  margin: 2px 0 7px;
+  line-height: 1.5;
+}
+.diary-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  font-size: 11px;
+  color: #a58560;
+}
+.diary-month > view > text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7b5537;
+}
+.diary-month button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px !important;
+  height: 31px;
+  font-size: 25px;
+  line-height: 1;
+}
+.diary-week,
+.diary-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+.diary-week {
+  flex: none;
+  font-size: 10px;
+  color: #ad9679;
+  margin: 7px 0 3px;
+}
+.diary-days {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 2px;
+}
+.diary-cell {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #8c6b4b;
+}
+.diary-cell.on {
+  background: #b47e54;
+  color: #fff9eb;
+  font-weight: 700;
+}
+.diary-cell.disabled {
+  color: #d6c9b3;
+}
+.diary-dot {
+  position: absolute;
+  bottom: 2px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #c58359;
+}
+.diary-cell.on .diary-dot {
+  background: #fff2d5;
+}
+.diary-retention {
+  display: block;
+  flex: none;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 8px;
+  color: #b29a78;
+}
+.diary-meals {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.diary-selected {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+.diary-selected > text:last-child {
+  font-size: 8px;
+  font-weight: 400;
+  color: #b29a79;
+}
+.diary-meal-tabs {
+  display: flex;
+  gap: 7px;
+  flex: none;
+  margin: 9px 0;
+}
+.diary-meal-tabs button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 32px;
+  border: 1px solid #e3d2b5;
+  background: #fffaf0;
+  border-radius: 10px;
+  font-size: 11px;
+  color: #9f815d;
+}
+.diary-meal-tabs button text {
+  font-size: 9px;
+  color: #b7a080;
+}
+.diary-meal-tabs button.active {
+  background: #e3e6d2;
+  border-color: #bdc3a1;
+  color: #6f7a54;
+  font-weight: 600;
+}
+.diary-dishes {
+  flex: 1;
+  height: 0;
+  min-height: 0;
+}
+.diary-dish {
+  height: calc(100% - 22px);
+  padding: 10px;
+  background: #fffbf4;
+  border: 1px solid #e3cfac;
+  border-radius: 16px;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.diary-dish > image {
+  width: 100%;
+  height: 0;
+  flex: 1;
+  min-height: 0;
+  border-radius: 11px;
+}
+.diary-dish > view {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+}
+.diary-dish-name {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.diary-quantity {
+  font-size: 9px;
+  color: #a48864;
+  flex: none;
+}
+.diary-dish .diary-orderers {
+  justify-content: flex-start;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.diary-orderers text {
+  font-size: 9px;
+  color: #a58a66;
+}
+.diary-empty {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #a98f6a;
+  font-size: 12px;
+}
+.diary-empty > view {
+  margin-top: 10px;
+}
+.diary-empty > text {
+  font-size: 9px;
+  margin-top: 4px;
+}
+@media (max-height: 700px) {
+  .diary-calendar {
+    padding-top: 8px;
+  }
+  .diary-intro .h2 {
+    font-size: 18px;
+    margin-bottom: 1px;
+  }
+  .diary-eyebrow {
+    display: none;
+  }
+  .diary-page {
+    gap: 8px;
+    padding-top: 5px;
+  }
+  .diary-selected > text:last-child {
+    display: none;
+  }
+}

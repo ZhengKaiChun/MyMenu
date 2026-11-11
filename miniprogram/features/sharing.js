@@ -1,24 +1,55 @@
 const { createPage, go, decorate, session, api, familyPath } = require('../lib/page');
+function filterShare(page) {
+  const dishes = page.data.allDishes.filter(
+    (d) =>
+      (page.data.category === 'all' || d.collectionId === page.data.category) &&
+      d.name.includes(page.data.query || ''),
+  );
+  page.setData({
+    dishes,
+    all: dishes.length > 0 && dishes.every((d) => page.data.selected.includes(d.id)),
+  });
+}
 exports.shareRecipes = createPage({
-  data: { dishes: [], selected: [], all: false },
+  data: {
+    dishes: [],
+    allDishes: [],
+    collections: [],
+    category: 'all',
+    query: '',
+    selected: [],
+    all: false,
+  },
   async reload() {
     const out = await api.request(familyPath('/menu'));
     if (out.family.role !== 'cook') {
       go('forbidden');
       return;
     }
-    this.setData({ dishes: await decorate(out.dishes) });
+    this.setData({ allDishes: await decorate(out.dishes), collections: out.collections });
+    filterShare(this);
   },
   methods: {
+    search(e) {
+      this.setData({ query: e.detail.value });
+      filterShare(this);
+    },
+    category(e) {
+      this.setData({ category: e.currentTarget.dataset.id });
+      filterShare(this);
+    },
     select(e) {
+      const ids = this.data.dishes.map((d) => d.id);
       this.setData({
-        selected: e.detail.value,
-        all: e.detail.value.length === this.data.dishes.length,
+        selected: [...this.data.selected.filter((id) => !ids.includes(id)), ...e.detail.value],
       });
+      filterShare(this);
     },
     all() {
-      const selected = this.data.all ? [] : this.data.dishes.map((d) => d.id);
-      this.setData({ selected, all: !this.data.all });
+      const ids = this.data.dishes.map((d) => d.id),
+        keep = this.data.selected.filter((id) => !ids.includes(id));
+      this.setData({ selected: this.data.all ? keep : [...keep, ...ids] });
+      filterShare(this);
     },
     async submit() {
       if (!this.data.selected.length) throw Error('至少选择一道菜');

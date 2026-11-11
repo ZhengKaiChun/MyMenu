@@ -17,10 +17,10 @@
           </view>
         </button>
       </view>
-      <swiper
+      <view wx:if="{{families.length}}" class="home-families"><swiper
         wx:if="{{families.length}}"
         class="home-houses"
-        indicator-dots="{{families.length>1}}"
+        indicator-dots="{{false}}" bindchange="houseChanged"
         next-margin="{{families.length>1?'22px':'0px'}}"
         indicator-active-color="#b74f37"
       >
@@ -45,6 +45,7 @@
           </view>
         </swiper-item>
       </swiper>
+      <view wx:if="{{families.length>1}}" class="home-house-dots"><view wx:for="{{families}}" wx:key="id" class="{{houseIndex===index?'on':''}}"/></view></view>
       <view class="section-title">
         <view class="h3 strong">有家，就有饭</view>
         <text class="caption small-text">创建或加入另一个小家</text>
@@ -72,13 +73,7 @@
           </view>
           <text class="link-extra">{{personalCount}} 项 ›</text>
         </button>
-        <button hover-class="none" class="list-row" bindtap="go" data-page="settings">
-          <view class="link-label">
-            <g-icon name="settings" size="25" />
-            <text>账号与设置</text>
-          </view>
-          <text class="link-extra">›</text>
-        </button>
+        <button hover-class="none" class="list-row" bindtap="go" data-page="privacy"><view class="link-label"><g-icon name="lock" size="25"/><text>隐私与使用说明</text></view><text class="link-extra">›</text></button>
       </view>
     </view>
   </view>

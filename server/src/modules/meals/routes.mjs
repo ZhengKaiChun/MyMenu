@@ -164,47 +164,49 @@ export function mealRoutes(app, { db, route }) {
     );
     return (
       await db.query(
-        "SELECT DISTINCT o.meal_date::text AS date FROM orders o JOIN order_lines l ON l.order_id=o.id WHERE o.family_id=$1 AND o.status='accepted' AND o.meal_date BETWEEN $2 AND $3 AND ($4::boolean=false OR l.done OR o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date) ORDER BY date",
-        [r.params.familyId, from, to, r.query.done === '1'],
+        "SELECT DISTINCT o.meal_date::text AS date FROM orders o JOIN order_lines l ON l.order_id=o.id WHERE o.family_id=$1 AND o.status='accepted' AND o.meal_date BETWEEN $2 AND $3 AND ($4::boolean=false OR l.done OR o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date) AND ($5::boolean=false OR (o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date AND o.meal_date >= (now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months')) ORDER BY date",
+        [r.params.familyId, from, to, r.query.done === '1', r.query.history === '1'],
       )
     ).rows.map((x) => ({
       date: String(x.date instanceof Date ? x.date.toISOString() : x.date).slice(0, 10),
     }));
   });
-  route('GET', '/families/:familyId/meals', null, async (r) => {
-    await member(db, r.user.id, r.params.familyId);
-    const date = mealDate.parse(r.query.date);
-    let lines = (
-      await db.query(
-        "SELECT l.id,l.dish_id,l.quantity,l.done,l.snapshot,o.id AS order_id,o.slot,o.user_id,u.nickname,m.identity,u.avatar_id FROM order_lines l JOIN orders o ON o.id=l.order_id JOIN users u ON u.id=o.user_id LEFT JOIN members m ON m.family_id=o.family_id AND m.user_id=o.user_id WHERE o.family_id=$1 AND o.meal_date=$2 AND o.status='accepted' ORDER BY o.created_at",
-        [r.params.familyId, date],
-      )
-    ).rows;
-    let grouped = new Map();
-    for (const l of lines) {
-      let key = l.slot + ':' + l.dish_id;
-      if (!grouped.has(key))
-        grouped.set(key, {
-          dishId: l.dish_id,
-          slot: l.slot,
-          snapshot: publicSnapshot(l.snapshot),
-          quantity: 0,
-          sources: [],
+  for (const endpoint of ['meals', 'history']) {
+    route('GET', '/families/:familyId/' + endpoint, null, async (r) => {
+      await member(db, r.user.id, r.params.familyId);
+      const date = mealDate.parse(r.query.date);
+      let lines = (
+        await db.query(
+          "SELECT l.id,l.dish_id,l.quantity,l.done,l.snapshot,o.id AS order_id,o.slot,o.user_id,u.nickname,m.identity,u.avatar_id FROM order_lines l JOIN orders o ON o.id=l.order_id JOIN users u ON u.id=o.user_id LEFT JOIN members m ON m.family_id=o.family_id AND m.user_id=o.user_id WHERE o.family_id=$1 AND o.meal_date=$2 AND o.status='accepted' AND ($3::boolean=false OR (o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date AND o.meal_date >= (now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months')) ORDER BY o.created_at",
+          [r.params.familyId, date, endpoint === 'history'],
+        )
+      ).rows;
+      let grouped = new Map();
+      for (const l of lines) {
+        let key = l.slot + ':' + l.dish_id;
+        if (!grouped.has(key))
+          grouped.set(key, {
+            dishId: l.dish_id,
+            slot: l.slot,
+            snapshot: publicSnapshot(l.snapshot),
+            quantity: 0,
+            sources: [],
+          });
+        let g = grouped.get(key);
+        g.quantity += l.quantity;
+        g.sources.push({
+          id: l.id,
+          quantity: l.quantity,
+          userId: l.user_id,
+          nickname: l.nickname,
+          identity: l.identity || '野生小猪',
+          avatarId: l.avatar_id,
+          done: l.done,
         });
-      let g = grouped.get(key);
-      g.quantity += l.quantity;
-      g.sources.push({
-        id: l.id,
-        quantity: l.quantity,
-        userId: l.user_id,
-        nickname: l.nickname,
-        identity: l.identity || '野生小猪',
-        avatarId: l.avatar_id,
-        done: l.done,
-      });
-    }
-    return { date, dishes: [...grouped.values()] };
-  });
+      }
+      return { date, dishes: [...grouped.values()] };
+    });
+  }
   route('POST', '/families/:familyId/lines/:id/done', z.object({}).strict(), async (r) =>
     db.transaction(async (tx) => {
       await familyLock(tx, r.params.familyId);
@@ -236,5 +238,7 @@ export function publicSnapshot(d) {
     minutes: d.minutes,
     servings: d.servings,
     category: d.category,
+    featured: d.featured || false,
+    spiceLevel: d.spiceLevel || 1,
   };
 }

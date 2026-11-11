@@ -1,0 +1,308 @@
+/* rc.5: regular baselines and visible basket badges. */
+.meal-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  height: 40px;
+  box-sizing: border-box;
+}
+.meal-switch button {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-height: 32px;
+  line-height: 20px !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+.meal-switch button text {
+  line-height: 20px;
+}
+.menu-dish {
+  position: relative;
+}
+.featured-star {
+  position: absolute;
+  right: 0;
+  top: 7px;
+  z-index: 2;
+}
+.dish-spice {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  margin: 4px 0 2px;
+}
+.menu-dish-info > .h3 {
+  padding-right: 18px;
+}
+.basket-count {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 44px !important;
+  min-width: 44px;
+  height: 46px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  flex: none;
+  margin-left: 3px !important;
+}
+.basket-count .basket-badge {
+  right: -1px;
+  top: 0;
+  min-width: 17px;
+  height: 17px;
+  line-height: 17px;
+  z-index: 2;
+  font-size: 10px;
+  background: #c98362;
+  border: 1px solid #efc6a0;
+}
+.basket-bar {
+  padding-left: 11px;
+  gap: 10px;
+  overflow: visible;
+}
+.home-house-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  height: 10px;
+  margin: 10px 0 3px;
+  flex: none;
+}
+.home-house-dots > view {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  background: #ddccb2;
+}
+.home-house-dots > view.on {
+  width: 17px;
+  border-radius: 5px;
+  background: #ba7756;
+}
+.page-home .home-houses {
+  height: 220px;
+  margin-bottom: 0;
+}
+.page-home .home-houses .house-card {
+  height: 208px;
+}
+.page-home .home-top {
+  margin-bottom: 5px;
+}
+.page-home .section-title {
+  margin: 9px 0;
+}
+@media (max-height: 740px) {
+  .page-home .home-houses {
+    height: 180px;
+  }
+  .page-home .home-houses .house-card {
+    height: 168px;
+  }
+  .home-house-dots {
+    margin-top: 5px;
+  }
+}
+@media (max-height: 680px) {
+  .page-home .home-houses {
+    height: 151px;
+  }
+  .page-home .home-houses .house-card {
+    height: 142px;
+  }
+  .home-house-dots {
+    margin-top: 4px;
+    height: 7px;
+  }
+}
+@media (max-height: 600px) {
+  .page-home .home-houses {
+    height: 127px;
+  }
+  .page-home .home-houses .house-card {
+    height: 118px;
+  }
+}
+/* Fixed category rails with an independent content scroller. */
+.pantry-fixed-page,
+.share-fixed-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.pantry-fixed-head {
+  flex: none;
+  padding: 8px 22px 0;
+}
+.pantry-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pantry-title-row .h2 {
+  font-size: 24px;
+  line-height: 1.4;
+  margin: 0;
+}
+.pantry-total {
+  font-size: 11px;
+  color: #a0805e;
+  margin-top: 10px;
+}
+.pantry-total .text-btn {
+  font-size: 10px;
+  min-height: 23px;
+}
+.pantry-fixed-head .search {
+  margin: 9px 0 8px;
+  height: 42px;
+  min-height: 42px;
+}
+.category-tabs {
+  height: 43px;
+  white-space: nowrap;
+  flex: none;
+  border-bottom: 1px solid #e7d9c3;
+}
+.category-tabs > view {
+  display: inline-flex;
+  align-items: center;
+}
+.category-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 35px;
+  padding: 6px 12px !important;
+  margin-right: 6px !important;
+  border-radius: 10px 10px 3px 3px;
+  font-size: 11px;
+  color: #9a7c5b;
+  line-height: 20px;
+}
+.category-tabs button text {
+  font-size: 9px;
+  color: #b49b7c;
+}
+.category-tabs button.active {
+  background: #e9e9d8;
+  color: #6c7553;
+  font-weight: 700;
+  border-bottom: 2px solid #b2ba92;
+}
+.pantry-list-scroll,
+.share-list-scroll {
+  height: 0;
+  flex: 1;
+  min-height: 0;
+}
+.pantry-list-content {
+  padding: 10px 22px 16px;
+}
+.pantry-list-content .pantry-item {
+  padding: 11px 12px;
+  min-height: 71px;
+  margin: 0 0 10px;
+}
+.pantry-item .grow .h4 {
+  margin: 0 0 3px;
+  line-height: 1.5;
+}
+.meat-fixed-tabs {
+  display: flex;
+  gap: 4px;
+  flex: none;
+  padding: 7px 0;
+}
+.meat-fixed-tabs button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 31px;
+  padding: 3px !important;
+  border: 1px solid #e2d3bc;
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 20px;
+  color: #a18566;
+  background: #fffbf3;
+}
+.meat-fixed-tabs button.active {
+  background: #eddfca;
+  border-color: #c9ae85;
+  color: #765337;
+  font-weight: 600;
+}
+.page-menu > .meat-fixed-tabs {
+  padding: 3px 18px 8px;
+}
+.share-fixed-head {
+  padding: 14px 22px 0;
+  flex: none;
+}
+.share-fixed-head .h2 {
+  font-size: 25px;
+  margin: 0 0 4px;
+}
+.share-fixed-head > .caption {
+  font-size: 11px;
+  color: #a18768;
+}
+.share-fixed-head .search {
+  margin: 14px 0 8px;
+}
+.share-selection-top {
+  margin: 0;
+  padding: 10px 0 8px;
+  border: 0;
+  font-size: 11px;
+}
+.share-selection-top button {
+  min-height: 30px;
+}
+.share-list-content {
+  padding: 0 22px 15px;
+}
+
+.home-families {
+  flex: none;
+}
+.home-families .home-house-dots {
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.manager-category .cat-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 24px);
+  gap: 4px;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
+.manager-category .cat-actions button {
+  width: 24px !important;
+  height: 24px;
+  min-height: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  line-height: 1;
+  font-size: 13px;
+}

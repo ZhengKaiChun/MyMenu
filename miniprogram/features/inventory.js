@@ -1,19 +1,32 @@
 const { createPage, go, session, api, familyPath, decorate } = require('../lib/page');
+const types = require('../lib/inventory-types');
 function inventoryGroups(page) {
-  const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
+  const all = page.data.allItems;
+  const category = page.data.activeCategory || 'all';
+  const items = all.filter(
+    (i) =>
+      i.name.includes(page.data.query || '') &&
+      (category === 'all' || i.category === category) &&
+      (category !== '肉类' || i.meatType === page.data.meatType),
+  );
   page.setData({
-    groups: names
-      .map((name) => ({
+    items,
+    totalCount: all.length,
+    categoryTabs: [
+      { id: 'all', name: '全部', count: all.length },
+      ...types.categories.map((name) => ({
+        id: name,
         name,
-        items: page.data.items.filter(
-          (i) => (names.includes(i.category) ? i.category : '其他') === name,
-        ),
-      }))
+        count: all.filter((i) => i.category === name).length,
+      })),
+    ],
+    groups: types.categories
+      .map((name) => ({ name, items: items.filter((i) => i.category === name) }))
       .filter((g) => g.items.length),
   });
 }
 function importGroups(page) {
-  const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
+  const names = types.categories;
   const all = page.data.personalItems;
   const filtered = all.filter(
     (i) =>
@@ -49,6 +62,9 @@ function inventoryPage(personal) {
       query: '',
       personal,
       isCook: false,
+      activeCategory: 'all',
+      meatType: '猪',
+      meatTypes: types.meatTypes,
       showImport: false,
       personalItems: [],
       importIds: [],
@@ -58,7 +74,7 @@ function inventoryPage(personal) {
       const items = await api.request(path);
       this.setData({
         allItems: items.map((i) => ({
-          ...i,
+          ...types.normalize(i),
           icon: { 番茄: 'tomato', 鸡蛋: 'egg', 牛奶: 'milk', 西兰花: 'leaf' }[i.name] || 'basket',
         })),
         isCook: true,
@@ -68,6 +84,16 @@ function inventoryPage(personal) {
       inventoryGroups(this);
     },
     methods: {
+      categoryTab(e) {
+        const category = e.currentTarget.dataset.id;
+        const first = this.data.allItems.find((i) => i.category === category);
+        this.setData({ activeCategory: category, meatType: first?.meatType || '猪' });
+        inventoryGroups(this);
+      },
+      meatTab(e) {
+        this.setData({ meatType: e.currentTarget.dataset.type });
+        inventoryGroups(this);
+      },
       search(e) {
         this.setData({
           query: e.detail.value,
@@ -92,12 +118,8 @@ function inventoryPage(personal) {
       },
       async showImport() {
         const items = await api.request('/inventory');
-        const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
         this.setData({
-          personalItems: items.map((i) => ({
-            ...i,
-            category: names.includes(i.category) ? i.category : '其他',
-          })),
+          personalItems: items.map(types.normalize),
           showImport: true,
           importIds: [],
           importQuery: '',
@@ -151,20 +173,26 @@ exports.ingredientEdit = createPage({
     quantity: '',
     unit: '个',
     category: '蔬菜',
-    categories: ['蔬菜', '肉禽', '蛋奶', '调味', '其他'],
+    meatType: '',
+    meatTypes: types.meatTypes,
+    categories: types.categories,
     scope: 'family',
   },
   init(q) {
     const item = session.editIngredient;
     session.editIngredient = null;
-    this.setData({ scope: q.scope || 'family', ...(item || {}) });
+    this.setData({ scope: q.scope || 'family', ...(item ? types.normalize(item) : {}) });
   },
   methods: {
+    meat(e) {
+      this.setData({ meatType: e.currentTarget.dataset.type });
+    },
     category(e) {
-      this.setData({ category: this.data.categories[Number(e.detail.value)] });
+      this.setData({ category: this.data.categories[Number(e.detail.value)], meatType: '' });
     },
     async save() {
       const d = this.data;
+      if (d.category === '肉类' && !d.meatType) throw Error('请选择肉类小分类');
       await api.request(
         (d.scope === 'personal' ? '/inventory' : familyPath('/inventory')) +
           (d.id ? '/' + d.id : ''),
@@ -175,6 +203,7 @@ exports.ingredientEdit = createPage({
             quantity: Number(d.quantity),
             unit: d.unit,
             category: d.category,
+            meatType: d.category === '肉类' ? d.meatType : '',
             ...(d.id ? { version: d.version } : {}),
           },
         },

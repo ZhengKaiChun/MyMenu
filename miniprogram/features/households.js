@@ -1,6 +1,6 @@
 const { createPage, go, session, api, familyPath } = require('../lib/page');
 exports.home = createPage({
-  data: { families: [] },
+  data: { families: [], houseIndex: 0 },
   async reload() {
     const [user, families, inventory] = await Promise.all([
       api.request('/me'),
@@ -14,6 +14,9 @@ exports.home = createPage({
     this.setData({ user, families, family, personalCount: inventory.length });
   },
   methods: {
+    houseChanged(e) {
+      this.setData({ houseIndex: e.detail.current });
+    },
     enter(e) {
       const f = this.data.families.find((f) => f.id === e.currentTarget.dataset.id);
       session.setFamily({ ...f, ownerId: f.owner_id });
@@ -201,7 +204,10 @@ exports.invite = createPage({
     return invitation
       ? {
           title: invitation.title,
-          imageUrl: this.data.role === 'cook' ? '/assets/invitation-cook-share.png' : '/assets/invitation-share.png',
+          imageUrl:
+            this.data.role === 'cook'
+              ? '/assets/invitation-cook-share.png'
+              : '/assets/invitation-share.png',
           path: '/pages/invitation/index?token=' + encodeURIComponent(invitation.token),
         }
       : { title: '给我饭', path: '/pages/home/index' };
@@ -209,7 +215,7 @@ exports.invite = createPage({
 });
 exports.identity = createPage({
   data: {
-    names: ['野生小猪', '猪爸爸', '猪妈妈', '猪大二', '猪二儿', '猪大妞', '猪二妞'],
+    names: ['野生小猪', '猪爸爸', '猪妈妈', '猪大儿', '猪二儿', '猪大妞', '猪二妞'],
     indices: [7, 1, 2, 3, 4, 5, 6],
     selected: '野生小猪',
   },

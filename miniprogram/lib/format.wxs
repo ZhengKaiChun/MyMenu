@@ -1,5 +1,5 @@
 function pigIndex(s) {
-  var names = ['猪爸爸', '猪妈妈', '猪大二', '猪二儿', '猪大妞', '猪二妞'];
+  var names = ['猪爸爸', '猪妈妈', '猪大儿', '猪二儿', '猪大妞', '猪二妞'];
   for (var i = 0; i < names.length; i++) if (names[i] === s) return i + 1;
   return 7;
 }

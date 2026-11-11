@@ -1,5 +1,5 @@
 const { seed, today } = require('./seed');
-const key = 'geiwofan.preview.database.v1';
+const key = require('../config/index').previewDatabaseKey || 'geiwofan.preview.database.v1';
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function read() {
   const value = wx.getStorageSync(key);
@@ -14,6 +14,52 @@ function read() {
         notify(db, o.family_id, 'order.sent', o.id, '你点的菜已收到，点击查看回音', [o.user_id]);
     }
     db.inboxVersion = 1;
+  }
+  if (!db.uiVersion5) {
+    for (const d of db.dishes) {
+      d.featured = !!d.featured;
+      d.spiceLevel = d.spiceLevel || 1;
+    }
+    for (const m of db.members) if (m.identity === '猪大二') m.identity = '猪大儿';
+    for (const i of db.inventories) {
+      if (['肉禽', '海鲜'].includes(i.category)) {
+        i.meatType = i.category === '海鲜' ? '海鲜' : '其他';
+        i.category = '肉类';
+      } else i.meatType = i.meatType || '';
+    }
+    for (const c of [...db.collections].filter((c) => c.name === '招牌')) {
+      const other = db.collections.find((x) => x.family_id === c.family_id && x.id !== c.id);
+      for (const d of db.dishes.filter((d) => d.collectionId === c.id)) {
+        d.featured = true;
+        if (other) d.collectionId = other.id;
+      }
+      if (other) db.collections = db.collections.filter((x) => x.id !== c.id);
+      else c.name = '家常菜';
+    }
+    for (const d of db.dishes) {
+      const c = db.collections.find((c) => c.id === d.collectionId);
+      d.meatType = d.meatType || (['肉类', '肉禽', '荤菜'].includes(c?.name) ? '其他' : '');
+    }
+    db.uiVersion5 = true;
+  }
+  const cutoff = require('../lib/dates').bounds().min;
+  db.orders = db.orders.filter((o) => o.meal_date >= cutoff);
+  const orderIds = new Set(db.orders.map((o) => o.id)),
+    lineIds = new Set(db.orders.flatMap((o) => o.items.map((l) => l.id)));
+  db.changes = db.changes.filter((c) => lineIds.has(c.line_id));
+  const changeIds = new Set(db.changes.map((c) => c.id));
+  db.notifications = db.notifications.filter(
+    (n) =>
+      (n.created_at || '').slice(0, 10) >= cutoff &&
+      (!n.type.startsWith('order.') || orderIds.has(n.entity_id)) &&
+      (!n.type.startsWith('change.') || changeIds.has(n.entity_id)),
+  );
+  for (const key of Object.keys(db.checks)) if (key.slice(-10) < cutoff) delete db.checks[key];
+  for (const [key, op] of Object.entries(db.operations)) {
+    if (!op.at) op.at = Date.now();
+    const body = JSON.parse(op.body || '{}');
+    if (op.at < Date.now() - 7 * 86400000 || (typeof body.date === 'string' && body.date < cutoff))
+      delete db.operations[key];
   }
   return db;
 }
@@ -35,7 +81,20 @@ function demand(value, message, status = 400, code) {
 }
 function publicDish(d) {
   const { id, name, intro, coverId, minutes, servings, collectionId, version, sortOrder } = d;
-  return { id, name, intro, coverId, minutes, servings, collectionId, version, sortOrder };
+  return {
+    id,
+    name,
+    intro,
+    coverId,
+    minutes,
+    servings,
+    collectionId,
+    version,
+    sortOrder,
+    featured: !!d.featured,
+    spiceLevel: d.spiceLevel || 1,
+    meatType: d.meatType || '',
+  };
 }
 function membership(db, user, fid, cook = false) {
   const f = db.families.find((f) => f.id === fid && !f.deleted_at),

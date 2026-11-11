@@ -133,6 +133,11 @@ export async function buildApp(options = {}) {
       await tx.query('DELETE FROM members WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM sessions WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM identities WHERE user_id=$1', [r.user.id]);
+      await tx.query('DELETE FROM inventories WHERE user_id=$1', [r.user.id]);
+      await tx.query('DELETE FROM notifications WHERE user_id=$1', [r.user.id]);
+      await tx.query('DELETE FROM subscription_grants WHERE user_id=$1', [r.user.id]);
+      await tx.query('UPDATE invitations SET revoked=true WHERE creator_id=$1', [r.user.id]);
+      await tx.query('UPDATE shares SET revoked=true WHERE sender_id=$1', [r.user.id]);
       await tx.query(
         "UPDATE users SET deleted_at=now(),nickname='已注销小猪',username=NULL,password_hash=NULL,avatar_id=NULL,phone_cipher=NULL,phone_hash=NULL WHERE id=$1",
         [r.user.id],
@@ -140,7 +145,7 @@ export async function buildApp(options = {}) {
       return { ok: true };
     }),
   );
-  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.4' }));
+  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.5' }));
   app.addHook('onClose', async () => {
     if (!options.db) await db.close();
   });
