@@ -46,6 +46,7 @@ exports.login = createPage({
         return;
       }
       if (!this.data.consent) throw Error('请先阅读并同意服务协议与隐私说明');
+      if (!this.data.capabilities.wechat) throw Error('微信登录服务尚未配置，请先使用账号密码登录');
       const out = await new Promise((resolve, reject) =>
         wx.login({ success: resolve, fail: reject }),
       );
@@ -97,6 +98,12 @@ exports.register = createPage({
 });
 async function sendCode() {
   if (this.data.countdown) return;
+  if (!this.data.capabilities?.sms)
+    throw Error(
+      api.isPreview()
+        ? '本机预览不发送短信，可先使用账号密码注册登录'
+        : '短信服务尚未配置，可先使用微信或账号密码登录',
+    );
   await api.request('/auth/sms/send', { method: 'POST', body: { phone: this.data.phone } });
   this.setData({ countdown: 60 });
   this.timer = setInterval(() => {
@@ -107,7 +114,10 @@ async function sendCode() {
 }
 exports.sms = createPage({
   public: true,
-  data: { ...publicData, countdown: 0, binding: false },
+  data: { ...publicData, countdown: 0, binding: false, capabilities: {} },
+  async reload() {
+    this.setData({ capabilities: await api.request('/capabilities') });
+  },
   init(q) {
     this.binding = q.bind === '1';
     this.setData({ binding: this.binding });

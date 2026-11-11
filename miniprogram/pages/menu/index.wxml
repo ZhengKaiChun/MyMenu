@@ -55,19 +55,18 @@
               {{item.name}}
             </button>
             <view class="copy dish-description">{{item.intro}}</view>
-            <view class="dish-meta">
-              <text class="tag">{{item.minutes}} 分钟</text>
-              <text class="tag">{{item.servings}} 人份</text>
-            </view>
-            <view class="dish-spice"><g-icon wx:for="{{[1,2,3]}}" wx:for-item="level" wx:key="*this" name="{{level<=item.spiceLevel?'chili':'chili-outline'}}" size="15"/></view>
-            <view class="dish-bottom">
+            <view class="dish-order-row">
+              <view class="dish-facts">
+                <view class="dish-meta">
+                  <text class="tag">{{item.minutes}} 分钟</text>
+                  <text class="tag">{{item.servings}} 人份</text>
+                </view>
+                <view class="dish-spice"><g-icon wx:for="{{[1,2,3]}}" wx:for-item="level" wx:key="*this" name="{{level<=item.spiceLevel?'chili':'chili-outline'}}" size="15"/></view>
+              </view>
               <button hover-class="none" class="dish-add" bindtap="add" data-id="{{item.id}}">
                 <text wx:if="{{quantities[item.id]}}" class="strong">{{quantities[item.id]}}</text>
                 <text wx:if="{{quantities[item.id]}}">＋</text>
-                <block wx:else>
-                  <g-icon name="bowl" size="20" />
-                  <text>想吃</text>
-                </block>
+                <block wx:else><g-icon name="bowl" size="20"/><text>想吃</text></block>
               </button>
             </view>
           </view>

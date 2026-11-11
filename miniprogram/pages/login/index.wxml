@@ -9,20 +9,9 @@
       </view>
       <view class="welcome-visual"><image src="/assets/pig-kitchen.png" mode="aspectFit" /></view>
       <view class="login-actions">
-        <button hover-class="none" wx:if="{{capabilities.wechat}}" class="btn" bindtap="wechat">
-          <g-icon tone="light" name="key" size="21" />
-          {{capabilities.preview?'直接体验小厨房':'微信快捷登录'}}
-        </button>
-        <button hover-class="none" wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="go" data-page="sms">
-          手机号登录 / 注册
-        </button>
-        <button hover-class="none" wx:else class="btn secondary" bindtap="go" data-page="register">
-          注册独立账号
-        </button>
-        <button hover-class="none" class="text-btn" bindtap="go" data-page="password">
-          账号密码登录
-          <text>›</text>
-        </button>
+        <button hover-class="none" class="btn" bindtap="wechat"><g-icon tone="light" name="key" size="21"/>微信一键登录</button>
+        <button hover-class="none" class="btn secondary" bindtap="go" data-page="sms">手机号登录 / 注册</button>
+        <button hover-class="none" class="text-btn" bindtap="go" data-page="password">账号密码登录<text>›</text></button>
       </view>
       <checkbox-group bindchange="consent">
         <label class="checkline login-consent">
@@ -34,7 +23,7 @@
               和
               <text bindtap="legal">隐私说明</text>
             </view>
-            <text class="small-text">{{capabilities.preview?'本机体验，数据仅保存在当前设备':'首次登录将创建独立账号'}}</text>
+            <text class="small-text">{{capabilities.preview?'本机预览仅演示登录，不进行微信认证或发送短信':'首次登录将创建独立账号'}}</text>
           </view>
         </label>
       </checkbox-group>

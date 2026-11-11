@@ -1,11 +1,11 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell id="page-shell" title="手机号登录" back="{{true}}">
+<g-shell id="page-shell" title="{{binding?'绑定手机号':'手机号登录 / 注册'}}" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-sms">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="page-intro">
-        <view class="h2">绑定手机号</view>
-        <text class="muted">验证码由短信服务发送，请勿向别人透露。</text>
+        <view class="h2">{{binding?'绑定手机号':'手机号登录 / 注册'}}</view>
+        <text class="muted">{{preview?'本机预览不发送短信，可使用账号密码注册登录。':'首次验证自动注册，请勿向别人透露验证码。'}}</text>
       </view>
       <label class="form-label">手机号</label>
       <input

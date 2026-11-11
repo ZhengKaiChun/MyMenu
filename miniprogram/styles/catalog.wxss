@@ -306,3 +306,74 @@
   line-height: 1;
   font-size: 13px;
 }
+
+/* The order action shares the metadata block, with no trailing action row. */
+.page-menu .dish-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+}
+.page-menu .dish-facts {
+  min-width: 0;
+  flex: 1;
+}
+.page-menu .dish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.page-menu .dish-meta .tag {
+  white-space: nowrap;
+  padding: 2px 4px;
+}
+.page-menu .dish-spice {
+  margin: 3px 0 0;
+  height: 18px;
+}
+.page-menu .dish-order-row .dish-add {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 7px;
+  margin: 0;
+}
+.page-menu .menu-dish {
+  min-height: 112px;
+  padding: 10px 0;
+  gap: 10px;
+}
+.page-menu .menu-photo,
+.page-menu .menu-photo .food {
+  width: 96px;
+}
+.page-menu .menu-photo .food {
+  height: 92px;
+}
+.page-menu .menu-dish-info > .dish-description {
+  margin-bottom: 4px;
+}
+@media (max-width: 360px) {
+  .page-menu .menu-rail {
+    width: 64px;
+  }
+  .page-menu .menu-dishes {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .page-menu .menu-photo,
+  .page-menu .menu-photo .food {
+    width: 76px;
+  }
+  .page-menu .menu-photo .food {
+    height: 86px;
+  }
+  .page-menu .menu-dish {
+    min-height: 106px;
+    gap: 8px;
+  }
+}
