@@ -433,3 +433,68 @@ test('formal avatar upload copies read-only package assets and removes the tempo
   assert.equal(events[1][1], events[0][2]);
   assert.equal(events[2][1], events[0][2]);
 });
+
+test('personal inventory works independently and account updates replace the session', async (t) => {
+  const { app } = await buildApp({
+    logger: false,
+    config: {
+      production: false,
+      database: {},
+      origin: 'http://127.0.0.1:3000',
+      mediaKey: 'm'.repeat(32),
+      pepper: 'p'.repeat(32),
+      mediaDir: '.runtime/test-media',
+      wechatSecret: '',
+      allowDevAuth: false,
+    },
+  });
+  t.after(() => app.close());
+  const rt = nativeRuntime(app),
+    register = rt.instance('register');
+  register.onLoad({});
+  register.setData({
+    username: 'personal_native',
+    password: 'personal-password-123',
+    confirm: 'personal-password-123',
+    consent: true,
+  });
+  await register.submit();
+  const session = rt.load(resolve(rt.root, 'lib/session.js')),
+    api = rt.load(resolve(rt.root, 'lib/api.js'));
+  session.family = null;
+  for (const meatType of ['猪', '鸡'])
+    await api.request('/inventory', {
+      method: 'POST',
+      body: { name: meatType + '肉', quantity: 1, unit: '斤', category: '肉类', meatType },
+    });
+  const personal = rt.instance('personal');
+  personal.onLoad({});
+  await personal.onShow();
+  assert.equal(personal.data.error, '');
+  assert.equal(personal.data.totalCount, 2);
+  await personal.categoryTab({ currentTarget: { dataset: { id: '肉类' } } });
+  await personal.meatTab({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(personal.data.items.length, 1);
+  await personal.meatTab({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(personal.data.items.length, 2);
+  const settings = rt.instance('settings');
+  settings.onLoad({});
+  await settings.onShow();
+  assert.equal(settings.data.error, '');
+  assert.equal(settings.data.achievements.cooked, 0);
+  const security = rt.instance('accountSecurity');
+  security.onLoad({});
+  await security.onShow();
+  const before = session.token;
+  security.setData({
+    username: 'personal_changed',
+    currentPassword: 'personal-password-123',
+    newPassword: 'new-personal-password',
+    confirm: 'new-personal-password',
+  });
+  await security.submit();
+  assert.equal(security.data.error, '');
+  assert.notEqual(session.token, before);
+  assert.equal(security.data.currentPassword, '');
+  assert.equal((await api.request('/me/security')).username, 'personal_changed');
+});

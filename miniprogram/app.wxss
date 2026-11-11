@@ -6,3 +6,4 @@
 @import './styles/legal.wxss';
 @import './styles/manage-profile.wxss';
 @import './styles/collection-picker.wxss';
+@import './styles/personal-center.wxss';

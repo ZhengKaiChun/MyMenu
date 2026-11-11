@@ -230,10 +230,16 @@ exports.settings = createPage({
   async reload() {
     const user = await api.request('/me');
     user.avatar = user.avatarId ? await api.image(user.avatarId, '') : '';
-    const preferences = await api.request('/notifications/preferences');
+    const [preferences, security, achievements] = await Promise.all([
+      api.request('/notifications/preferences'),
+      api.request('/me/security'),
+      api.request('/me/achievements'),
+    ]);
     this.setData({
       user,
       notificationsEnabled: preferences.enabled,
+      security,
+      achievements,
       capabilities: await api.request('/capabilities'),
     });
   },

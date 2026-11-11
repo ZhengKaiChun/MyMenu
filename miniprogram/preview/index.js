@@ -25,6 +25,7 @@ function cleanUser(u) {
 function login(db, u) {
   const token = S.id();
   db.sessions[token] = u.id;
+  db.sessionTimes[token] = Date.now();
   return { token, user: cleanUser(u) };
 }
 function request(path, options = {}, token) {
@@ -39,7 +40,10 @@ function request(path, options = {}, token) {
     const [k, v] = pair.split('=');
     if (k) query[k] = decodeURIComponent(v || '');
   }
-  const operationKey = options.key ? (db.sessions[token] || 'public') + ':' + options.key : null;
+  const operationKey =
+    options.key && !path.startsWith('/auth/') && path !== '/me/credentials'
+      ? (db.sessions[token] || 'public') + ':' + options.key
+      : null;
   const operation = operationKey && db.operations[operationKey];
   if (operation) {
     S.demand(
@@ -72,7 +76,11 @@ function request(path, options = {}, token) {
           body.password.length <= 128,
         '体验密码需要10–128位，请勿使用真实密码',
       );
-      S.demand(!db.users.some((u) => u.username === body.username), '这个账号已经存在', 409);
+      S.demand(
+        !db.users.some((u) => u.username?.toLowerCase() === body.username?.toLowerCase()),
+        '这个账号已经存在',
+        409,
+      );
       const u = {
         id: S.id(),
         username: body.username,
@@ -84,7 +92,7 @@ function request(path, options = {}, token) {
       db.users.push(u);
       out = login(db, u);
     } else if (parts[1] === 'password') {
-      const u = db.users.find((u) => u.username === body.username);
+      const u = db.users.find((u) => u.username?.toLowerCase() === body.username?.toLowerCase());
       S.demand(
         u?.passwordHash && hash(u.salt + body.password) === u.passwordHash,
         '账号或密码不正确',
@@ -100,7 +108,12 @@ function request(path, options = {}, token) {
     const user = db.users.find((u) => u.id === db.sessions[token] && !u.deleted_at);
     S.demand(user, '请重新进入体验', 401, 'SESSION_EXPIRED');
     if (parts[0] === 'me') {
-      if (method === 'GET') out = cleanUser(user);
+      if (parts[1] === 'security' && method === 'GET') out = require('./personal').security(user);
+      else if (parts[1] === 'credentials' && method === 'POST')
+        out = require('./personal').credentials(db, user, body, token);
+      else if (parts[1] === 'achievements' && method === 'GET')
+        out = require('./personal').achievements(db, user);
+      else if (method === 'GET') out = cleanUser(user);
       else if (method === 'PATCH') {
         S.demand(typeof body.nickname === 'string' && body.nickname.trim(), '请填写昵称');
         user.nickname = body.nickname.trim().slice(0, 30);
@@ -112,6 +125,9 @@ function request(path, options = {}, token) {
           '请先转让或解散你创建的小家',
           409,
         );
+        db.cookingRecords = db.cookingRecords.filter((c) => c.userId !== user.id);
+        for (const [key, row] of Object.entries(db.achievementTotals))
+          if (row.userId === user.id) delete db.achievementTotals[key];
         user.deleted_at = new Date().toISOString();
         user.nickname = '已注销小猪';
         delete user.username;
@@ -141,7 +157,9 @@ function request(path, options = {}, token) {
         S.demand(f.name, '请填写小家名称');
         f.version++;
         out = { ok: true };
-      } else if (section === 'menu')
+      } else if (section === 'cooking-records')
+        out = require('./personal').cooking(db, user, fid, method, method === 'GET' ? query : body);
+      else if (section === 'menu')
         out = {
           family: { ...m, memberCount: db.members.filter((x) => x.family_id === fid).length },
           collections: db.collections
@@ -890,6 +908,9 @@ function dissolve(db, user, fid, method, rid, action, b) {
   if (p.status === 'pending' && p.votes.every((v) => v.decision === 'agree')) {
     p.status = 'completed';
     db.families.find((f) => f.id === fid).deleted_at = new Date().toISOString();
+    db.cookingRecords = db.cookingRecords.filter((c) => c.familyId !== fid);
+    for (const [key, row] of Object.entries(db.achievementTotals))
+      if (row.familyId === fid) delete db.achievementTotals[key];
     for (const i of db.invitations) if (i.family_id === fid) i.revoked = true;
     for (const s of db.shares) if (s.source_family_id === fid) s.revoked = true;
     S.notify(

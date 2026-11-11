@@ -43,7 +43,9 @@ function read() {
     db.uiVersion5 = true;
   }
   for (const d of db.dishes) if (!d.collectionIds?.length) d.collectionIds = [d.collectionId];
+  db.sessionTimes = db.sessionTimes || {};
   const cutoff = require('../lib/dates').bounds().min;
+  require('./personal').archive(db, cutoff);
   db.orders = db.orders.filter((o) => o.meal_date >= cutoff);
   const orderIds = new Set(db.orders.map((o) => o.id)),
     lineIds = new Set(db.orders.flatMap((o) => o.items.map((l) => l.id)));
@@ -58,6 +60,10 @@ function read() {
   for (const key of Object.keys(db.checks)) if (key.slice(-10) < cutoff) delete db.checks[key];
   for (const [key, op] of Object.entries(db.operations)) {
     if (!op.at) op.at = Date.now();
+    if (op.path?.startsWith('/auth/') || op.path === '/me/credentials') {
+      delete db.operations[key];
+      continue;
+    }
     const body = JSON.parse(op.body || '{}');
     if (op.at < Date.now() - 7 * 86400000 || (typeof body.date === 'string' && body.date < cutoff))
       delete db.operations[key];

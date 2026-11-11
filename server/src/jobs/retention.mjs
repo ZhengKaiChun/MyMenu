@@ -1,6 +1,8 @@
+import { archiveAchievements } from '../modules/meals/achievements.mjs';
 export async function pruneHistory(db) {
   return db.transaction(async (tx) => {
     const cutoff = "(now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months'";
+    await archiveAchievements(tx, cutoff);
     await tx.query(
       `DELETE FROM changes WHERE line_id IN(SELECT l.id FROM order_lines l JOIN orders o ON o.id=l.order_id WHERE o.meal_date<${cutoff})`,
     );

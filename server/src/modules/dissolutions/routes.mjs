@@ -139,6 +139,8 @@ export function dissolutionRoutes(app, { db, route }) {
 async function complete(tx, fid, did, actor, users) {
   await tx.query("UPDATE dissolutions SET status='completed' WHERE id=$1", [did]);
   await tx.query('UPDATE families SET deleted_at=now(),version=version+1 WHERE id=$1', [fid]);
+  await tx.query('DELETE FROM cooking_records WHERE family_id=$1', [fid]);
+  await tx.query('DELETE FROM achievement_totals WHERE family_id=$1', [fid]);
   await tx.query('UPDATE invitations SET revoked=true WHERE family_id=$1', [fid]);
   await tx.query('UPDATE shares SET revoked=true WHERE source_family_id=$1', [fid]);
   await notify(

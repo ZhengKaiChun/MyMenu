@@ -287,6 +287,61 @@ test('standalone import preview runs without HTTP and preserves separate device-
       assert.equal(preview.image(refreshed.avatarId, ''), '/assets/avatars/pig-2.png');
     },
   );
+  await t.test('achievement counts survive pruning and disappear with their home', async () => {
+    const u = await call('POST', '/auth/register', null, {
+      username: 'personal_preview',
+      password: 'personal-preview-password',
+    });
+    const f = await call('POST', '/families', u, { name: '成就测试' }),
+      path = '/families/' + f.id,
+      m = await call('GET', path + '/menu', u);
+    const d = await call('POST', path + '/dishes', u, {
+      name: '煎蛋',
+      collectionId: m.collections[0].id,
+      minutes: 5,
+      servings: 2,
+      ingredients: [],
+      steps: [],
+    });
+    await call('POST', path + '/orders', u, {
+      date: today(),
+      slot: '晚餐',
+      items: [{ dishId: d.id, quantity: 3 }],
+    });
+    const b = { date: today(), slot: '晚餐', dishIds: [d.id] };
+    await call('PUT', path + '/cooking-records', u, b);
+    await call('PUT', path + '/cooking-records', u, b);
+    assert.equal((await call('GET', '/me/achievements', u)).cooked, 1);
+    const key = 'geiwofan.preview.database.v1',
+      db = storage.get(key),
+      dates = require('../../miniprogram/lib/dates.js'),
+      expired = dates.shift(dates.bounds().min, -1);
+    db.orders.filter((o) => o.family_id === f.id).forEach((o) => (o.meal_date = expired));
+    db.cookingRecords.filter((c) => c.familyId === f.id).forEach((c) => (c.date = expired));
+    storage.set(key, db);
+    for (let i = 0; i < 2; i++) {
+      const stats = await call('GET', '/me/achievements', u);
+      assert.equal(stats.cooked, 1);
+      assert.equal(stats.ordered, 3);
+    }
+    await call('POST', path + '/dissolution', u, {});
+    assert.equal((await call('GET', '/me/achievements', u)).ordered, 0);
+    assert.equal((await call('GET', '/me/achievements', u)).cooked, 0);
+    const changed = await call(
+      'POST',
+      '/me/credentials',
+      u,
+      {
+        username: 'changed_preview',
+        currentPassword: 'personal-preview-password',
+        newPassword: 'changed-preview-password',
+      },
+      'credential-secret-retry',
+    );
+    await assert.rejects(call('GET', '/me', u));
+    assert.equal((await call('GET', '/me/security', changed)).username, 'changed_preview');
+    assert.equal(JSON.stringify(storage.get(key)).includes('changed-preview-password'), false);
+  });
   await t.test('formal releases reject the device-local transport', async () => {
     env = 'release';
     await assert.rejects(call('GET', '/capabilities'), (e) => e.code === 'PREVIEW_NOT_PRODUCTION');

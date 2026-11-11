@@ -39,7 +39,10 @@ const parents = {
   register: 'password',
   recover: 'password',
   sms: 'login',
-  history: 'settings',
+  history: 'today',
+  accountSecurity: 'settings',
+  achievements: 'settings',
+  cookingRecord: 'achievements',
 };
 let trail = [];
 function snapshot(page) {

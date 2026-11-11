@@ -47,7 +47,10 @@
     "pages/offline/index",
     "pages/forbidden/index",
     "pages/expired/index",
-    "pages/privacy/index"
+    "pages/privacy/index",
+    "pages/accountSecurity/index",
+    "pages/achievements/index",
+    "pages/cookingRecord/index"
   ],
   "window": {
     "navigationStyle": "custom",

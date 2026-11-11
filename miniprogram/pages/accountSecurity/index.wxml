@@ -1,0 +1,9 @@
+<g-shell id="page-shell" title="账号与密码" back="{{true}}"><scroll-view scroll-y class="scroll"><view class="page-content page-account-security">
+<view wx:if="{{error}}" class="error-tip">{{error}}</view>
+<view class="security-heading"><g-icon name="key" size="34"/><view><view class="h2">把小家，妥善保管</view><text>登录账号与昵称分别设置</text></view></view>
+<view class="security-form"><label class="form-label">登录账号</label><input class="input" value="{{username}}" bindinput="input" data-field="username" placeholder="4–32位字母、数字或下划线" maxlength="32"/>
+<block wx:if="{{security.passwordSet}}"><label class="form-label">当前密码</label><input class="input" password value="{{currentPassword}}" bindinput="input" data-field="currentPassword" placeholder="修改账号或密码前需验证" maxlength="128"/></block>
+<label class="form-label">{{security.passwordSet?'新密码':'设置密码'}}</label><input class="input" password value="{{newPassword}}" bindinput="input" data-field="newPassword" placeholder="{{security.passwordSet?'10–128位，不修改密码可留空':'请设置10–128位密码'}}" maxlength="128"/>
+<label class="form-label">确认密码</label><input class="input" password value="{{confirm}}" bindinput="input" data-field="confirm" placeholder="再次输入新密码" maxlength="128"/></view>
+<text class="security-help">{{security.passwordSet?'保存后，其他设备需重新登录。':'首次设置请在重新登录后5分钟内完成。'}}</text>
+</view></scroll-view><view slot="dock" class="dock"><button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">保存账号设置</button></view></g-shell>

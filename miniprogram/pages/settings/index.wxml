@@ -28,9 +28,11 @@
         <view class="notification-setting"><view><text class="setting-name">开饭通知</text><text class="setting-help">{{notificationsEnabled?'开启提醒，不错过小家的回音':'提醒已关闭，消息记录仍可查看'}}</text></view><switch checked="{{notificationsEnabled}}" color="#a8ae82" bindchange="toggleNotifications" disabled="{{actionBusy}}"/></view>
         <button hover-class="none" wx:if="{{capabilities.subscriptionTemplateId && notificationsEnabled}}" class="list-row subscribe-link" bindtap="subscribe"><text>接收一次微信提醒</text><text>去授权 ›</text></button>
       </view>
-<view class="settings-tools"><button hover-class="none" class="list-row" bindtap="go" data-page="personal"><view class="link-label"><g-icon name="basket"/><text>个人现有食材</text></view><text>›</text></button><button hover-class="none" class="list-row" bindtap="go" data-page="history"><view class="link-label"><g-icon name="calendar"/><text>最近三个月的吃饭记录</text></view><text>›</text></button></view>      <button hover-class="none" wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="bindPhone">
-        绑定／修改手机号
-      </button>
+<view class="settings-tools">
+ <button hover-class="none" class="list-row" bindtap="bindPhone"><view class="link-label"><g-icon name="phone"/><text>{{security.phoneBound?'修改绑定手机号':'绑定手机号'}}</text></view><text>›</text></button>
+ <button hover-class="none" class="list-row" bindtap="go" data-page="accountSecurity"><view class="link-label"><g-icon name="key"/><text>账号与密码</text></view><text>›</text></button>
+</view>
+<button hover-class="none" class="achievement-entry" bindtap="go" data-page="achievements"><view class="achievement-entry-title"><g-icon name="star" size="22"/><text class="grow">我的开饭成就</text><text>查看各小家 ›</text></view><view class="achievement-numbers"><view><text>{{achievements.cooked || 0}}</text><text>累计做菜 / 道</text></view><view><text>{{achievements.ordered || 0}}</text><text>累计点菜 / 份</text></view></view></button>
 <view class="row settings-actions"><button hover-class="none" class="btn logout-red" bindtap="logout">退出登录</button><button hover-class="none" class="btn ghost" bindtap="deleteAccount">注销账号</button></view>
     </view>
   </scroll-view>
