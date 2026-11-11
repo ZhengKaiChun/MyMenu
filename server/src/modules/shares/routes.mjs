@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { id, token, digest } from '../../core/security.mjs';
 import { member, familyLock, atomic, audit } from '../../core/policy.mjs';
 import { demand } from '../../core/errors.mjs';
-import { recipeSnapshot } from '../recipes/routes.mjs';
+import { recipeSnapshot, setDishCollections } from '../recipes/routes.mjs';
 const importBody = z
   .object({
     token: z.string().min(30).max(100),
@@ -134,20 +134,29 @@ export function shareRoutes(app, { db, route }) {
         replaced = before.length;
       }
       for (const source of s.snapshot) {
-        let category = (
-          await tx.query('SELECT id FROM collections WHERE family_id=$1 AND name=$2', [
-            fid,
-            source.category,
-          ])
-        ).rows[0];
-        if (!category) {
-          category = { id: id() };
-          await tx.query('INSERT INTO collections(id,family_id,name) VALUES($1,$2,$3)', [
-            category.id,
-            fid,
-            source.category,
-          ]);
+        const targetIds = [];
+        for (const categoryName of [
+          ...new Set(
+            source.categories?.length ? source.categories : [source.category || '分享好菜'],
+          ),
+        ]) {
+          let category = (
+            await tx.query('SELECT id FROM collections WHERE family_id=$1 AND name=$2', [
+              fid,
+              categoryName,
+            ])
+          ).rows[0];
+          if (!category) {
+            category = { id: id() };
+            await tx.query('INSERT INTO collections(id,family_id,name) VALUES($1,$2,$3)', [
+              category.id,
+              fid,
+              categoryName,
+            ]);
+          }
+          targetIds.push(category.id);
         }
+        const category = { id: targetIds[0] };
         let did = id(),
           name = source.name,
           match =
@@ -196,6 +205,7 @@ export function shareRoutes(app, { db, route }) {
           before.push({ id: did, name });
           added++;
         }
+        await setDishCollections(tx, fid, did, targetIds);
         await tx.query(
           'INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps',
           [did, JSON.stringify(source.ingredients), JSON.stringify(source.steps)],

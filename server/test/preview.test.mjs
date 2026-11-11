@@ -228,6 +228,65 @@ test('standalone import preview runs without HTTP and preserves separate device-
     assert.equal(saved.checks['preview-home' + expired], undefined);
     storage.set(key, original);
   });
+  await t.test(
+    'multi-collection preview persists memberships and copies one independent dish',
+    async () => {
+      const f = await call('POST', '/families', cook, { name: '本机多合集' }),
+        path = '/families/' + f.id;
+      let menu = await call('GET', path + '/menu', cook);
+      const a = menu.collections[0].id;
+      const b = (await call('POST', path + '/collections', cook, { name: '暖汤' })).id;
+      const body = {
+        name: '番茄汤',
+        minutes: 10,
+        servings: 2,
+        collectionId: a,
+        collectionIds: [a, b],
+        ingredients: [],
+        steps: [],
+      };
+      const d = await call('POST', path + '/dishes', cook, body);
+      menu = await call('GET', path + '/menu', cook);
+      assert.equal(menu.dishes.length, 1);
+      assert.equal(menu.dishes[0].collectionIds.length, 2);
+      await assert.rejects(
+        call('POST', path + '/dishes', cook, { ...body, collectionIds: [a, a] }),
+      );
+      await assert.rejects(
+        call('POST', path + '/dishes', cook, { ...body, collectionIds: [a, 'preview-foreign'] }),
+      );
+      const share = await call('POST', path + '/shares', cook, { dishIds: [d.id] });
+      const imported = await call('POST', '/imports', cook, {
+        token: share.token,
+        newFamilyName: '本机复制',
+        mode: 'add',
+        scope: 'matching',
+      });
+      const copy = await call('GET', '/families/' + imported.familyId + '/menu', cook);
+      assert.equal(copy.dishes.length, 1);
+      assert.equal(copy.dishes[0].collectionIds.length, 2);
+      assert.ok(copy.dishes[0].collectionIds.every((id) => ![a, b].includes(id)));
+      const draft = {
+        version: menu.family.version,
+        collections: menu.collections.map((c) => ({ id: c.id, name: c.name })),
+        dishes: [{ id: d.id, collectionId: b, collectionIds: [b] }],
+        recipes: [],
+        deletedDishIds: [],
+      };
+      await call('PUT', path + '/menu-layout', cook, draft);
+      assert.deepEqual((await call('GET', path + '/menu', cook)).dishes[0].collectionIds, [b]);
+    },
+  );
+  await t.test(
+    'built-in avatar saves and survives a new session without moving packaged files',
+    async () => {
+      const preset = await preview.upload('/assets/avatars/pig-2.png');
+      await call('PATCH', '/me', cook, { nickname: '小猪头像', avatarId: preset.id });
+      const refreshed = await call('GET', '/me', cook);
+      assert.equal(refreshed.avatarId, preset.id);
+      assert.equal(preview.image(refreshed.avatarId, ''), '/assets/avatars/pig-2.png');
+    },
+  );
   await t.test('formal releases reject the device-local transport', async () => {
     env = 'release';
     await assert.rejects(call('GET', '/capabilities'), (e) => e.code === 'PREVIEW_NOT_PRODUCTION');

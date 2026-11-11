@@ -42,6 +42,7 @@ function read() {
     }
     db.uiVersion5 = true;
   }
+  for (const d of db.dishes) if (!d.collectionIds?.length) d.collectionIds = [d.collectionId];
   const cutoff = require('../lib/dates').bounds().min;
   db.orders = db.orders.filter((o) => o.meal_date >= cutoff);
   const orderIds = new Set(db.orders.map((o) => o.id)),
@@ -89,6 +90,7 @@ function publicDish(d) {
     minutes,
     servings,
     collectionId,
+    collectionIds: d.collectionIds?.length ? d.collectionIds : [collectionId],
     version,
     sortOrder,
     featured: !!d.featured,

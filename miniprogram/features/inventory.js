@@ -7,7 +7,7 @@ function inventoryGroups(page) {
     (i) =>
       i.name.includes(page.data.query || '') &&
       (category === 'all' || i.category === category) &&
-      (category !== '肉类' || i.meatType === page.data.meatType),
+      (category !== '肉类' || !page.data.meatType || i.meatType === page.data.meatType),
   );
   page.setData({
     items,
@@ -63,7 +63,7 @@ function inventoryPage(personal) {
       personal,
       isCook: false,
       activeCategory: 'all',
-      meatType: '猪',
+      meatType: '',
       meatTypes: types.meatTypes,
       showImport: false,
       personalItems: [],
@@ -86,12 +86,12 @@ function inventoryPage(personal) {
     methods: {
       categoryTab(e) {
         const category = e.currentTarget.dataset.id;
-        const first = this.data.allItems.find((i) => i.category === category);
-        this.setData({ activeCategory: category, meatType: first?.meatType || '猪' });
+        this.setData({ activeCategory: category, meatType: '' });
         inventoryGroups(this);
       },
       meatTab(e) {
-        this.setData({ meatType: e.currentTarget.dataset.type });
+        const type = e.currentTarget.dataset.type;
+        this.setData({ meatType: this.data.meatType === type ? '' : type });
         inventoryGroups(this);
       },
       search(e) {

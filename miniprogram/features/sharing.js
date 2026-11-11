@@ -1,8 +1,9 @@
 const { createPage, go, decorate, session, api, familyPath } = require('../lib/page');
+const groups = require('../lib/collections');
 function filterShare(page) {
   const dishes = page.data.allDishes.filter(
     (d) =>
-      (page.data.category === 'all' || d.collectionId === page.data.category) &&
+      (page.data.category === 'all' || groups.contains(d, page.data.category)) &&
       d.name.includes(page.data.query || ''),
   );
   page.setData({

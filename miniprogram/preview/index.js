@@ -190,6 +190,7 @@ function request(path, options = {}, token) {
             id: d?.id || S.id(),
             family_id: fid,
             collectionId: cmap[e.body.collectionId],
+            collectionIds: (e.body.collectionIds || [e.body.collectionId]).map((id) => cmap[id]),
             version: (d?.version || 0) + 1,
             archived: false,
           };
@@ -201,15 +202,35 @@ function request(path, options = {}, token) {
           const row = S.findDish(db, fid, dmap[d.id] || d.id);
           S.demand(cmap[d.collectionId], '请先移动被删除合集中的菜品');
           row.collectionId = cmap[d.collectionId];
+          row.collectionIds = (d.collectionIds || [d.collectionId]).map((id) => cmap[id]);
+          S.demand(
+            row.collectionIds.every(Boolean) &&
+              new Set(row.collectionIds).size === row.collectionIds.length &&
+              row.collectionIds.includes(row.collectionId),
+            '请选择本小家的合集',
+          );
+          if (
+            !row.meatType &&
+            db.collections.some(
+              (c) => row.collectionIds.includes(c.id) && ['肉类', '肉禽', '荤菜'].includes(c.name),
+            )
+          )
+            row.meatType = '其他';
           row.sortOrder = sort;
           row.version++;
         }
         const keep = Object.values(cmap);
         for (const d of db.dishes)
-          if (d.family_id === fid && !keep.includes(d.collectionId)) d.collectionId = keep[0];
+          if (d.family_id === fid) {
+            d.collectionIds = (d.collectionIds || [d.collectionId]).filter((id) =>
+              keep.includes(id),
+            );
+            if (!d.collectionIds.length) d.collectionIds = [keep[0]];
+            if (!d.collectionIds.includes(d.collectionId)) d.collectionId = d.collectionIds[0];
+          }
         db.collections = db.collections.filter((c) => c.family_id !== fid || keep.includes(c.id));
         f.version++;
-        out = { ok: true };
+        out = { ok: true, collectionMap: cmap };
       } else if (section === 'members') {
         if (method === 'GET')
           out = db.members
@@ -276,7 +297,9 @@ function request(path, options = {}, token) {
           if (method === 'PATCH') c.name = S.demand(body.name?.trim(), '请填写合集名称');
           else {
             S.demand(
-              !db.dishes.some((d) => d.collectionId === rid && !d.archived),
+              !db.dishes.some(
+                (d) => (d.collectionIds || [d.collectionId]).includes(rid) && !d.archived,
+              ),
               '请先移动合集中的菜品',
               409,
             );
@@ -319,13 +342,29 @@ function request(path, options = {}, token) {
               '请填写每一步做法',
             );
             S.demand(
-              db.collections.some((c) => c.id === body.collectionId && c.family_id === fid),
+              (body.collectionIds || [body.collectionId]).includes(body.collectionId) &&
+                (body.collectionIds || [body.collectionId]).every((id) =>
+                  db.collections.some((c) => c.id === id && c.family_id === fid),
+                ),
               '请选择本小家的合集',
+            );
+            const selected = body.collectionIds || [body.collectionId];
+            S.demand(
+              selected.length <= 100 && new Set(selected).size === selected.length,
+              '请选择不重复的合集',
+            );
+            const meat = db.collections.some(
+              (c) => selected.includes(c.id) && ['肉类', '肉禽', '荤菜'].includes(c.name),
+            );
+            S.demand(
+              !meat || ['猪', '鸡', '牛', '鱼', '海鲜', '其他'].includes(body.meatType),
+              '请选择肉类小分类',
             );
             const old = rid ? S.findDish(db, fid, rid) : null;
             if (old) S.demand(old.version === body.version, '菜品已更新，请刷新', 409);
             const d = {
               ...body,
+              collectionIds: body.collectionIds || [body.collectionId],
               featured: !!body.featured,
               spiceLevel: body.spiceLevel || 1,
               id: old?.id || S.id(),
@@ -555,6 +594,13 @@ function request(path, options = {}, token) {
           sender_id: user.id,
           snapshot: body.dishIds.map((id) => ({
             ...S.clone(S.findDish(db, fid, id)),
+            categories: db.collections
+              .filter((c) =>
+                (
+                  S.findDish(db, fid, id).collectionIds || [S.findDish(db, fid, id).collectionId]
+                ).includes(c.id),
+              )
+              .map((c) => c.name),
             category:
               db.collections.find((c) => c.id === S.findDish(db, fid, id).collectionId)?.name ||
               '分享好菜',
@@ -899,18 +945,18 @@ function imports(db, user, b, preview) {
       d.version++;
     });
   for (const source of s.snapshot) {
-    let category = db.collections.find(
-      (c) => c.family_id === f.id && c.name === (source.category || '分享好菜'),
-    );
-    if (!category) {
-      category = {
-        id: S.id(),
-        family_id: f.id,
-        name: source.category || '分享好菜',
-        sort_order: db.collections.length,
-      };
-      db.collections.push(category);
+    const targetIds = [];
+    for (const name of [
+      ...new Set(source.categories?.length ? source.categories : [source.category || '分享好菜']),
+    ]) {
+      let c = db.collections.find((c) => c.family_id === f.id && c.name === name);
+      if (!c) {
+        c = { id: S.id(), family_id: f.id, name, sort_order: db.collections.length };
+        db.collections.push(c);
+      }
+      targetIds.push(c.id);
     }
+    const category = { id: targetIds[0] };
     let match =
       b.mode === 'overwrite' && b.scope === 'matching'
         ? old.find((d) => d.name === source.name)
@@ -926,6 +972,7 @@ function imports(db, user, b, preview) {
       id: match?.id || S.id(),
       family_id: f.id,
       collectionId: category.id,
+      collectionIds: targetIds,
       name,
       archived: false,
       version: (match?.version || 0) + 1,
@@ -952,6 +999,15 @@ function image(id, fallback) {
 }
 async function upload(tempFilePath) {
   allowed();
+  // Built-in artwork already persists in the app package; save a media reference.
+  if (/^\/assets\/avatars\/pig-[0-7]\.png$/.test(tempFilePath)) {
+    const db = S.read(),
+      id = S.id();
+    db.media[id] = tempFilePath;
+    S.save(db);
+    return { id };
+  }
+
   const result = await new Promise((resolve, reject) =>
     wx.getFileSystemManager().saveFile({ tempFilePath, success: resolve, fail: reject }),
   );

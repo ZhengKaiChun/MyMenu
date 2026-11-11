@@ -229,6 +229,16 @@ test('legacy migration retains recipes and inventory while converting featured c
     .map((s) => s.trim())
     .filter(Boolean))
     await db.query(sql);
+  for (const sql of (await readFile(new URL('006_dish_collections.sql', folder), 'utf8'))
+    .split(';')
+    .map((s) => s.trim())
+    .filter(Boolean))
+    await db.query(sql);
+  assert.equal(
+    (await db.query('SELECT collection_id FROM dish_collections WHERE dish_id=$1', [dish])).rows[0]
+      .collection_id,
+    normal,
+  );
   const updated = (await db.query('SELECT * FROM dishes WHERE id=$1', [dish])).rows[0];
   assert.equal(updated.featured, true);
   assert.equal(updated.spice_level, 1);

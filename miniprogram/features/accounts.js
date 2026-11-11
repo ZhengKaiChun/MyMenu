@@ -152,21 +152,60 @@ exports.recover = createPage({
   },
 });
 exports.profile = createPage({
-  data: { nickname: '', avatarId: null, avatar: '' },
+  data: {
+    nickname: '',
+    avatarId: null,
+    avatar: '',
+    preset: -1,
+    chosenPreset: -1,
+    pigOptions: Array.from({ length: 8 }, (_, i) => i),
+  },
   async reload() {
-    let u = await api.request('/me');
+    if (this.loaded) return;
+    const u = await api.request('/me');
+    const avatar = u.avatarId ? await api.image(u.avatarId, '') : '';
+    const builtin = avatar.match(/^\/assets\/avatars\/pig-([0-7])\.png$/);
     this.setData({
       nickname: u.nickname,
       avatarId: u.avatarId,
-      avatar: u.avatarId ? await api.image(u.avatarId, '') : '',
+      avatar,
+      chosenPreset: builtin ? Number(builtin[1]) : -1,
     });
+    this.loaded = true;
   },
   methods: {
-    async chooseAvatar(e) {
-      const out = await api.upload(e.detail.avatarUrl);
-      this.setData({ avatarId: out.id, avatar: await api.image(out.id, '') });
+    preset(e) {
+      const preset = Number(e.currentTarget.dataset.index);
+      if (!Number.isInteger(preset) || preset < 0 || preset > 7) return;
+      this.setData({
+        preset,
+        chosenPreset: preset,
+        avatar: '/assets/avatars/pig-' + preset + '.png',
+      });
+    },
+    async customAvatar() {
+      const picked = await new Promise((resolve, reject) =>
+        wx.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sizeType: ['compressed'],
+          success: resolve,
+          fail: reject,
+        }),
+      );
+      const out = await api.upload(picked.tempFiles[0].tempFilePath);
+      this.setData({
+        preset: -1,
+        chosenPreset: -1,
+        avatarId: out.id,
+        avatar: await api.image(out.id, ''),
+      });
     },
     async submit() {
+      if (this.data.preset >= 0) {
+        const out = await api.upload(this.data.avatar, { crop: false });
+        this.setData({ avatarId: out.id, preset: -1 });
+      }
       await api.request('/me', {
         method: 'PATCH',
         body: { nickname: this.data.nickname, avatarId: this.data.avatarId },

@@ -1,24 +1,20 @@
 <wxs module="util" src="../../lib/format.wxs" />
 <g-shell id="page-shell" title="菜谱与合集管理" back="{{true}}">
-  <view class="page-content flush page-collections">
+  <view class="page-content flush page-manage">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
 <view class="manager-compact"><view class="h3">菜谱与合集</view><button hover-class="none" class="text-btn" bindtap="go" data-page="shareRecipes">分享菜谱 ↗</button></view>    <view class="manager-toolbar">
       <button hover-class="none" bindtap="addCollection">
         <g-icon name="plus" size="21" />
         添加合集
       </button>
-      <button hover-class="none" bindtap="go" data-page="editDish">
+      <button hover-class="none" bindtap="addDish">
         <g-icon name="book" size="21" />
         添加菜品
       </button>
     </view>
     <view class="menu-catalog manager-catalog">
-      <scroll-view class="menu-rail manager-rail" scroll-y>
-        <button hover-class="none" bindtap="category" data-id="all">
-          <g-icon name="utensils" />
-          <text>全部</text>
-        </button>
-        <view
+      <scroll-view class="menu-rail manager-rail" scroll-y scroll-top="{{railTop}}" bindscroll="rememberRail">
+<view
           wx:for="{{collections}}"
           wx:key="id"
           class="manager-category {{category===item.id?'active':''}}"
@@ -29,14 +25,14 @@
           </button>
           <view class="cat-actions">
             <button hover-class="none" data-id="{{item.id}}" bindtap="renameCollection">✎</button>
-            <button hover-class="none" data-id="{{item.id}}" data-dir="-1" data-type="collections" bindtap="move">
+            <button hover-class="none" data-id="{{item.id}}" data-dir="-1" data-type="collections" bindtap="move" disabled="{{index===0}}">
               ↑
-            </button><button hover-class="none" data-id="{{item.id}}" data-dir="1" data-type="collections" bindtap="move">↓</button>
+            </button>
             <button hover-class="none" data-id="{{item.id}}" bindtap="deleteCollection">×</button>
           </view>
         </view>
       </scroll-view>
-      <scroll-view class="menu-dishes manager-dishes" scroll-y>
+      <scroll-view class="menu-dishes manager-dishes" scroll-y scroll-top="{{scrollTop}}" bindscroll="rememberScroll">
         <view class="catalog-label">{{dishes.length}} 道菜</view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish manager-dish">
 
@@ -45,14 +41,14 @@
             <view class="h3 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}} 分钟</text>
             <view class="manager-actions">
-              <button hover-class="none" bindtap="go" data-page="editDish" data-id="{{item.id}}">编辑</button>
+              <button hover-class="none" bindtap="editDish" data-id="{{item.id}}">编辑</button>
               <button hover-class="none" bindtap="moveCollection" data-id="{{item.id}}">移动</button>
               <button hover-class="none" bindtap="remove" data-id="{{item.id}}">删除</button>
             </view>
-            <view class="sort-actions">
-              <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="-1">↑</button>
-              <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="1">↓</button>
-            </view>
+          </view>
+          <view class="sort-actions">
+            <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="-1" disabled="{{index===0}}"><text>↑</text></button>
+            <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="1" disabled="{{index===dishes.length-1}}"><text>↓</text></button>
           </view>
         </view>
         <view wx:if="{{!dishes.length}}" class="empty">

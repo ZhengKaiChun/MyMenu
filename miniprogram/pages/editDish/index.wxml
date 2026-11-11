@@ -23,10 +23,8 @@
         />
         <view wx:else class="upload-placeholder"><g-icon name="image" size="29"/><text>添加菜品图片</text></view>
       </button>
-      <label class="form-label">所属合集</label>
-      <picker range="{{collections}}" range-key="name" bindchange="collection">
-        <view class="select">选择合集：{{collectionName || '点击选择'}}</view>
-      </picker>
+      <view class="collection-select-heading"><label class="form-label">所属合集</label><text>可多选 · 已选 {{collectionIds.length}} 个</text></view>
+      <view class="collection-chip-grid"><button hover-class="none" wx:for="{{collections}}" wx:key="id" class="collection-chip {{util.contains(collectionIds,item.id)?'selected':''}}" data-id="{{item.id}}" bindtap="collection"><text class="chip-tick">{{util.contains(collectionIds,item.id)?'✓':'＋'}}</text><text>{{item.name}}</text></button></view>
       <view wx:if="{{needsMeatType}}" class="editor-meat"><label class="form-label">肉类小分类 *</label><view class="meat-fixed-tabs"><button hover-class="none" wx:for="{{meatTypes}}" wx:key="*this" bindtap="meat" data-type="{{item}}" class="{{meatType===item?'active':''}}">{{item}}</button></view></view>
       <view class="two">
         <view>

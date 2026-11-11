@@ -9,6 +9,7 @@ export const publicDish = (d) => ({
   intro: d.intro,
   coverId: d.cover_id,
   collectionId: d.collection_id,
+  collectionIds: d.collection_ids?.length ? d.collection_ids : [d.collection_id],
   minutes: d.minutes,
   servings: d.servings,
   version: d.version,
@@ -20,12 +21,21 @@ export const publicDish = (d) => ({
 export async function recipeSnapshot(db, dishId) {
   const r = (
     await db.query(
-      'SELECT d.*,r.ingredients,r.steps,c.name AS category FROM dishes d JOIN recipes r ON r.dish_id=d.id JOIN collections c ON c.id=d.collection_id WHERE d.id=$1',
+      `SELECT d.*,r.ingredients,r.steps,c.name AS category,
+       ARRAY(SELECT dc.collection_id FROM dish_collections dc JOIN collections cc ON cc.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY cc.sort_order,cc.id) AS collection_ids,
+       ARRAY(SELECT cc.name FROM dish_collections dc JOIN collections cc ON cc.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY cc.sort_order,cc.id) AS categories
+       FROM dishes d JOIN recipes r ON r.dish_id=d.id JOIN collections c ON c.id=d.collection_id WHERE d.id=$1`,
       [dishId],
     )
   ).rows[0];
   return r
-    ? { ...publicDish(r), category: r.category, ingredients: r.ingredients, steps: r.steps }
+    ? {
+        ...publicDish(r),
+        category: r.category,
+        categories: r.categories,
+        ingredients: r.ingredients,
+        steps: r.steps,
+      }
     : null;
 }
 export function recipeRoutes(app, { db, route }) {
@@ -40,14 +50,27 @@ export function recipeRoutes(app, { db, route }) {
           .array(z.object({ id: localId, name }).strict())
           .min(1)
           .max(100),
-        dishes: z.array(z.object({ id: localId, collectionId: localId }).strict()).max(1000),
+        dishes: z
+          .array(
+            z
+              .object({
+                id: localId,
+                collectionId: localId,
+                collectionIds: z.array(localId).min(1).max(100).optional(),
+              })
+              .strict(),
+          )
+          .max(1000),
         deletedDishIds: z.array(z.uuid()).max(1000),
         recipes: z
           .array(
             z
               .object({
                 id: localId,
-                body: recipe.omit({ collectionId: true }).extend({ collectionId: localId }),
+                body: recipe.omit({ collectionId: true, collectionIds: true }).extend({
+                  collectionId: localId,
+                  collectionIds: z.array(localId).min(1).max(100).optional(),
+                }),
               })
               .strict(),
           )
@@ -139,18 +162,32 @@ export function recipeRoutes(app, { db, route }) {
           const saved = await saveDish(tx, r.user.id, fid, existing ? entry.id : null, {
             ...entry.body,
             collectionId: cid,
+            collectionIds: (entry.body.collectionIds || [entry.body.collectionId]).map(
+              (id) => cmap[id],
+            ),
           });
           dmap[entry.id] = saved.id;
         }
         for (const [sort, d] of b.dishes.entries()) {
           const did = dmap[d.id] || d.id,
             cid = cmap[d.collectionId];
-          demand(cid, 400, 'COLLECTION_REQUIRED', '请先移动被删除合集中的菜品');
+          demand(
+            cid && (!d.collectionIds || d.collectionIds.includes(d.collectionId)),
+            400,
+            'COLLECTION_REQUIRED',
+            '请先移动被删除合集中的菜品',
+          );
           const out = await tx.query(
             'UPDATE dishes SET collection_id=$3,sort_order=$4,version=version+1 WHERE id=$1 AND family_id=$2 AND NOT archived RETURNING id',
             [did, fid, cid, sort],
           );
           demand(out.rows.length, 400, 'DISH_OWNER', '菜品不属于当前小家');
+          await setDishCollections(
+            tx,
+            fid,
+            did,
+            (d.collectionIds || [d.collectionId]).map((id) => cmap[id]),
+          );
         }
         const fallback = cmap[b.collections[0].id];
         for (const c of oldC)
@@ -163,7 +200,7 @@ export function recipeRoutes(app, { db, route }) {
           }
         await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [fid]);
         await audit(tx, r.user.id, fid, 'menu.save', fid);
-        return { ok: true };
+        return { ok: true, collectionMap: cmap };
       }),
   );
   route('GET', '/families/:familyId/menu', null, async (r) => {
@@ -176,7 +213,7 @@ export function recipeRoutes(app, { db, route }) {
     ).rows;
     let dishes = (
       await db.query(
-        'SELECT * FROM dishes WHERE family_id=$1 AND NOT archived ORDER BY sort_order,id',
+        `SELECT d.*,ARRAY(SELECT dc.collection_id FROM dish_collections dc JOIN collections c ON c.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY c.sort_order,c.id) AS collection_ids FROM dishes d WHERE d.family_id=$1 AND NOT d.archived ORDER BY d.sort_order,d.id`,
         [r.params.familyId],
       )
     ).rows.map(publicDish);
@@ -240,7 +277,7 @@ export function recipeRoutes(app, { db, route }) {
       await member(tx, r.user.id, r.params.familyId, 'cook');
       let count = (
         await tx.query(
-          'SELECT count(*)::int AS n FROM dishes WHERE collection_id=$1 AND family_id=$2 AND NOT archived',
+          'SELECT count(*)::int AS n FROM dishes d JOIN dish_collections dc ON dc.dish_id=d.id WHERE dc.collection_id=$1 AND d.family_id=$2 AND NOT d.archived',
           [r.params.id, r.params.familyId],
         )
       ).rows[0].n;
@@ -305,14 +342,10 @@ export function recipeRoutes(app, { db, route }) {
   );
 }
 async function saveDish(tx, user, family, dishId, b) {
-  let c = (
-    await tx.query('SELECT id,name FROM collections WHERE id=$1 AND family_id=$2', [
-      b.collectionId,
-      family,
-    ])
-  ).rows[0];
-  demand(c, 400, 'INVALID_COLLECTION', '请选择当前小家的合集');
-  const meat = ['肉类', '肉禽', '荤菜'].includes(c.name);
+  const collectionIds = b.collectionIds || [b.collectionId];
+  demand(collectionIds.includes(b.collectionId), 400, 'INVALID_COLLECTION', '主合集须在已选合集中');
+  const categories = await validateCollections(tx, family, collectionIds);
+  const meat = categories.some((c) => ['肉类', '肉禽', '荤菜'].includes(c.name));
   demand(!meat || !!b.meatType, 400, 'MEAT_TYPE', '请选择菜品的肉类小分类');
   const meatType = meat ? b.meatType : '';
   for (const mediaId of [b.coverId, ...b.steps.map((s) => s.imageId)].filter(Boolean)) {
@@ -377,6 +410,7 @@ async function saveDish(tx, user, family, dishId, b) {
         meatType,
       ],
     );
+  await setDishCollections(tx, family, did, collectionIds);
   await tx.query(
     'INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps',
     [did, JSON.stringify(b.ingredients), JSON.stringify(b.steps)],
@@ -384,4 +418,34 @@ async function saveDish(tx, user, family, dishId, b) {
   await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [family]);
   await audit(tx, user, family, 'dish.save', did);
   return { id: did };
+}
+
+async function validateCollections(tx, family, ids) {
+  demand(
+    ids.length &&
+      ids.every((id) => z.uuid().safeParse(id).success) &&
+      new Set(ids).size === ids.length,
+    400,
+    'INVALID_COLLECTION',
+    '请选择不重复的合集',
+  );
+  const rows = (
+    await tx.query('SELECT id,name FROM collections WHERE family_id=$1 AND id=ANY($2::uuid[])', [
+      family,
+      ids,
+    ])
+  ).rows;
+  demand(rows.length === ids.length, 400, 'INVALID_COLLECTION', '只能选择当前小家的合集');
+  return rows;
+}
+export async function setDishCollections(tx, family, dish, ids) {
+  const rows = await validateCollections(tx, family, ids);
+  await tx.query('DELETE FROM dish_collections WHERE dish_id=$1', [dish]);
+  for (const cid of ids)
+    await tx.query(
+      'INSERT INTO dish_collections(dish_id,collection_id,family_id) VALUES($1,$2,$3)',
+      [dish, cid, family],
+    );
+  if (rows.some((c) => ['肉类', '肉禽', '荤菜'].includes(c.name)))
+    await tx.query("UPDATE dishes SET meat_type='其他' WHERE id=$1 AND meat_type=''", [dish]);
 }

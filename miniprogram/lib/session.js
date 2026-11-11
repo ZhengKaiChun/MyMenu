@@ -27,6 +27,8 @@ module.exports = Object.assign(state, {
     state.user = null;
     state.family = null;
     state.cart = {};
+    state.menuDraft = null;
+    state.menuManageView = null;
     wx.removeStorageSync(prefix + '.session');
     wx.removeStorageSync(prefix + '.family');
   },

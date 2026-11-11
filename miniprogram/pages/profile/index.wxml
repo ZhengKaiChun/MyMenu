@@ -3,21 +3,8 @@
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-profile">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="center" style="margin: 25px auto; text-align: center">
-        <button hover-class="none"
-          open-type="chooseAvatar"
-          bindchooseavatar="chooseAvatar"
-          style="width: 90px; margin: auto"
-        >
-          <image
-            wx:if="{{avatar}}"
-            src="{{avatar}}"
-            style="width: 80px; height: 80px; border-radius: 50%"
-          />
-          <g-pig wx:else index="7" size="80" />
-        </button>
-        <text class="caption copy small-text">点这里选择头像</text>
-      </view>
+      <view class="avatar-workbench"><view class="avatar-preview"><image wx:if="{{avatar}}" src="{{avatar}}" mode="aspectFill"/><g-pig wx:else index="7" size="82"/></view><view class="h3 strong">今天是哪一只小猪</view><text class="caption">选个喜欢的，也可以用自己的照片</text></view>
+      <view class="avatar-picker-panel"><view class="avatar-panel-title"><text>小猪头像</text><text>8 个可选</text></view><view class="avatar-preset-grid"><button hover-class="none" wx:for="{{pigOptions}}" wx:key="*this" class="avatar-preset {{chosenPreset===item?'selected':''}}" bindtap="preset" data-index="{{item}}"><image src="/assets/avatars/pig-{{item}}.png" mode="aspectFit"/><text wx:if="{{chosenPreset===item}}" class="avatar-selected">✓</text></button></view><button hover-class="none" class="avatar-custom" bindtap="customAvatar"><g-icon name="image" size="21"/><text>从相册 / 拍照自定义</text><text>›</text></button></view>
       <label class="form-label">昵称</label>
       <input
         class="input"

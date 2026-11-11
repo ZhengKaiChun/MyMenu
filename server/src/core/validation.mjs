@@ -27,6 +27,7 @@ export const recipe = z
     meatType: z.enum(['', '猪', '鸡', '牛', '鱼', '海鲜', '其他']).default(''),
     spiceLevel: z.number().int().min(1).max(3).default(1),
     collectionId: uuid,
+    collectionIds: z.array(uuid).min(1).max(100).optional(),
     coverId: uuid.nullable().optional(),
     minutes: z.number().int().min(1).max(1440),
     servings: z.number().int().min(1).max(99),

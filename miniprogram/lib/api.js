@@ -63,6 +63,25 @@ async function image(id, fallback = '/assets/food-placeholder.png', shareToken) 
   }
 }
 async function upload(path, options = {}) {
+  // Bundled avatar files are read-only. Formal uploads use a short-lived writable copy.
+  if (!isPreview() && /^\/?assets\/avatars\/pig-[0-7]\.png$/.test(path)) {
+    const fs = wx.getFileSystemManager(),
+      dest = wx.env.USER_DATA_PATH + '/avatar-' + uuid() + '.png';
+    await new Promise((resolve, reject) =>
+      fs.copyFile({
+        srcPath: '/' + path.replace(/^\//, ''),
+        destPath: dest,
+        success: resolve,
+        fail: reject,
+      }),
+    );
+    try {
+      return await upload(dest, { ...options, crop: false });
+    } finally {
+      fs.unlink({ filePath: dest, success() {}, fail() {} });
+    }
+  }
+
   if (options.crop !== false && wx.cropImage) {
     const out = await new Promise((resolve, reject) =>
       wx.cropImage({ src: path, cropScale: '1:1', success: resolve, fail: reject }),

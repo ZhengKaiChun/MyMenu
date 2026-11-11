@@ -89,7 +89,7 @@ test('all native WXML event handlers are implemented', () => {
       page = runtime.instance(name),
       source = readFileSync('miniprogram/' + path + '.wxml', 'utf8');
     for (const match of source.matchAll(
-      /(?:bind|catch)(?:tap|input|change|touchstart|touchmove|touchend|chooseavatar|getphonenumber)="([A-Za-z_][A-Za-z_0-9]*)"/g,
+      /(?:bind|catch)(?:tap|input|change|scroll|touchstart|touchmove|touchend|chooseavatar|getphonenumber)="([A-Za-z_][A-Za-z_0-9]*)"/g,
     ))
       assert.equal(typeof page[match[1]], 'function', name + ' missing ' + match[1]);
     assert.ok(source.includes('<g-shell'), name + ' missing native shell');
@@ -256,4 +256,170 @@ test('native controllers register, create household, save a real recipe and subm
     2,
     'share search keeps previously selected hidden dishes',
   );
+});
+
+test('native multi-select, return position, reversible meat filters and avatar drafts work together', async (t) => {
+  const { app } = await buildApp({
+    logger: false,
+    config: {
+      production: false,
+      database: {},
+      origin: 'http://127.0.0.1:3000',
+      mediaKey: 'm'.repeat(32),
+      pepper: 'p'.repeat(32),
+      mediaDir: '.runtime/test-media',
+      wechatSecret: '',
+      allowDevAuth: false,
+    },
+  });
+  t.after(() => app.close());
+  const rt = nativeRuntime(app),
+    register = rt.instance('register');
+  register.onLoad({});
+  register.setData({
+    username: 'native_multi',
+    password: 'native-multi-password',
+    confirm: 'native-multi-password',
+    consent: true,
+  });
+  await register.submit();
+  const session = rt.load(resolve(rt.root, 'lib/session.js')),
+    api = rt.load(resolve(rt.root, 'lib/api.js'));
+  const home = await api.request('/families', { method: 'POST', body: { name: '记住这里' } });
+  session.setFamily({ ...home, role: 'cook' });
+  const base = '/families/' + home.id,
+    menu = await api.request(base + '/menu'),
+    a = menu.collections[0].id;
+  const b = (await api.request(base + '/collections', { method: 'POST', body: { name: '肉类' } }))
+    .id;
+  const chicken = await api.request(base + '/dishes', {
+    method: 'POST',
+    body: { name: '鸡翅', minutes: 10, servings: 2, collectionId: b, meatType: '鸡' },
+  });
+  await api.request(base + '/dishes', {
+    method: 'POST',
+    body: { name: '猪肉', minutes: 10, servings: 2, collectionId: b, meatType: '猪' },
+  });
+  const manager = rt.instance('manage');
+  manager.onLoad({});
+  await manager.onShow();
+  assert.equal(
+    manager.data.category,
+    a,
+    'manager opens the first actual collection, without virtual all',
+  );
+  await manager.category({ currentTarget: { dataset: { id: b } } });
+  await manager.rememberScroll({ detail: { scrollTop: 165 } });
+  await manager.editDish({ currentTarget: { dataset: { id: chicken.id } } });
+  const editor = rt.instance('editDish');
+  editor.onLoad({ id: chicken.id });
+  await editor.onShow();
+  await editor.collection({ currentTarget: { dataset: { id: a } } });
+  assert.equal(editor.data.collectionIds.length, 2);
+  await editor.save();
+  assert.equal(editor.data.error, '');
+  const returned = rt.instance('collections');
+  returned.onLoad({});
+  await returned.onShow();
+  assert.equal(returned.data.category, b);
+  assert.equal(returned.data.scrollTop, 165);
+  await returned.saveMenu();
+  assert.equal(returned.data.error, '');
+  assert.equal(returned.data.category, b);
+  const ordering = rt.instance('menu');
+  ordering.onLoad({});
+  await ordering.onShow();
+  await ordering.category({ currentTarget: { dataset: { id: b } } });
+  assert.equal(ordering.data.dishes.length, 2);
+  await ordering.meatCategory({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(ordering.data.dishes.length, 1);
+  await ordering.meatCategory({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(ordering.data.dishes.length, 2);
+  assert.equal(ordering.data.meatType, '');
+  const snapshot = await api.request(base + '/menu');
+  assert.equal(snapshot.dishes.filter((d) => d.id === chicken.id).length, 1);
+  await api.request(base + '/inventory', {
+    method: 'POST',
+    body: { name: '鸡肉', quantity: 1, unit: '斤', category: '肉类', meatType: '鸡' },
+  });
+  await api.request(base + '/inventory', {
+    method: 'POST',
+    body: { name: '猪肉', quantity: 1, unit: '斤', category: '肉类', meatType: '猪' },
+  });
+  const pantry = rt.instance('pantry');
+  pantry.onLoad({});
+  await pantry.onShow();
+  await pantry.categoryTab({ currentTarget: { dataset: { id: '肉类' } } });
+  assert.equal(pantry.data.items.length, 2);
+  await pantry.meatTab({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(pantry.data.items.length, 1);
+  await pantry.meatTab({ currentTarget: { dataset: { type: '鸡' } } });
+  assert.equal(pantry.data.items.length, 2);
+  const profile = rt.instance('profile');
+  profile.onLoad({});
+  await profile.onShow();
+  profile.data.nickname = '还在编辑昵称';
+  await profile.preset({ currentTarget: { dataset: { index: 2 } } });
+  await profile.onShow();
+  assert.equal(profile.data.nickname, '还在编辑昵称');
+  assert.equal(profile.data.preset, 2);
+  const originalRequest = api.request,
+    uploads = [];
+  let saved;
+  api.request = async (path, opts) =>
+    path === '/me'
+      ? opts?.method === 'PATCH'
+        ? (saved = opts.body)
+        : { ...saved }
+      : originalRequest(path, opts);
+  api.upload = async (path, opts) => {
+    uploads.push({ path, opts });
+    return { id: 'saved-avatar' };
+  };
+  api.image = async () => '/tmp/custom-avatar';
+  rt.wx.getImageInfo = (o) => o.success({ path: '/tmp/builtin-avatar' });
+  await profile.submit();
+  assert.equal(profile.data.error, '');
+  assert.equal(saved.avatarId, 'saved-avatar');
+  assert.equal(saved.nickname, '还在编辑昵称');
+  assert.equal(uploads[0].opts.crop, false);
+  assert.equal(uploads[0].path, '/assets/avatars/pig-2.png');
+  rt.wx.chooseMedia = (o) => {
+    profile.onShow();
+    o.success({ tempFiles: [{ tempFilePath: '/tmp/custom-original' }] });
+  };
+  await profile.customAvatar();
+  assert.equal(profile.data.preset, -1);
+  assert.equal(profile.data.avatar, '/tmp/custom-avatar');
+  assert.equal(uploads[1].path, '/tmp/custom-original');
+});
+
+test('formal avatar upload copies read-only package assets and removes the temporary file', async () => {
+  const rt = nativeRuntime(null),
+    api = rt.load(resolve(rt.root, 'lib/api.js')),
+    events = [];
+  rt.wx.env = { USER_DATA_PATH: 'wxfile://usr' };
+  rt.wx.getFileSystemManager = () => ({
+    copyFile(o) {
+      events.push(['copy', o.srcPath, o.destPath]);
+      o.success({});
+    },
+    unlink(o) {
+      events.push(['unlink', o.filePath]);
+      o.success({});
+    },
+  });
+  rt.wx.uploadFile = (o) => {
+    events.push(['upload', o.filePath]);
+    o.success({ statusCode: 200, data: JSON.stringify({ id: 'avatar-uuid' }) });
+  };
+  const result = await api.upload('/assets/avatars/pig-3.png', { crop: false });
+  assert.equal(result.id, 'avatar-uuid');
+  assert.deepEqual(
+    events.map((e) => e[0]),
+    ['copy', 'upload', 'unlink'],
+  );
+  assert.equal(events[0][1], '/assets/avatars/pig-3.png');
+  assert.equal(events[1][1], events[0][2]);
+  assert.equal(events[2][1], events[0][2]);
 });
