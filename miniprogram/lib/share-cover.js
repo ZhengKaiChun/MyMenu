@@ -18,60 +18,53 @@ module.exports = async function (page, dishes) {
         const i = canvas.createImage();
         i.onload = () => r(i);
         i.onerror = j;
-        i.src = src;
+        i.src = src.startsWith('assets/') ? '/' + src : src;
       });
     ctx.drawImage(await load('/assets/recipe-share.png'), 0, 0, 500, 400);
-    const rows = dishes.slice(0, 3),
-      w = 86,
-      gap = 13,
-      left = (500 - rows.length * w - (rows.length - 1) * gap) / 2;
-    for (let i = 0; i < rows.length; i++) {
+    // Only one dish peeks out; offset paper layers hint at the rest of the parcel.
+    const dish = dishes[0];
+    if (dish) {
+      const x = 307,
+        y = 189,
+        w = 120;
+      ctx.fillStyle = '#f2e3c7';
+      ctx.strokeStyle = '#c8ad83';
+      ctx.lineWidth = 1;
+      ctx.save();
+      ctx.translate(x + w / 2, y + w / 2);
+      ctx.rotate(0.08);
+      ctx.fillRect(-w / 2 - 2, -w / 2 - 9, w + 8, w + 18);
+      ctx.strokeRect(-w / 2 - 2, -w / 2 - 9, w + 8, w + 18);
+      ctx.restore();
+      ctx.fillStyle = '#fffdf6';
+      ctx.fillRect(x - 6, y - 7, w + 12, w + 25);
+      ctx.strokeRect(x - 6, y - 7, w + 12, w + 25);
       try {
-        const info = await new Promise((r, j) =>
-          wx.getImageInfo({ src: rows[i].cover, success: r, fail: j }),
+        const info = await new Promise((resolve, reject) =>
+          wx.getImageInfo({ src: dish.cover, success: resolve, fail: reject }),
         );
         const img = await load(info.path),
-          x = left + i * (w + gap),
           size = Math.min(img.width, img.height);
-        ctx.fillStyle = '#fffaf0';
-        ctx.fillRect(x - 4, 154, w + 8, 94);
-        ctx.drawImage(
-          img,
-          (img.width - size) / 2,
-          (img.height - size) / 2,
-          size,
-          size,
-          x,
-          158,
-          w,
-          w,
-        );
-        ctx.strokeStyle = '#c3a17b';
-        ctx.strokeRect(x - 4, 154, w + 8, 94);
+        ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, x, y, w, w);
       } catch {
-        /* Keep the paper visible if a dish image cannot load. */
+        ctx.drawImage(await load('/assets/food-placeholder.png'), x, y, w, w);
       }
+      ctx.fillStyle = '#efe0c0';
+      ctx.beginPath();
+      ctx.moveTo(x + w - 17, y - 7);
+      ctx.lineTo(x + w + 6, y + 16);
+      ctx.lineTo(x + w + 6, y - 7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#98704e';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        dishes.length > 1 ? '还有' + (dishes.length - 1) + '道，藏在信里' : '这道拿手菜，送给你',
+        x + w / 2,
+        y + w + 12,
+      );
     }
-    ctx.fillStyle = '#eddbbb';
-    ctx.strokeStyle = '#a98660';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(44, 244);
-    ctx.lineTo(250, 319);
-    ctx.lineTo(456, 244);
-    ctx.lineTo(456, 362);
-    ctx.lineTo(44, 362);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = '#bd7d60';
-    ctx.beginPath();
-    ctx.arc(250, 310, 22, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#f5dec1';
-    ctx.textAlign = 'center';
-    ctx.font = '24px sans-serif';
-    ctx.fillText('♥', 250, 319);
     return await new Promise((r, j) =>
       wx.canvasToTempFilePath(
         {

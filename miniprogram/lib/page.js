@@ -1,15 +1,6 @@
 const session = require('./session');
 const api = require('./api');
-function go(page, query = {}) {
-  const qs = Object.keys(query)
-    .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
-    .join('&');
-  const url = '/pages/' + page + '/index' + (qs ? '?' + qs : '');
-  if (getCurrentPages().slice(-1)[0]?.route === 'pages/' + page + '/index' && !qs) return;
-  const roots = ['home', 'menu', 'today', 'pantry', 'family'];
-  if (roots.includes(page)) wx.reLaunch({ url });
-  else wx.redirectTo({ url });
-}
+const { go } = require('./navigation');
 function createPage(options) {
   const output = {
     data: { preview: api.isPreview(), loading: false, error: '', ...options.data },
@@ -26,6 +17,7 @@ function createPage(options) {
       if (options.init) options.init.call(this, query || {});
     },
     onShow() {
+      require('./navigation').arrive(this);
       if (options.public === true || session.token) {
         this.setData({ family: session.family, user: session.user });
         return this.run(async function () {

@@ -46,3 +46,32 @@
 .shell-tabs {
   flex-shrink: 0;
 }
+
+.nav-inner {
+  gap: 8px;
+}
+.back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px !important;
+  height: 40px;
+  min-width: 28px;
+  line-height: 1;
+  margin-left: -7px !important;
+  flex: none;
+}
+.back-chevron {
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid #64452e;
+  border-bottom: 2px solid #64452e;
+  transform: rotate(45deg);
+  margin-left: 5px;
+}
+.nav-title {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  line-height: 20px;
+}

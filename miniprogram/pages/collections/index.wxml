@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="菜谱与合集管理" back="{{true}}">
+<g-shell id="page-shell" title="菜谱与合集管理" back="{{true}}">
   <view class="page-content flush page-collections">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
 <view class="manager-compact"><view class="h3">菜谱与合集</view><button hover-class="none" class="text-btn" bindtap="go" data-page="shareRecipes">分享菜谱 ↗</button></view>    <view class="manager-toolbar">

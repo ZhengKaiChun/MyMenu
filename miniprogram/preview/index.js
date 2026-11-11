@@ -450,6 +450,14 @@ function request(path, options = {}, token) {
           db.orders.push(o);
           if (o.status === 'pending')
             S.notify(db, fid, 'order.pending', o.id, '您小猪发来了一条吃饭申请');
+          S.notify(
+            db,
+            fid,
+            'order.sent',
+            o.id,
+            o.status === 'pending' ? '心愿已寄出，等饲养员回音' : '这顿安排啦，已加入全家菜单',
+            [user.id],
+          );
           out = { id: o.id, status: o.status };
         } else {
           const o = S.demand(
@@ -538,7 +546,13 @@ function request(path, options = {}, token) {
     } else if (parts[0] === 'inventory')
       out = inventory(db, user, null, method, parts.slice(1), body, () => {});
     else if (parts[0] === 'notifications') {
-      if (method === 'GET') out = db.notifications.filter((n) => n.user_id === user.id);
+      if (parts[1] === 'preferences') {
+        if (method === 'PATCH') {
+          S.demand(typeof body.enabled === 'boolean', '请选择是否开启开饭通知');
+          user.notificationsEnabled = body.enabled;
+        }
+        out = { enabled: user.notificationsEnabled !== false };
+      } else if (method === 'GET') out = db.notifications.filter((n) => n.user_id === user.id);
       else if (parts[1] === 'delete') {
         const before = db.notifications.length;
         db.notifications = db.notifications.filter(

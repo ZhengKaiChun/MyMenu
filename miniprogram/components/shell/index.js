@@ -1,38 +1,4 @@
-function parentUrl(page) {
-  const name = (page?.route || '').split('/')[1];
-  const parents = {
-    menu: 'home',
-    editDish: 'manage',
-    manage: 'family',
-    collections: 'manage',
-    recipe: 'menu',
-    dish: 'menu',
-    shopping: 'today',
-    calendar: 'today',
-    match: 'pantry',
-    ingredientEdit: page?.query?.scope === 'personal' ? 'personal' : 'pantry',
-    personal: 'home',
-    settings: 'home',
-    profile: 'settings',
-    members: 'family',
-    identity: 'family',
-    invite: 'family',
-    dissolve: 'family',
-    requests: 'menu',
-    requestDetail: 'requests',
-    changes: 'today',
-    swap: 'changes',
-    changeDetail: 'changes',
-    shareRecipes: 'family',
-    recipeParcel: 'shareRecipes',
-    recipeGift: 'home',
-    copyRecipes: 'recipeGift',
-    copyDone: 'family',
-    checkout: 'menu',
-    sent: 'today',
-  };
-  return '/pages/' + (parents[name] || 'home') + '/index';
-}
+const navigation = require('../../lib/navigation');
 Component({
   options: { multipleSlots: true, styleIsolation: 'shared' },
   properties: { title: String, back: { type: Boolean, value: true } },
@@ -49,10 +15,23 @@ Component({
   },
   methods: {
     back() {
-      if (getCurrentPages().length > 1) wx.navigateBack();
-      else {
-        wx.redirectTo({ url: parentUrl(getCurrentPages().slice(-1)[0]) });
+      navigation.back();
+    },
+    touchStart(e) {
+      if (e.touches?.length !== 1) {
+        this.gesture = null;
+        return;
       }
+      const t = e.touches[0];
+      this.gesture = { x: t.clientX, y: t.clientY, time: Date.now() };
+    },
+    touchEnd(e) {
+      const t = e.changedTouches?.[0];
+      if (!t || !this.gesture) return;
+      const end = { x: t.clientX, y: t.clientY, time: Date.now() };
+      const width = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).windowWidth;
+      if (navigation.isBackSwipe(this.gesture, end, width)) navigation.exitSection();
+      this.gesture = null;
     },
   },
 });

@@ -28,7 +28,7 @@ exports.create = createPage({
       if (!this.data.name.trim()) throw Error('给小家起个名字吧');
       const f = await api.request('/families', { method: 'POST', body: { name: this.data.name } });
       session.setFamily({ ...f, ownerId: session.user.id, version: 1 });
-      wx.redirectTo({ url: '/pages/menu/index' });
+      go('menu', {}, { replace: true });
     },
   },
 });
@@ -56,7 +56,7 @@ exports.invitation = createPage({
         ),
         families = await api.request('/families');
       session.setFamily(families.find((f) => f.id === out.familyId));
-      wx.redirectTo({ url: '/pages/menu/index' });
+      go('menu', {}, { replace: true });
     },
   },
 });
@@ -201,7 +201,7 @@ exports.invite = createPage({
     return invitation
       ? {
           title: invitation.title,
-          imageUrl: '/assets/invitation-share.png',
+          imageUrl: this.data.role === 'cook' ? '/assets/invitation-cook-share.png' : '/assets/invitation-share.png',
           path: '/pages/invitation/index?token=' + encodeURIComponent(invitation.token),
         }
       : { title: '给我饭', path: '/pages/home/index' };
@@ -227,7 +227,7 @@ exports.identity = createPage({
       });
       session.family.identity = this.data.selected;
       session.setFamily(session.family);
-      wx.redirectTo({ url: '/pages/family/index' });
+      go('family', {}, { replace: true });
     },
   },
 });

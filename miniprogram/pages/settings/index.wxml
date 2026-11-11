@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="我的与设置" back="{{true}}">
+<g-shell id="page-shell" title="我的与设置" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-settings">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
@@ -25,18 +25,8 @@
           <text>绑定微信身份</text>
           <text>›</text>
         </button>
-        <button hover-class="none"
-          wx:if="{{capabilities.subscriptionTemplateId}}"
-          class="list-row"
-          bindtap="subscribe"
-        >
-          <text>开饭订阅提醒</text>
-          <text>按需订阅 ›</text>
-        </button>
-        <view wx:else class="list-row">
-          <text>开饭通知</text>
-          <text class="caption copy small-text">站内回音已开启</text>
-        </view>
+        <view class="notification-setting"><view><text class="setting-name">开饭通知</text><text class="setting-help">{{notificationsEnabled?'开启提醒，不错过小家的回音':'提醒已关闭，消息记录仍可查看'}}</text></view><switch checked="{{notificationsEnabled}}" color="#a8ae82" bindchange="toggleNotifications" disabled="{{actionBusy}}"/></view>
+        <button hover-class="none" wx:if="{{capabilities.subscriptionTemplateId && notificationsEnabled}}" class="list-row subscribe-link" bindtap="subscribe"><text>接收一次微信提醒</text><text>去授权 ›</text></button>
       </view>
 <view class="settings-tools"><button hover-class="none" class="list-row" bindtap="go" data-page="personal"><view class="link-label"><g-icon name="basket"/><text>个人现有食材</text></view><text>›</text></button><button hover-class="none" class="list-row" bindtap="go" data-page="history"><view class="link-label"><g-icon name="calendar"/><text>最近三个月的吃饭记录</text></view><text>›</text></button></view>      <button hover-class="none" wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="bindPhone">
         绑定／修改手机号

@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="创建我的小家" back="{{true}}">
+<g-shell id="page-shell" title="创建我的小家" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-create">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>

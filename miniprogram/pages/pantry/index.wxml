@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="小家的食材库" back="{{false}}">
+<g-shell id="page-shell" title="小家的食材库" back="{{false}}">
   <scroll-view scroll-y class="scroll">
     <view class="page-content page-pantry">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
@@ -38,4 +38,12 @@
   </view>
   <g-tabbar slot="tabs" active="pantry" />
 </g-shell>
-<view wx:if="{{showImport}}" class="modal-mask sheet-mask" bindtap="closeImport"><view class="sheet pantry-import" catchtap="noop"><view class="sheet-title"><view><text class="import-eyebrow">从我的冰箱，带到小家</text><view class="h3">带上现有食材</view></view><button hover-class="none" class="close" bindtap="closeImport">×</button></view><text class="caption">勾选想带来的食材，小家已有数量会保留</text><scroll-view scroll-y class="import-scroll" style="height:{{personalItems.length > 4 ? 320 : personalItems.length * 66}}px"><checkbox-group bindchange="selectImport"><label wx:for="{{personalItems}}" wx:key="id" class="import-row"><checkbox value="{{item.id}}" color="#b74f37"/><view class="grow"><view class="h4">{{item.name}}</view><text class="caption">{{item.category}}</text></view><text class="import-amount">{{item.quantity}} {{item.unit}}</text></label></checkbox-group><view wx:if="{{!personalItems.length}}" class="empty">个人冰箱还是空的，先添加几样食材吧。</view></scroll-view><button hover-class="none" class="btn" bindtap="importItems" disabled="{{!importIds.length}}">带入小家 · 已选{{importIds.length}}种</button></view></view>
+<view wx:if="{{showImport}}" class="modal-mask import-mask" bindtap="closeImport"><view class="import-dialog" catchtap="noop">
+<view class="import-letter-head"><view class="fridge-stamp"><g-icon name="basket" size="30"/></view><view class="grow"><text class="import-eyebrow">MY LITTLE FRIDGE</text><view class="h3">带几样食材回家</view></view><button hover-class="none" class="import-close" bindtap="closeImport">×</button></view>
+<text class="import-help">从个人冰箱挑选，小家已有的数量会保留</text>
+<view class="search row import-search"><g-icon name="search" size="18"/><input placeholder="找一种食材" value="{{importQuery}}" bindinput="importSearch"/></view>
+<scroll-view scroll-x class="import-tabs"><view><button hover-class="none" wx:for="{{importTabs}}" wx:key="id" class="{{importCategory===item.id?'active':''}}" bindtap="importCategory" data-id="{{item.id}}">{{item.name}} {{item.count}}</button></view></scroll-view>
+<view class="import-selection-bar"><text>个人冰箱 · {{personalItems.length}} 种</text><button hover-class="none" bindtap="allImport">{{importAll?'取消本栏':'全选本栏'}}</button></view>
+<scroll-view scroll-y class="import-grid-scroll" style="height:{{importHeight}}px"><checkbox-group bindchange="selectImport"><view wx:for="{{importGroups}}" wx:for-item="group" wx:key="name" class="import-section"><view class="import-group-name">{{group.name}}</view><view class="import-grid"><label wx:for="{{group.items}}" wx:key="id" class="import-tile {{util.contains(importIds,item.id)?'selected':''}}"><checkbox value="{{item.id}}" checked="{{util.contains(importIds,item.id)}}" color="#a66d48"/><view><text class="import-name">{{item.name}}</text><text class="import-unit">{{item.quantity}} {{item.unit}}</text></view></label></view></view></checkbox-group><view wx:if="{{!importVisible.length}}" class="empty">{{personalItems.length?'没有找到，换个名字试试':'个人冰箱还是空的'}}</view></scroll-view>
+<view class="import-footer"><view><text class="strong">已挑选 {{importIds.length}} 种</text><text>跨分类选择会一起保留</text></view><button hover-class="none" class="btn" bindtap="importItems" disabled="{{!importIds.length}}">放进小家冰箱</button></view>
+</view></view>

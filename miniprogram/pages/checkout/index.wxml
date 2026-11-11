@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="确认点菜" back="{{true}}">
+<g-shell id="page-shell" title="确认点菜" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-checkout">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
@@ -14,10 +14,7 @@
       </button>
       <view class="order-paper">
         <view class="row section-head">
-          <text>
-            <g-icon name="utensils" size="20" />
-            已选菜品
-          </text>
+          <view class="inline-icon-label"><g-icon name="utensils" size="20" /><text>已选菜品</text></view>
           <text class="caption copy small-text">{{count}}份</text>
         </view>
         <view wx:for="{{items}}" wx:key="id" class="order-dish row">
@@ -26,9 +23,9 @@
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>
             <view class="order-qty">
-              <button hover-class="none" data-id="{{item.id}}" data-dir="-1" bindtap="quantity">−</button>
+              <button hover-class="none" data-id="{{item.id}}" data-dir="-1" bindtap="quantity"><view class="qty-symbol"/></button>
               <text class="strong">{{item.quantity}}</text>
-              <button hover-class="none" data-id="{{item.id}}" data-dir="1" bindtap="quantity">＋</button>
+              <button hover-class="none" data-id="{{item.id}}" data-dir="1" bindtap="quantity"><view class="qty-symbol plus"/></button>
             </view>
           </view>
         </view>

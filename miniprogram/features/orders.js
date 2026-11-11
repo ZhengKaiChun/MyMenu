@@ -58,7 +58,7 @@ exports.checkout = createPage({
       session.cart = {};
       session.lastOrder = out;
       session.mealDate = this.data.date;
-      wx.redirectTo({ url: '/pages/sent/index' });
+      go('sent', {}, { replace: true });
     },
   },
 });
@@ -72,75 +72,121 @@ exports.sent = createPage({
     });
   },
 });
+const inbox = require('../lib/inbox');
+function filterInbox(page) {
+  const visible = page.data.notifications
+    .filter((n) => inbox.category(n) === page.data.noteTab)
+    .sort(
+      (a, b) =>
+        Number(Boolean(a.read_at)) - Number(Boolean(b.read_at)) ||
+        String(b.created_at).localeCompare(String(a.created_at)),
+    );
+  page.setData({
+    visibleNotes: visible,
+    noteTabs: inbox.summarize(page.data.notifications),
+    selectedNotes: [],
+    allNotes: false,
+  });
+}
 async function loadRequests() {
   const [orders, changes, notifications] = await Promise.all([
     api.request(familyPath('/orders')),
     api.request(familyPath('/changes')),
     api.request('/notifications'),
   ]);
-  const mapped = await Promise.all(
-    orders.map(async (o) => ({
-      ...o,
-      label: labels[o.status],
-      items: await Promise.all(
-        o.items.map(async (l) => ({
-          ...l,
-          name: l.snapshot.name,
-          cover: await api.image(l.snapshot.coverId),
-          quantity: l.quantity,
-        })),
-      ),
-    })),
+  const notes = await Promise.all(
+    notifications
+      .filter((n) => n.family_id === session.family.id || n.type === 'dissolution.complete')
+      .map(async (n) => {
+        const order = n.type.startsWith('order.') ? orders.find((o) => o.id === n.entity_id) : null;
+        const change = n.type.startsWith('change.')
+          ? changes.find((c) => c.id === n.entity_id)
+          : null;
+        const lines = order?.items || [];
+        const snapshots = change
+          ? [change.old_snapshot, change.new_snapshot]
+          : lines.slice(0, 3).map((l) => l.snapshot);
+        return {
+          ...n,
+          category: inbox.category(n),
+          date: n.created_at
+            ? new Date(new Date(n.created_at).getTime() + 8 * 3600000)
+                .toISOString()
+                .slice(0, 16)
+                .replace('T', ' ')
+            : '',
+          status: labels[order?.status || change?.status] || '',
+          meal: order
+            ? order.meal_date + ' · ' + order.slot
+            : change
+              ? change.meal_date + ' · ' + change.slot
+              : '小家的重要消息',
+          pictures: await Promise.all(
+            snapshots.map(async (d) => ({ name: d.name, cover: await api.image(d.coverId) })),
+          ),
+        };
+      }),
   );
   this.setData({
-    notifications: notifications.filter(
-      (n) => n.family_id === session.family.id || n.type === 'dissolution.complete',
-    ),
-    orders: mapped,
-    changes: await decorateChanges(changes),
-    isCook: session.family.role === 'cook',
+    notifications: notes,
+    noteTab: this.inboxInitialized ? this.data.noteTab : inbox.initial(notes),
   });
+  this.inboxInitialized = true;
+  filterInbox(this);
 }
 exports.requests = createPage({
-  data: { orders: [], changes: [], notifications: [], selectedNotes: [], allNotes: false },
+  data: {
+    notifications: [],
+    visibleNotes: [],
+    noteTab: 'order',
+    noteTabs: [],
+    selectedNotes: [],
+    allNotes: false,
+  },
   reload: loadRequests,
   methods: {
+    tab(e) {
+      this.setData({ noteTab: e.currentTarget.dataset.id });
+      filterInbox(this);
+    },
     selectNotes(e) {
       this.setData({
         selectedNotes: e.detail.value,
-        allNotes: e.detail.value.length === this.data.notifications.length,
+        allNotes:
+          this.data.visibleNotes.length > 0 &&
+          e.detail.value.length === this.data.visibleNotes.length,
       });
     },
     allNotes() {
       const all = !this.data.allNotes;
       this.setData({
         allNotes: all,
-        selectedNotes: all ? this.data.notifications.map((n) => n.id) : [],
+        selectedNotes: all ? this.data.visibleNotes.map((n) => n.id) : [],
       });
     },
-    async deleteNotes() {
-      if (!this.data.selectedNotes.length) return;
+    async deleteNotes(e) {
+      const id = e?.currentTarget?.dataset?.id;
+      const ids = id ? [id] : this.data.selectedNotes;
+      if (!ids.length) return;
       const x = await new Promise((resolve) =>
         require('../lib/dialog').show({
-          title: '删除这些通知？',
-          content: '只删除通知，点菜和回音记录仍保留。',
+          title: ids.length === 1 ? '删除这条通知？' : '删除选中的' + ids.length + '条通知？',
+          content: '只移除消息，点菜、换菜和小家记录仍会保留。',
+          confirmText: '删除',
           success: resolve,
         }),
       );
       if (!x.confirm) return;
-      await api.request('/notifications/delete', {
-        method: 'POST',
-        body: { ids: this.data.selectedNotes },
-      });
-      this.setData({ selectedNotes: [], allNotes: false });
+      await api.request('/notifications/delete', { method: 'POST', body: { ids } });
       await loadRequests.call(this);
     },
-
     async notification(e) {
       const item = this.data.notifications.find((n) => n.id === e.currentTarget.dataset.id);
+      if (!item) return;
       await api.request('/notifications/' + item.id + '/read', { method: 'POST', body: {} });
       if (item.type === 'dissolution.complete') {
         require('../lib/dialog').show({ title: '小家消息', content: item.body, showCancel: false });
+        await loadRequests.call(this);
         return;
       }
       if (item.type.startsWith('order.')) go('requestDetail', { id: item.entity_id });
@@ -405,7 +451,7 @@ exports.swap = createPage({
           reason: this.data.reason,
         },
       });
-      wx.redirectTo({ url: '/pages/changeDetail/index?id=' + out.id });
+      go('changeDetail', { id: out.id }, { replace: true });
     },
   },
 });

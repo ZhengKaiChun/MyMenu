@@ -422,7 +422,7 @@ exports.editDish = createPage({
         else session.menuDraft.dishes[index] = row;
         session.menuDraft.dirty = true;
         if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
-        wx.redirectTo({ url: '/pages/manage/index' });
+        go('manage', {}, { replace: true });
         return;
       }
       await api.request(familyPath('/dishes' + (this.query.id ? '/' + this.query.id : '')), {
@@ -430,7 +430,7 @@ exports.editDish = createPage({
         body,
       });
       if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
-      wx.redirectTo({ url: '/pages/manage/index' });
+      go('manage', {}, { replace: true });
     },
   },
 });

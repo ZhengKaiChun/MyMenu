@@ -3,7 +3,19 @@ const key = 'geiwofan.preview.database.v1';
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function read() {
   const value = wx.getStorageSync(key);
-  return value && value.schema === 1 ? clone(value) : seed();
+  const db = value && value.schema === 1 ? clone(value) : seed();
+  if (!db.inboxVersion) {
+    for (const o of db.orders) {
+      if (
+        !db.notifications.some(
+          (n) => n.user_id === o.user_id && n.entity_id === o.id && n.type === 'order.sent',
+        )
+      )
+        notify(db, o.family_id, 'order.sent', o.id, '你点的菜已收到，点击查看回音', [o.user_id]);
+    }
+    db.inboxVersion = 1;
+  }
+  return db;
 }
 function save(db) {
   wx.setStorageSync(key, db);

@@ -62,4 +62,52 @@ test('subscription delivery consumes one-time grant, never forges permission and
     throw Error('must not redeliver');
   });
   assert.equal(calls.length, 1);
+  const defaultPreferences = await app.inject({ url: '/notifications/preferences', headers });
+  assert.equal(defaultPreferences.json().enabled, true);
+  const disabled = await app.inject({
+    method: 'PATCH',
+    url: '/notifications/preferences',
+    headers,
+    payload: { enabled: false },
+  });
+  assert.equal(disabled.json().enabled, false);
+  assert.equal(
+    (await app.inject({ url: '/notifications/preferences', headers })).json().enabled,
+    false,
+  );
+  await app.inject({
+    method: 'POST',
+    url: '/notifications/subscribe',
+    headers,
+    payload: { templateId: config.subscription.templateId, accepted: true },
+  });
+  await db.query(
+    "INSERT INTO notifications(id,user_id,type,body) VALUES($1,$2,'order.pending','关闭时收到的新点菜')",
+    [randomUUID(), auth.user.id],
+  );
+  await deliverNotifications(db, config, async () => {
+    throw Error('disabled notifications must not be delivered');
+  });
+  assert.equal((await db.query('SELECT remaining FROM subscription_grants')).rows[0].remaining, 1);
+  assert.equal(
+    (await app.inject({ url: '/notifications', headers })).json().length,
+    3,
+    'turning reminders off keeps inbox records',
+  );
+  await app.inject({
+    method: 'PATCH',
+    url: '/notifications/preferences',
+    headers,
+    payload: { enabled: true },
+  });
+  await db.query(
+    "INSERT INTO notifications(id,user_id,type,body) VALUES($1,$2,'order.pending','重新开启后的点菜')",
+    [randomUUID(), auth.user.id],
+  );
+  await deliverNotifications(db, config, async (n) => {
+    calls.push(n);
+    return 0;
+  });
+  assert.equal(calls.length, 2);
+  assert.equal((await db.query('SELECT remaining FROM subscription_grants')).rows[0].remaining, 0);
 });

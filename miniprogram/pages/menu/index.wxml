@@ -1,7 +1,14 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="给我饭" back="{{true}}">
+<g-shell id="page-shell" title="给我饭" back="{{true}}">
   <view class="page-content flush page-menu">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+    <view class="menu-heading"><text class="h3 grow strong">小家菜单</text><text class="menu-family-label">{{family.name}}</text></view>
+    <view class="menu-search">
+      <view class="search row">
+        <g-icon name="search" size="20" />
+        <input placeholder="搜索菜名" bindinput="search" value="{{search}}" />
+      </view>
+    </view>
     <view class="menu-schedule">
       <picker mode="date" value="{{date}}" bindchange="date">
         <view class="date-trigger native-date">
@@ -22,13 +29,6 @@
       </view>
       <button hover-class="none" class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
     </view>
-    <view class="menu-search">
-      <view class="search row">
-        <g-icon name="search" size="20" />
-        <input placeholder="搜索菜名" bindinput="search" value="{{search}}" />
-      </view>
-    </view>
-    <view class="menu-heading"><text class="h3 grow strong">小家菜单</text><text class="menu-family-label">{{family.name}}</text></view>
     <view class="menu-catalog">
       <scroll-view class="menu-rail" scroll-y>
         <button hover-class="none" class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
@@ -108,14 +108,14 @@
       <view class="h3 strong">小猪的菜篮</view>
       <button hover-class="none" class="close" bindtap="cart">×</button>
     </view>
-    <scroll-view scroll-y style="max-height: 52vh">
+    <scroll-view scroll-y style="height:{{cart.length > 4 ? 340 : cart.length * 76}}px;max-height:45vh">
       <view wx:for="{{cart}}" wx:key="id" class="row list-row cart-dish">
         <image class="food" src="{{item.cover}}" mode="aspectFill" />
         <text class="grow">{{item.name}}</text>
         <view class="row">
-          <button hover-class="none" class="pill" bindtap="minus" data-id="{{item.id}}">−</button>
+          <button hover-class="none" class="pill" bindtap="minus" data-id="{{item.id}}"><view class="qty-symbol"/></button>
           <text>{{item.quantity}}</text>
-          <button hover-class="none" class="pill" bindtap="add" data-id="{{item.id}}">＋</button>
+          <button hover-class="none" class="pill" bindtap="add" data-id="{{item.id}}"><view class="qty-symbol plus"/></button>
         </view>
       </view>
     </scroll-view>

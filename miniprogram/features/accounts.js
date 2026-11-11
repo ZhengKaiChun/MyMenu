@@ -130,7 +130,7 @@ exports.sms = createPage({
       const body = { phone: this.data.phone, code: this.data.code };
       if (this.binding) {
         await api.request('/me/phone', { method: 'POST', body });
-        wx.redirectTo({ url: '/pages/settings/index' });
+        go('settings', {}, { replace: true });
       } else await afterLogin(await api.request('/auth/sms', { method: 'POST', body }));
     },
   },
@@ -152,7 +152,7 @@ exports.recover = createPage({
         body: { phone: this.data.phone, code: this.data.code, password: this.data.password },
       });
       wx.showToast({ title: '已重设，请重新登录', icon: 'none' });
-      wx.redirectTo({ url: '/pages/password/index' });
+      go('password', {}, { replace: true });
     },
   },
 });
@@ -177,17 +177,36 @@ exports.profile = createPage({
         body: { nickname: this.data.nickname, avatarId: this.data.avatarId },
       });
       session.user = await api.request('/me');
-      wx.redirectTo({ url: '/pages/settings/index' });
+      go('settings', {}, { replace: true });
     },
   },
 });
 exports.settings = createPage({
+  data: { notificationsEnabled: true },
   async reload() {
     const user = await api.request('/me');
     user.avatar = user.avatarId ? await api.image(user.avatarId, '') : '';
-    this.setData({ user, capabilities: await api.request('/capabilities') });
+    const preferences = await api.request('/notifications/preferences');
+    this.setData({
+      user,
+      notificationsEnabled: preferences.enabled,
+      capabilities: await api.request('/capabilities'),
+    });
   },
   methods: {
+    async toggleNotifications(e) {
+      const before = this.data.notificationsEnabled;
+      this.setData({ notificationsEnabled: e.detail.value });
+      try {
+        await api.request('/notifications/preferences', {
+          method: 'PATCH',
+          body: { enabled: e.detail.value },
+        });
+      } catch (error) {
+        this.setData({ notificationsEnabled: before });
+        throw error;
+      }
+    },
     async previewRole(e) {
       const role = e.currentTarget.dataset.role;
       const result = await api.request('/auth/preview', { method: 'POST', body: { role } });

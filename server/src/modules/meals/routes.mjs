@@ -58,6 +58,14 @@ export function mealRoutes(app, { db, route }) {
           }
           if (status === 'pending')
             await notify(tx, m.family_id, 'order.pending', oid, '您小猪发来了一条吃饭申请');
+          await notify(
+            tx,
+            m.family_id,
+            'order.sent',
+            oid,
+            status === 'pending' ? '心愿已寄出，等饲养员回音' : '这顿安排啦，已加入全家菜单',
+            [r.user.id],
+          );
           await audit(tx, r.user.id, m.family_id, 'order.create', oid);
           return { id: oid, status };
         },

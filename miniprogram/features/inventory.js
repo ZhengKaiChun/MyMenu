@@ -12,6 +12,35 @@ function inventoryGroups(page) {
       .filter((g) => g.items.length),
   });
 }
+function importGroups(page) {
+  const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
+  const all = page.data.personalItems;
+  const filtered = all.filter(
+    (i) =>
+      (page.data.importCategory === 'all' || i.category === page.data.importCategory) &&
+      i.name.includes(page.data.importQuery),
+  );
+  const sections = names
+    .map((name) => ({ name, items: filtered.filter((i) => i.category === name) }))
+    .filter((g) => g.items.length);
+  page.setData({
+    importHeight: Math.max(
+      90,
+      sections.reduce((sum, g) => sum + 32 + Math.ceil(g.items.length / 2) * 69, 0),
+    ),
+    importGroups: names
+      .map((name) => ({ name, items: filtered.filter((i) => i.category === name) }))
+      .filter((g) => g.items.length),
+    importTabs: [
+      { id: 'all', name: '全部', count: all.length },
+      ...names
+        .map((name) => ({ id: name, name, count: all.filter((i) => i.category === name).length }))
+        .filter((t) => t.count),
+    ],
+    importVisible: filtered.map((i) => i.id),
+    importAll: filtered.length > 0 && filtered.every((i) => page.data.importIds.includes(i.id)),
+  });
+}
 function inventoryPage(personal) {
   return createPage({
     data: {
@@ -62,17 +91,46 @@ function inventoryPage(personal) {
         await this.onShow();
       },
       async showImport() {
+        const items = await api.request('/inventory');
+        const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
         this.setData({
-          personalItems: await api.request('/inventory'),
+          personalItems: items.map((i) => ({
+            ...i,
+            category: names.includes(i.category) ? i.category : '其他',
+          })),
           showImport: true,
           importIds: [],
+          importQuery: '',
+          importCategory: 'all',
         });
+        importGroups(this);
       },
       closeImport() {
         this.setData({ showImport: false });
       },
+      importSearch(e) {
+        this.setData({ importQuery: e.detail.value });
+        importGroups(this);
+      },
+      importCategory(e) {
+        this.setData({ importCategory: e.currentTarget.dataset.id });
+        importGroups(this);
+      },
       selectImport(e) {
-        this.setData({ importIds: e.detail.value });
+        this.setData({
+          importIds: [
+            ...this.data.importIds.filter((id) => !this.data.importVisible.includes(id)),
+            ...e.detail.value,
+          ],
+        });
+        importGroups(this);
+      },
+      allImport() {
+        const keep = this.data.importIds.filter((id) => !this.data.importVisible.includes(id));
+        this.setData({
+          importIds: this.data.importAll ? keep : [...keep, ...this.data.importVisible],
+        });
+        importGroups(this);
       },
       async importItems() {
         await api.request(familyPath('/inventory/import'), {
@@ -121,9 +179,7 @@ exports.ingredientEdit = createPage({
           },
         },
       );
-      wx.redirectTo({
-        url: this.data.scope === 'personal' ? '/pages/personal/index' : '/pages/pantry/index',
-      });
+      go(this.data.scope === 'personal' ? 'personal' : 'pantry', {}, { replace: true });
     },
   },
 });

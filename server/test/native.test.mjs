@@ -168,4 +168,43 @@ test('native controllers register, create household, save a real recipe and subm
   await today.onShow();
   assert.equal(today.data.total, 1);
   assert.equal(today.data.sections[2].dishes[0].snapshot.name, '原生番茄炒蛋');
+  const api = runtime.load(resolve(runtime.root, 'lib/api.js'));
+  const a = await api.request('/inventory', {
+    method: 'POST',
+    body: { name: '青椒', category: '蔬菜', quantity: 3, unit: '个' },
+  });
+  const b = await api.request('/inventory', {
+    method: 'POST',
+    body: { name: '鸡肉', category: '肉禽', quantity: 1, unit: '斤' },
+  });
+  const pantry = runtime.instance('pantry');
+  pantry.onLoad({});
+  await pantry.onShow();
+  await pantry.showImport();
+  await pantry.importCategory({ currentTarget: { dataset: { id: '蔬菜' } } });
+  await pantry.selectImport({ detail: { value: [a.id] } });
+  await pantry.importCategory({ currentTarget: { dataset: { id: '肉禽' } } });
+  await pantry.selectImport({ detail: { value: [b.id] } });
+  assert.equal(pantry.data.importIds.length, 2, 'selection must survive category changes');
+  await pantry.allImport();
+  assert.equal(
+    pantry.data.importIds.length,
+    1,
+    'unselecting a category preserves other selections',
+  );
+  assert.equal(pantry.data.importIds[0], a.id);
+  const messages = runtime.instance('requests');
+  messages.onLoad({});
+  await messages.onShow();
+  assert.equal(messages.data.noteTab, 'order');
+  assert.equal(messages.data.visibleNotes.length, 1);
+  await messages.allNotes();
+  assert.equal(messages.data.selectedNotes.length, 1);
+  await messages.deleteNotes();
+  assert.equal(messages.data.notifications.length, 0);
+  assert.equal(
+    (await api.request('/families/' + session.family.id + '/orders')).length,
+    1,
+    'inbox deletion must retain orders',
+  );
 });

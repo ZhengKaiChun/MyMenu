@@ -190,6 +190,15 @@ test('standalone import preview runs without HTTP and preserves separate device-
       true,
     );
   });
+  await t.test('notification preference persists per account without erasing notices', async () => {
+    const before = (await call('GET', '/notifications', cook)).length;
+    assert.equal((await call('GET', '/notifications/preferences', cook)).enabled, true);
+    await call('PATCH', '/notifications/preferences', cook, { enabled: false });
+    assert.equal((await call('GET', '/notifications/preferences', cook)).enabled, false);
+    assert.equal((await call('GET', '/notifications/preferences', eater)).enabled, true);
+    assert.equal((await call('GET', '/notifications', cook)).length, before);
+    await call('PATCH', '/notifications/preferences', cook, { enabled: true });
+  });
   await t.test('formal releases reject the device-local transport', async () => {
     env = 'release';
     await assert.rejects(call('GET', '/capabilities'), (e) => e.code === 'PREVIEW_NOT_PRODUCTION');

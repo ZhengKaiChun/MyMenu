@@ -11,7 +11,7 @@ Component({
   methods: {
     go(e) {
       const id = e.currentTarget.dataset.id;
-      if (id !== this.data.active) wx.redirectTo({ url: '/pages/' + id + '/index' });
+      if (id !== this.data.active) require('../../lib/navigation').go(id);
     },
   },
 });

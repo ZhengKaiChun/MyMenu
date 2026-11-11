@@ -130,7 +130,7 @@ exports.copyDone = createPage({
       const home = homes.find((h) => h.id === this.data.receipt.familyId);
       if (!home) throw Error('目标小家暂时不可用');
       session.setFamily(home);
-      wx.redirectTo({ url: '/pages/manage/index' });
+      go('manage', {}, { replace: true });
     },
   },
 });

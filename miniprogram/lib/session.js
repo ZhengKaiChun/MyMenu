@@ -20,6 +20,7 @@ module.exports = Object.assign(state, {
     wx.setStorageSync(prefix + '.family', family);
   },
   clear() {
+    require('./navigation').reset();
     state.token = '';
     state.user = null;
     state.family = null;

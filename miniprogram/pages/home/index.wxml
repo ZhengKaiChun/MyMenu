@@ -1,4 +1,4 @@
-<g-shell title="给我饭" back="{{false}}">
+<g-shell id="page-shell" title="给我饭" back="{{false}}">
   <view class="home-fixed">
     <view class="page-content page-home">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
@@ -27,10 +27,7 @@
         <swiper-item wx:for="{{families}}" wx:key="id">
           <view class="house-card">
             <view class="house-topline">
-              <text>
-                <g-icon name="home" size="18" />
-                我的小家
-              </text>
+              <view class="inline-icon-label"><g-icon name="home" size="18" /><text>我的小家</text></view>
               <text class="tag good">{{item.role==='cook'?'饲养员':'大懒猪'}}</text>
             </view>
             <view class="house-main">

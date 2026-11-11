@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="备菜清单" back="{{true}}">
+<g-shell id="page-shell" title="备菜清单" back="{{true}}">
   <scroll-view scroll-y class="scroll">
     <view class="page-content page-shopping">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>

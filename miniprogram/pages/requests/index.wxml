@@ -1,69 +1,11 @@
-<wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="开饭回音" back="{{true}}">
-  <scroll-view class="scroll" scroll-y>
-    <view class="page-content page-requests">
-      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="page-intro">
-        <view class="h2">{{isCook?'小猪想吃这些':'开饭有回音'}}</view>
-        <text class="muted">等你回音 → 这顿安排啦／这次先不做</text>
-      </view>
-<view wx:if="{{notifications.length}}" class="notification-box"><view class="section-title"><view class="h3">消息通知</view><button hover-class="none" class="text-btn" bindtap="allNotes">{{allNotes?'取消全选':'全选'}}</button></view><checkbox-group bindchange="selectNotes"><view wx:for="{{notifications}}" wx:key="id" class="notification-row"><checkbox value="{{item.id}}" checked="{{util.contains(selectedNotes,item.id)}}" color="#b74f37"/><button hover-class="none" class="grow" bindtap="notification" data-id="{{item.id}}"><g-icon name="envelope" size="23"/><text>{{item.body}}</text><text>›</text></button></view></checkbox-group><button hover-class="none" class="delete-notes" bindtap="deleteNotes" disabled="{{!selectedNotes.length}}">删除选中 · {{selectedNotes.length}}</button></view>      <view wx:if="{{changes.length}}">
-        <view class="section-title"><text class="h3 strong">换菜的回音</text></view>
-        <button hover-class="none"
-          wx:for="{{changes}}"
-          wx:key="id"
-          class="change-card"
-          bindtap="go"
-          data-page="changeDetail"
-          data-id="{{item.id}}"
-        >
-          <view class="row">
-            <text>{{util.date(item.meal_date)}} · {{item.slot}}</text>
-            <text class="tag wait">{{item.label}}</text>
-          </view>
-          <view class="change-pair">
-            <view>
-              <image class="food" src="{{item.oldCover}}" mode="aspectFill" />
-              <text>{{item.old_snapshot.name}}</text>
-            </view>
-            <text>→</text>
-            <view>
-              <image class="food" src="{{item.newCover}}" mode="aspectFill" />
-              <text>{{item.new_snapshot.name}}</text>
-            </view>
-          </view>
-          <text class="caption copy small-text">{{item.nickname}} · {{item.quantity}}份 · 查看回音 ›</text>
-        </button>
-      </view>
-      <view wx:for="{{orders}}" wx:key="id" class="wish-ticket">
-        <view class="row">
-          <view class="wish-date">
-            {{util.date(item.meal_date)}}
-            <text style="font-size: 12px">{{item.slot}}</text>
-          </view>
-          <text class="tag wait">{{item.label}}</text>
-        </view>
-        <view class="wish-sender row start" style="margin: 14px 0">
-          <g-pig index="{{util.pigIndex(item.identity)}}" size="33" />
-          <view>
-            <view class="h4 strong">{{item.nickname}}的小小心愿</view>
-            <text class="caption copy small-text">点了{{item.items.length}}道菜，想和你一起吃。</text>
-          </view>
-        </view>
-        <view class="wish-foods">
-          <view wx:for="{{item.items}}" wx:key="id" wx:for-item="dish">
-            <image class="food" src="{{dish.cover}}" mode="aspectFill" />
-            <text>{{dish.name}}</text>
-          </view>
-        </view>
-        <view class="wish-message"><text>{{item.note || '想和你一起好好吃饭。'}}</text></view>
-        <button hover-class="none" class="list-row" bindtap="go" data-page="requestDetail" data-id="{{item.id}}">
-          查看点菜与回音 ›
-        </button>
-      </view>
-      <view wx:if="{{!orders.length}}" class="empty">
-        <text class="muted">还没有点菜心愿，去菜单看看吧。</text>
-      </view>
-    </view>
-  </scroll-view>
-</g-shell>
+<wxs module="util" src="../../lib/format.wxs"/>
+<g-shell id="page-shell" title="小家的消息" back="{{true}}"><view class="inbox-page">
+<view class="inbox-heading"><view><view class="h2">开饭有回音</view><text>饭桌上的心愿，都有着落</text></view><g-icon name="envelope" size="38"/></view>
+<view class="inbox-tabs"><button hover-class="none" wx:for="{{noteTabs}}" wx:key="id" bindtap="tab" data-id="{{item.id}}" class="{{noteTab===item.id?'active':''}}"><text>{{item.name}}</text><text wx:if="{{item.unread}}" class="unread-badge">{{item.unread}}</text></button></view>
+<view class="inbox-batch"><button hover-class="none" bindtap="allNotes">{{allNotes?'取消全选':'全选本栏'}}</button><text>已选 {{selectedNotes.length}} 条</text><button hover-class="none" class="danger-copy" bindtap="deleteNotes" disabled="{{!selectedNotes.length}}">批量删除</button></view>
+<view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}}</view>
+<scroll-view scroll-y class="inbox-scroll"><checkbox-group bindchange="selectNotes">
+<view wx:for="{{visibleNotes}}" wx:key="id" class="inbox-note {{item.read_at?'is-read':''}}"><view class="inbox-note-top"><checkbox value="{{item.id}}" checked="{{util.contains(selectedNotes,item.id)}}" color="#a66d48"/><text class="grow">{{item.date}}</text><text wx:if="{{!item.read_at}}" class="unread-mark">未读</text><button hover-class="none" class="note-delete" data-id="{{item.id}}" bindtap="deleteNotes">删除</button></view>
+<button hover-class="none" class="note-open" data-id="{{item.id}}" bindtap="notification"><view class="note-body">{{item.body}}</view><view class="note-meal">{{item.meal}}</view><view wx:if="{{item.pictures.length}}" class="note-dishes"><view wx:for="{{item.pictures}}" wx:for-item="dish" wx:key="name"><image src="{{dish.cover}}" mode="aspectFill"/><text>{{dish.name}}</text></view></view><view class="note-bottom"><text>{{item.status || '小家来信'}}</text><text>查看详情 ›</text></view></button></view>
+</checkbox-group><view wx:if="{{!visibleNotes.length}}" class="inbox-empty"><g-icon name="envelope" size="52"/><view>这一栏还没有来信</view><text>新消息会安静地收在这里</text></view></scroll-view>
+</view></g-shell>

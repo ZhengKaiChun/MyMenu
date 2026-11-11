@@ -8,6 +8,22 @@ export function subscriptionEnabled(config) {
   );
 }
 export function notificationRoutes(app, { db, config, route }) {
+  route('GET', '/notifications/preferences', null, async (r) => ({
+    enabled: (await db.query('SELECT notifications_enabled FROM users WHERE id=$1', [r.user.id]))
+      .rows[0].notifications_enabled,
+  }));
+  route(
+    'PATCH',
+    '/notifications/preferences',
+    z.object({ enabled: z.boolean() }).strict(),
+    async (r) => {
+      await db.query('UPDATE users SET notifications_enabled=$2 WHERE id=$1', [
+        r.user.id,
+        r.body.enabled,
+      ]);
+      return { enabled: r.body.enabled };
+    },
+  );
   route(
     'POST',
     '/notifications/subscribe',
@@ -102,12 +118,17 @@ export async function deliverNotifications(db, config, sender) {
     const result = await db.transaction(async (tx) => {
       const note = (
         await tx.query(
-          "SELECT n.*,i.subject AS openid,g.remaining FROM notifications n LEFT JOIN identities i ON i.user_id=n.user_id AND i.provider='wechat' LEFT JOIN subscription_grants g ON g.user_id=n.user_id AND g.template_id=$1 WHERE n.delivery_status IN('pending','failed') AND n.delivery_attempts<3 AND n.created_at>now()-interval '1 day' ORDER BY n.created_at LIMIT 1 FOR UPDATE OF n SKIP LOCKED",
+          "SELECT n.*,u.notifications_enabled,i.subject AS openid,g.remaining FROM notifications n JOIN users u ON u.id=n.user_id LEFT JOIN identities i ON i.user_id=n.user_id AND i.provider='wechat' LEFT JOIN subscription_grants g ON g.user_id=n.user_id AND g.template_id=$1 WHERE n.delivery_status IN('pending','failed') AND n.delivery_attempts<3 AND n.created_at>now()-interval '1 day' ORDER BY n.created_at LIMIT 1 FOR UPDATE OF n SKIP LOCKED",
           [config.subscription.templateId],
         )
       ).rows[0];
       if (!note) return false;
-      if (!note.openid || !note.remaining) {
+      if (
+        !note.notifications_enabled ||
+        !note.openid ||
+        !note.remaining ||
+        note.type === 'order.sent'
+      ) {
         await tx.query("UPDATE notifications SET delivery_status='skipped' WHERE id=$1", [note.id]);
         return true;
       }
