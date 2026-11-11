@@ -1,5 +1,6 @@
 const { createPage, go, decorate, familyPath, session, api } = require('../lib/page');
 const groups = require('../lib/collections');
+const collectionPicker = require('../lib/collection-picker');
 function count() {
   return Object.values(session.cart).reduce((n, x) => n + x, 0);
 }
@@ -357,6 +358,11 @@ exports.editDish = createPage({
     servings: 2,
     collectionId: '',
     collectionIds: [],
+    collectionSummary: '',
+    showCollectionPicker: false,
+    draftCollectionIds: [],
+    collectionOptions: [],
+    collectionSearch: '',
     collections: [],
     coverId: null,
     cover: '',
@@ -410,6 +416,7 @@ exports.editDish = createPage({
       });
     }
     this.setData({ needsMeatType: groups.needsMeat(menu.collections, this.data.collectionIds) });
+    collectionPicker.summary(this);
     this.loaded = true;
   },
   methods: {
@@ -422,17 +429,7 @@ exports.editDish = createPage({
     spice(e) {
       this.setData({ spiceLevel: Number(e.currentTarget.dataset.level) });
     },
-    collection(e) {
-      const id = e.currentTarget.dataset.id;
-      const selected = this.data.collectionIds.includes(id)
-        ? this.data.collectionIds.filter((x) => x !== id)
-        : [...this.data.collectionIds, id];
-      this.setData({
-        collectionIds: selected,
-        collectionId: selected[0] || '',
-        needsMeatType: groups.needsMeat(this.data.collections, selected),
-      });
-    },
+    ...collectionPicker.methods,
     field(e) {
       if (e?.detail?.value === undefined) return;
       const { list, index, field } = e.currentTarget.dataset;

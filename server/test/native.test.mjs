@@ -314,7 +314,17 @@ test('native multi-select, return position, reversible meat filters and avatar d
   const editor = rt.instance('editDish');
   editor.onLoad({ id: chicken.id });
   await editor.onShow();
+  await editor.openCollections();
   await editor.collection({ currentTarget: { dataset: { id: a } } });
+  assert.equal(editor.data.collectionIds.length, 1, 'picker edits remain temporary');
+  editor.searchCollections({ type: 'input', detail: { value: '肉' } });
+  assert.equal(editor.data.collectionOptions.length, 1);
+  assert.equal(editor.data.draftCollectionIds.length, 2, 'search keeps hidden selections');
+  await editor.closeCollections();
+  assert.equal(editor.data.collectionIds.length, 1, 'cancel leaves original memberships');
+  await editor.openCollections();
+  await editor.collection({ currentTarget: { dataset: { id: a } } });
+  await editor.confirmCollections();
   assert.equal(editor.data.collectionIds.length, 2);
   await editor.save();
   assert.equal(editor.data.error, '');

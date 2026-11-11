@@ -1,6 +1,6 @@
 <wxs module="util" src="../../lib/format.wxs" />
 <g-shell id="page-shell" title="写下一道拿手菜" back="{{true}}">
-  <scroll-view scroll-y class="scroll">
+  <scroll-view scroll-y="{{!showCollectionPicker}}" class="scroll">
     <view class="page-content page-editDish">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="h2">写下小家的拿手菜</view>
@@ -23,8 +23,12 @@
         />
         <view wx:else class="upload-placeholder"><g-icon name="image" size="29"/><text>添加菜品图片</text></view>
       </button>
-      <view class="collection-select-heading"><label class="form-label">所属合集</label><text>可多选 · 已选 {{collectionIds.length}} 个</text></view>
-      <view class="collection-chip-grid"><button hover-class="none" wx:for="{{collections}}" wx:key="id" class="collection-chip {{util.contains(collectionIds,item.id)?'selected':''}}" data-id="{{item.id}}" bindtap="collection"><text class="chip-tick">{{util.contains(collectionIds,item.id)?'✓':'＋'}}</text><text>{{item.name}}</text></button></view>
+      <view class="collection-select-heading"><label class="form-label">所属合集</label><text>可多选</text></view>
+      <button hover-class="none" class="collection-entry" bindtap="openCollections">
+        <view class="collection-entry-icon"><g-icon name="book" size="24"/></view>
+        <view class="collection-entry-copy"><text>{{collectionSummary || '为这道菜选择合集'}}</text><text>{{collectionIds.length?'已选 '+collectionIds.length+' 个合集':'点击选择，至少一个'}}</text></view>
+        <text class="collection-entry-arrow">›</text>
+      </button>
       <view wx:if="{{needsMeatType}}" class="editor-meat"><label class="form-label">肉类小分类 *</label><view class="meat-fixed-tabs"><button hover-class="none" wx:for="{{meatTypes}}" wx:key="*this" bindtap="meat" data-type="{{item}}" class="{{meatType===item?'active':''}}">{{item}}</button></view></view>
       <view class="two">
         <view>
@@ -138,3 +142,22 @@
     </button>
   </view>
 </g-shell>
+
+<view wx:if="{{showCollectionPicker}}" class="modal-mask collection-mask" bindtap="closeCollections">
+  <view class="collection-sheet" catchtap="noop">
+    <view class="collection-sheet-head">
+      <view class="collection-folder-icon"><g-icon name="book" size="29"/></view>
+      <view class="grow"><view class="h3 strong">放进喜欢的合集</view><text>一道菜，也可以有几个位置</text></view>
+      <button hover-class="none" class="collection-close" bindtap="closeCollections">×</button>
+    </view>
+    <view class="collection-search"><g-icon name="search" size="19"/><input placeholder="搜索合集名称" value="{{collectionSearch}}" bindinput="searchCollections"/></view>
+    <view class="collection-list-caption"><text>{{collectionOptions.length}} 个合集</text><text>可多选</text></view>
+    <scroll-view scroll-y class="collection-options" style="height:{{collectionOptions.length>5?280:collectionOptions.length*53+12}}px">
+      <button hover-class="none" wx:for="{{collectionOptions}}" wx:key="id" class="collection-option {{util.contains(draftCollectionIds,item.id)?'selected':''}}" bindtap="collection" data-id="{{item.id}}">
+        <g-icon name="book" size="19"/><text class="collection-option-name">{{item.name}}</text><view class="collection-option-check">{{util.contains(draftCollectionIds,item.id)?'✓':''}}</view>
+      </button>
+      <view wx:if="{{!collectionOptions.length}}" class="collection-no-results">没有找到，换个名字试试</view>
+    </scroll-view>
+    <view class="collection-sheet-footer"><view><text>已选 {{draftCollectionIds.length}} 个</text><text>确认选择后，记得保存菜品</text></view><button hover-class="none" class="btn" disabled="{{!draftCollectionIds.length}}" bindtap="confirmCollections">确认选择</button></view>
+  </view>
+</view>

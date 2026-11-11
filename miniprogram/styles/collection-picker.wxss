@@ -1,0 +1,232 @@
+.collection-entry {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px !important;
+  border: 1px solid #dfccab;
+  border-radius: 14px;
+  background: #fffaf0;
+  text-align: left;
+  min-height: 69px;
+}
+.collection-entry-icon {
+  width: 39px;
+  height: 39px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #efe2c8;
+}
+.collection-entry-copy {
+  min-width: 0;
+  flex: 1;
+}
+.collection-entry-copy > text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 600;
+  color: #78573c;
+}
+.collection-entry-copy > text:last-child {
+  font-size: 10px;
+  font-weight: 400;
+  color: #ad9170;
+  margin-top: 3px;
+}
+.collection-entry-arrow {
+  font-size: 24px;
+  color: #a5845e;
+  line-height: 1;
+  flex: none;
+}
+.collection-mask {
+  align-items: center;
+  padding: 22px;
+}
+.collection-sheet {
+  width: 100%;
+  max-width: 430px;
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 19px 18px 16px;
+  border: 1px solid #d8bd94;
+  border-radius: 24px 24px 19px 19px;
+  background: #fffbf2;
+  box-shadow: 0 7px 0 #8b67472b;
+  overflow: hidden;
+}
+.collection-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: none;
+}
+.collection-folder-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 43px;
+  border-radius: 7px 12px 12px 12px;
+  background: #eedfbe;
+  border: 1px solid #c8aa7a;
+  flex: none;
+}
+.collection-folder-icon:before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 6px;
+  left: 0;
+  top: -5px;
+  background: #eedfbe;
+  border: 1px solid #c8aa7a;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+}
+.collection-sheet-head .h3 {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.collection-sheet-head .grow > text {
+  display: block;
+  font-size: 10px;
+  color: #ac8d68;
+  margin-top: 3px;
+}
+.collection-close {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  flex: none;
+  padding: 0 !important;
+  line-height: 30px;
+  border-radius: 50%;
+  background: #f0e5d1;
+  color: #9b7c57;
+  font-size: 22px;
+}
+.collection-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #f4ecdc;
+  border: 1px solid #e2d2b7;
+  border-radius: 12px;
+  padding: 0 12px;
+  margin: 20px 0 12px;
+  height: 42px;
+  flex: none;
+}
+.collection-search input {
+  min-width: 0;
+  flex: 1;
+  height: 40px;
+  line-height: 40px;
+  font-size: 12px;
+}
+.collection-list-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #ad9171;
+  margin: 0 3px 7px;
+  flex: none;
+}
+.collection-options {
+  min-height: 80px;
+  max-height: 40vh;
+  flex: 0 1 auto;
+}
+.collection-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px !important;
+  width: 100%;
+  height: 47px;
+  margin: 0 0 6px !important;
+  border: 1px solid #e9decb;
+  border-radius: 11px;
+  background: #fffdf8;
+  text-align: left;
+}
+.collection-option.selected {
+  border-color: #b5b78d;
+  background: #ededdc;
+}
+.collection-option-name {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: #806447;
+}
+.collection-option-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid #d5c4a9;
+  border-radius: 7px;
+  color: #fffdf4;
+  font-size: 14px;
+  line-height: 1;
+  flex: none;
+  background: #fffdf8;
+}
+.collection-option.selected .collection-option-check {
+  background: #939e71;
+  border-color: #939e71;
+}
+.collection-sheet-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-top: 10px;
+  border-top: 1px dashed #dbc7a6;
+  flex: none;
+}
+.collection-sheet-footer > view {
+  min-width: 0;
+  flex: 1;
+}
+.collection-sheet-footer > view > text {
+  display: block;
+  font-size: 12px;
+  color: #7b5b3e;
+}
+.collection-sheet-footer > view > text:last-child {
+  font-size: 9px;
+  color: #b09574;
+  margin-top: 4px;
+}
+.collection-sheet-footer .btn {
+  width: auto;
+  min-width: 98px;
+  min-height: 40px;
+  padding: 8px 14px !important;
+  font-size: 12px;
+  border-radius: 12px;
+  flex: none;
+}
+.collection-no-results {
+  text-align: center;
+  padding: 24px 8px;
+  color: #ac9170;
+  font-size: 12px;
+}
