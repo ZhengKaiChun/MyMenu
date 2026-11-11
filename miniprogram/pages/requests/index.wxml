@@ -7,20 +7,9 @@
         <view class="h2">{{isCook?'小猪想吃这些':'开饭有回音'}}</view>
         <text class="muted">等你回音 → 这顿安排啦／这次先不做</text>
       </view>
-      <button
-        wx:for="{{notifications}}"
-        wx:key="id"
-        class="change-entry"
-        bindtap="notification"
-        data-id="{{item.id}}"
-      >
-        <g-icon name="envelope" size="24" />
-        <text class="grow">{{item.body}}</text>
-        <text>查看 ›</text>
-      </button>
-      <view wx:if="{{changes.length}}">
+<view wx:if="{{notifications.length}}" class="notification-box"><view class="section-title"><view class="h3">消息通知</view><button hover-class="none" class="text-btn" bindtap="allNotes">{{allNotes?'取消全选':'全选'}}</button></view><checkbox-group bindchange="selectNotes"><view wx:for="{{notifications}}" wx:key="id" class="notification-row"><checkbox value="{{item.id}}" checked="{{util.contains(selectedNotes,item.id)}}" color="#b74f37"/><button hover-class="none" class="grow" bindtap="notification" data-id="{{item.id}}"><g-icon name="envelope" size="23"/><text>{{item.body}}</text><text>›</text></button></view></checkbox-group><button hover-class="none" class="delete-notes" bindtap="deleteNotes" disabled="{{!selectedNotes.length}}">删除选中 · {{selectedNotes.length}}</button></view>      <view wx:if="{{changes.length}}">
         <view class="section-title"><text class="h3 strong">换菜的回音</text></view>
-        <button
+        <button hover-class="none"
           wx:for="{{changes}}"
           wx:key="id"
           class="change-card"
@@ -68,7 +57,7 @@
           </view>
         </view>
         <view class="wish-message"><text>{{item.note || '想和你一起好好吃饭。'}}</text></view>
-        <button class="list-row" bindtap="go" data-page="requestDetail" data-id="{{item.id}}">
+        <button hover-class="none" class="list-row" bindtap="go" data-page="requestDetail" data-id="{{item.id}}">
           查看点菜与回音 ›
         </button>
       </view>

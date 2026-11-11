@@ -227,7 +227,7 @@ exports.identity = createPage({
       });
       session.family.identity = this.data.selected;
       session.setFamily(session.family);
-      wx.navigateBack();
+      wx.redirectTo({ url: '/pages/family/index' });
     },
   },
 });

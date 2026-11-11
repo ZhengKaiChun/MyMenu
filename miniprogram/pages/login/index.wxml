@@ -9,17 +9,17 @@
       </view>
       <view class="welcome-visual"><image src="/assets/pig-kitchen.png" mode="aspectFit" /></view>
       <view class="login-actions">
-        <button wx:if="{{capabilities.wechat}}" class="btn" bindtap="wechat">
+        <button hover-class="none" wx:if="{{capabilities.wechat}}" class="btn" bindtap="wechat">
           <g-icon tone="light" name="key" size="21" />
           {{capabilities.preview?'直接体验小厨房':'微信快捷登录'}}
         </button>
-        <button wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="go" data-page="sms">
+        <button hover-class="none" wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="go" data-page="sms">
           手机号登录 / 注册
         </button>
-        <button wx:else class="btn secondary" bindtap="go" data-page="register">
+        <button hover-class="none" wx:else class="btn secondary" bindtap="go" data-page="register">
           注册独立账号
         </button>
-        <button class="text-btn" bindtap="go" data-page="password">
+        <button hover-class="none" class="text-btn" bindtap="go" data-page="password">
           账号密码登录
           <text>›</text>
         </button>

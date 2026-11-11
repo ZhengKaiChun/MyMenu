@@ -1,5 +1,5 @@
 <g-shell title="给我饭" back="{{false}}">
-  <scroll-view class="scroll" scroll-y>
+  <view class="home-fixed">
     <view class="page-content page-home">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="home-top">
@@ -10,7 +10,7 @@
             <text class="title-dot">。</text>
           </view>
         </view>
-        <button bindtap="go" data-page="settings">
+        <button hover-class="none" bindtap="go" data-page="settings">
           <view class="avatar">
             <image wx:if="{{user.avatar}}" src="{{user.avatar}}" mode="aspectFill" />
             <g-pig wx:else index="7" size="45" />
@@ -40,7 +40,7 @@
               </view>
               <view class="house-chef"><g-pig index="0" size="95" /></view>
             </view>
-            <button class="house-enter" bindtap="enter" data-id="{{item.id}}">
+            <button hover-class="none" class="house-enter" bindtap="enter" data-id="{{item.id}}">
               <g-icon name="utensils" size="24" />
               <text class="grow">看看今天吃什么</text>
               <text class="strong">↗</text>
@@ -53,13 +53,13 @@
         <text class="caption small-text">创建或加入另一个小家</text>
       </view>
       <view class="two home-entry">
-        <button class="card quick" bindtap="go" data-page="create">
+        <button hover-class="none" class="card quick" bindtap="go" data-page="create">
           <g-icon name="pot" size="47" />
           <view class="strong">创建小家</view>
           <text class="small-text">从第一道拿手菜开始</text>
           <text class="entry-arrow">↗</text>
         </button>
-        <button class="card quick" bindtap="go" data-page="join">
+        <button hover-class="none" class="card quick" bindtap="go" data-page="join">
           <g-icon name="key" size="47" />
           <view class="strong">加入小家</view>
           <text class="small-text">拿好 TA 给你的邀请码</text>
@@ -68,14 +68,14 @@
       </view>
       <view class="section-title personal-title"><view class="h3 strong">我的日常</view></view>
       <view class="personal-panel home-tools">
-        <button class="list-row" bindtap="go" data-page="personal">
+        <button hover-class="none" class="list-row" bindtap="go" data-page="personal">
           <view class="link-label">
             <g-icon name="basket" size="25" />
             <text>个人食材库</text>
           </view>
           <text class="link-extra">{{personalCount}} 项 ›</text>
         </button>
-        <button class="list-row" bindtap="go" data-page="settings">
+        <button hover-class="none" class="list-row" bindtap="go" data-page="settings">
           <view class="link-label">
             <g-icon name="settings" size="25" />
             <text>账号与设置</text>
@@ -84,5 +84,5 @@
         </button>
       </view>
     </view>
-  </scroll-view>
+  </view>
 </g-shell>

@@ -539,7 +539,13 @@ function request(path, options = {}, token) {
       out = inventory(db, user, null, method, parts.slice(1), body, () => {});
     else if (parts[0] === 'notifications') {
       if (method === 'GET') out = db.notifications.filter((n) => n.user_id === user.id);
-      else if (parts[2] === 'read') {
+      else if (parts[1] === 'delete') {
+        const before = db.notifications.length;
+        db.notifications = db.notifications.filter(
+          (n) => n.user_id !== user.id || !body.ids.includes(n.id),
+        );
+        out = { deleted: before - db.notifications.length };
+      } else if (parts[2] === 'read') {
         const n = S.demand(
           db.notifications.find((n) => n.id === parts[1] && n.user_id === user.id),
           '消息不存在',
@@ -656,7 +662,20 @@ function changes(db, user, fid, m, method, rid, action, b) {
   const all = db.changes.filter(
     (c) => c.family_id === fid && (m.role === 'cook' || c.user_id === user.id),
   );
-  if (method === 'GET') return all;
+  if (method === 'GET')
+    return all.map((c) => {
+      const order = db.orders.find((o) => o.items.some((l) => l.id === c.line_id));
+      const line = order?.items.find((l) => l.id === c.line_id);
+      return {
+        ...c,
+        meal_date: order?.meal_date || '',
+        slot: order?.slot || '',
+        quantity: line?.quantity || 0,
+        nickname: db.users.find((u) => u.id === c.user_id)?.nickname || '野生小猪',
+        old_snapshot: S.publicDish(c.old_snapshot),
+        new_snapshot: S.publicDish(c.new_snapshot),
+      };
+    });
   if (!rid) {
     const line = S.demand(
       S.eligible(db, user, fid).find((l) => l.id === b.lineId),

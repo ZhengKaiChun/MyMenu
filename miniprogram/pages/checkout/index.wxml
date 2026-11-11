@@ -4,7 +4,7 @@
     <view class="page-content page-checkout">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="page-intro"><view class="h2">给这顿饭，寄个心愿</view></view>
-      <button class="meal-ticket row" bindtap="openDate">
+      <button hover-class="none" class="meal-ticket row" bindtap="openDate">
         <g-icon name="calendar" size="28" />
         <view class="grow">
           <view class="strong">{{util.shortDate(date)}} · {{slot}}</view>
@@ -26,9 +26,9 @@
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>
             <view class="order-qty">
-              <button data-id="{{item.id}}" data-dir="-1" bindtap="quantity">−</button>
+              <button hover-class="none" data-id="{{item.id}}" data-dir="-1" bindtap="quantity">−</button>
               <text class="strong">{{item.quantity}}</text>
-              <button data-id="{{item.id}}" data-dir="1" bindtap="quantity">＋</button>
+              <button hover-class="none" data-id="{{item.id}}" data-dir="1" bindtap="quantity">＋</button>
             </view>
           </view>
         </view>
@@ -54,7 +54,7 @@
         <text class="strong">已选 {{count}} 份</text>
         <text class="caption copy small-text">{{date}} · {{slot}}</text>
       </view>
-      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
         <g-icon tone="light" name="{{family.role==='cook'?'utensils':'envelope'}}" size="22" />
         {{family.role==='cook'?'加入做饭清单':'发送吃饭申请'}}
       </button>
@@ -66,13 +66,13 @@
   <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">想在哪天，好好吃饭</view>
-      <button class="close" bindtap="closeDate">×</button>
+      <button hover-class="none" class="close" bindtap="closeDate">×</button>
     </view>
     <picker mode="date" value="{{date}}" bindchange="date">
       <view class="select">{{date}} · 点这里换一天</view>
     </picker>
     <view class="meal-switch" style="margin: 16px 0">
-      <button
+      <button hover-class="none"
         wx:for="{{['早餐','午餐','晚餐']}}"
         wx:key="*this"
         class="{{slot===item?'active':''}}"
@@ -82,7 +82,7 @@
         {{item}}
       </button>
     </view>
-    <button class="btn" bindtap="closeDate">
+    <button hover-class="none" class="btn" bindtap="closeDate">
       <g-icon tone="light" name="check" size="22" />
       就这天，一起吃饭
     </button>

@@ -130,7 +130,7 @@ exports.sms = createPage({
       const body = { phone: this.data.phone, code: this.data.code };
       if (this.binding) {
         await api.request('/me/phone', { method: 'POST', body });
-        wx.navigateBack();
+        wx.redirectTo({ url: '/pages/settings/index' });
       } else await afterLogin(await api.request('/auth/sms', { method: 'POST', body }));
     },
   },
@@ -177,7 +177,7 @@ exports.profile = createPage({
         body: { nickname: this.data.nickname, avatarId: this.data.avatarId },
       });
       session.user = await api.request('/me');
-      wx.navigateBack();
+      wx.redirectTo({ url: '/pages/settings/index' });
     },
   },
 });

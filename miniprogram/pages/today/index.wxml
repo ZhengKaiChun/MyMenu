@@ -8,7 +8,7 @@
           <text class="caption copy small-text">OUR DAILY TABLE</text>
           <view class="h2">今天，全家吃什么</view>
         </view>
-        <button class="text-btn" bindtap="go" data-page="calendar">饭历 ›</button>
+        <button hover-class="none" class="text-btn" bindtap="go" data-page="calendar">饭历 ›</button>
       </view>
       <picker mode="date" value="{{date}}" bindchange="date">
         <view class="today-date">
@@ -48,7 +48,7 @@
             </view>
             <text class="caption copy small-text">合计{{item.quantity}}份</text>
           </view>
-          <button
+          <button hover-class="none"
             wx:if="{{item.ownLineId}}"
             class="text-btn swap-button"
             catchtap="swapDish"
@@ -62,11 +62,11 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock dock-with-tabs">
-    <button wx:if="{{isCook}}" class="btn" bindtap="prep">
+    <button hover-class="none" wx:if="{{isCook}}" class="btn" bindtap="prep">
       <g-icon tone="light" name="basket" size="22" />
       去备菜 · 汇总当天食材
     </button>
-    <button wx:else class="btn" bindtap="go" data-page="menu">
+    <button hover-class="none" wx:else class="btn" bindtap="go" data-page="menu">
       <g-icon name="utensils" size="21" tone="light" />
       我也来点菜
     </button>

@@ -93,4 +93,28 @@ test('menu draft saves atomically, supports minimal recipes and shared inventory
     409,
     'stale save must not overwrite another edit',
   );
+  const order = await call('POST', base + '/orders', eater, {
+    date: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
+    slot: '晚餐',
+    items: [{ dishId: dish.data.id, quantity: 1 }],
+    note: '',
+  });
+  assert.equal(order.status, 200);
+  const notes = (await call('GET', '/notifications', cook)).data;
+  assert.ok(notes.length);
+  assert.equal(
+    (await call('POST', '/notifications/delete', eater, { ids: notes.map((n) => n.id) })).data
+      .deleted,
+    0,
+  );
+  assert.equal(
+    (await call('POST', '/notifications/delete', cook, { ids: notes.map((n) => n.id) })).data
+      .deleted,
+    notes.length,
+  );
+  assert.equal(
+    (await call('GET', base + '/orders', cook)).data.length,
+    1,
+    'deleting notices must retain orders',
+  );
 });

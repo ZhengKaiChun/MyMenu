@@ -29,7 +29,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button
+    <button hover-class="none"
       wx:if="{{!proposal || proposal.status!=='pending'}}"
       class="btn ghost"
       bindtap="confirm"
@@ -37,10 +37,10 @@
       发起解散，全员确认
     </button>
     <view wx:elif="{{canVote}}" class="row">
-      <button class="btn secondary" bindtap="vote" data-decision="reject">不同意，保留小家</button>
-      <button class="btn ghost" bindtap="vote" data-decision="agree">同意解散</button>
+      <button hover-class="none" class="btn secondary" bindtap="vote" data-decision="reject">不同意，保留小家</button>
+      <button hover-class="none" class="btn ghost" bindtap="vote" data-decision="agree">同意解散</button>
     </view>
-    <button wx:elif="{{isInitiator}}" class="btn ghost" bindtap="cancel">撤回解散申请</button>
+    <button hover-class="none" wx:elif="{{isInitiator}}" class="btn ghost" bindtap="cancel">撤回解散申请</button>
   </view>
 </g-shell>
 <view wx:if="{{showConfirm}}" class="modal-mask" bindtap="dismissModal">
@@ -53,8 +53,8 @@
       <view>只有每个人都同意，小家才会解散。</view>
     </view>
     <view class="cry-actions">
-      <button class="btn" bindtap="close" loading="{{actionBusy}}">先不解散，再陪陪小猪</button>
-      <button class="btn ghost" bindtap="start" loading="{{actionBusy}}">确定发起，全员确认</button>
+      <button hover-class="none" class="btn" bindtap="close" loading="{{actionBusy}}">先不解散，再陪陪小猪</button>
+      <button hover-class="none" class="btn ghost" bindtap="start" loading="{{actionBusy}}">确定发起，全员确认</button>
     </view>
   </view>
 </view>

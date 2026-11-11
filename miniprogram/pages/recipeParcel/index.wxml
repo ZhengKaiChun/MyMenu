@@ -39,6 +39,8 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" open-type="share">分享给微信好友</button>
+    <button hover-class="none" class="btn" open-type="share" disabled="{{loading || !shareCover}}">分享给微信好友</button>
   </view>
 </g-shell>
+
+<canvas type="2d" id="shareCoverCanvas" style="position:fixed;left:-1000px;top:0;width:500px;height:400px;pointer-events:none"/>

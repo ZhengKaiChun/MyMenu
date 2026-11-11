@@ -14,7 +14,7 @@
         placeholder="例如：番茄炒蛋"
       />
       <label class="form-label">菜品封面</label>
-      <button class="upload" bindtap="picture" data-kind="cover" style="width: 100%">
+      <button hover-class="none" class="upload" bindtap="picture" data-kind="cover" style="width: 100%">
         <image
           wx:if="{{cover}}"
           src="{{cover}}"
@@ -25,7 +25,7 @@
       </button>
       <view class="row">
         <text class="caption copy small-text">相机或相册上传</text>
-        <button class="text-btn" bindtap="ai">✧ AI优化图片 · 预留</button>
+        <button hover-class="none" class="text-btn" bindtap="ai">✧ AI优化图片 · 预留</button>
       </view>
       <label class="form-label">所属合集</label>
       <picker range="{{collections}}" range-key="name" bindchange="collection">
@@ -66,7 +66,7 @@
       />
       <view class="section-title">
         <view class="h3 strong">用料</view>
-        <button class="text-btn" bindtap="addIngredient">＋ 一行</button>
+        <button hover-class="none" class="text-btn" bindtap="addIngredient">＋ 一行</button>
       </view>
       <view wx:for="{{ingredients}}" wx:key="index" class="row" style="margin: 8px 0; gap: 7px">
         <input
@@ -100,7 +100,7 @@
           bindinput="field"
           placeholder="单位"
         />
-        <button class="text-btn" data-index="{{index}}" bindtap="removeIngredient">×</button>
+        <button hover-class="none" class="text-btn" data-index="{{index}}" bindtap="removeIngredient">×</button>
       </view>
       <view class="section-title">
         <view class="h3 strong">制作步骤</view>
@@ -109,9 +109,9 @@
       <view wx:for="{{steps}}" wx:key="index" class="step">
         <view class="row">
           <text class="step-num">步骤 {{index+1}}</text>
-          <button class="text-btn" data-index="{{index}}" bindtap="removeStep">删除此步</button>
+          <button hover-class="none" class="text-btn" data-index="{{index}}" bindtap="removeStep">删除此步</button>
         </view>
-        <button
+        <button hover-class="none"
           class="upload"
           bindtap="picture"
           data-kind="step"
@@ -132,11 +132,11 @@
           style="margin-top: 10px"
         />
       </view>
-      <button class="list-row" bindtap="addStep">＋ 添加下一步</button>
+      <button hover-class="none" class="list-row" bindtap="addStep">＋ 添加下一步</button>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="save" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="save" loading="{{actionBusy}}">
       <g-icon name="book" size="21" tone="light" />
       保存到小家菜单
     </button>

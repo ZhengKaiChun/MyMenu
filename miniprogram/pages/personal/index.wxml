@@ -20,18 +20,18 @@
           <view class="h4 strong">{{item.name}}</view>
           <text class="caption copy small-text">{{item.quantity}} {{item.unit}} · {{item.category}}</text>
         </view>
-        <button wx:if="{{isCook}}" class="text-btn" data-id="{{item.id}}" bindtap="edit">
+        <button hover-class="none" wx:if="{{isCook}}" class="text-btn" data-id="{{item.id}}" bindtap="edit">
           编辑
         </button>
       </view>
-      <button wx:if="{{isCook}}" class="btn secondary" bindtap="go" data-page="match">
+      <button hover-class="none" wx:if="{{isCook}}" class="btn secondary" bindtap="go" data-page="match">
         <g-icon name="basket" size="21" tone="" />
         看看这些食材能做什么
       </button>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button wx:if="{{isCook}}" class="btn" bindtap="add">
+    <button hover-class="none" wx:if="{{isCook}}" class="btn" bindtap="add">
       <g-icon name="plus" size="21" tone="light" />
       添加食材
     </button>
@@ -41,7 +41,7 @@
   <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">带上我的现有食材</view>
-      <button bindtap="closeImport">×</button>
+      <button hover-class="none" bindtap="closeImport">×</button>
     </view>
     <text class="muted">复制后各自独立维护，同名食材保留小家已有数量。</text>
     <checkbox-group bindchange="selectImport">
@@ -51,7 +51,7 @@
         <text>{{item.quantity}} {{item.unit}}</text>
       </label>
     </checkbox-group>
-    <button class="btn" bindtap="importItems" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="importItems" loading="{{actionBusy}}">
       <g-icon name="basket" size="21" tone="light" />
       复制到当前小家
     </button>

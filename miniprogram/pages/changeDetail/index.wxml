@@ -47,12 +47,12 @@
   <view slot="dock" class="dock">
     <view wx:if="{{change.status==='pending'}}">
       <view wx:if="{{isCook}}" class="row">
-        <button class="btn secondary" data-decision="reject" bindtap="reply">这次不换</button>
-        <button class="btn" data-decision="accept" bindtap="reply">好呀，换这道</button>
+        <button hover-class="none" class="btn secondary" data-decision="reject" bindtap="reply">这次不换</button>
+        <button hover-class="none" class="btn" data-decision="accept" bindtap="reply">好呀，换这道</button>
       </view>
-      <button wx:else class="btn ghost" bindtap="withdraw">撤回换菜申请</button>
+      <button hover-class="none" wx:else class="btn ghost" bindtap="withdraw">撤回换菜申请</button>
     </view>
-    <button wx:else class="btn" bindtap="go" data-page="today">
+    <button hover-class="none" wx:else class="btn" bindtap="go" data-page="today">
       <g-icon name="utensils" size="21" tone="light" />
       查看全家今日菜单
     </button>

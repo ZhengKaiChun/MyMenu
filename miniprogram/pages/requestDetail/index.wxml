@@ -24,7 +24,7 @@
         </view>
         <view class="section-title"><view class="h3 strong">小猪的留言</view></view>
         <view class="quote">{{order.note || '没有留言，也想和你好好吃饭。'}}</view>
-        <button wx:if="{{isMine}}" class="change-entry" bindtap="go" data-page="changes">
+        <button hover-class="none" wx:if="{{isMine}}" class="change-entry" bindtap="go" data-page="changes">
           想换一道菜？申请更换 ›
         </button>
         <view wx:if="{{order.reply}}" class="card green">
@@ -37,12 +37,12 @@
   <view slot="dock" class="dock">
     <view wx:if="{{order.status==='pending'}}">
       <view wx:if="{{isCook}}" class="row">
-        <button class="btn secondary" bindtap="reply" data-decision="reject">这次先不做</button>
-        <button class="btn accent" bindtap="reply" data-decision="accept">好呀，安排上</button>
+        <button hover-class="none" class="btn secondary" bindtap="reply" data-decision="reject">这次先不做</button>
+        <button hover-class="none" class="btn accent" bindtap="reply" data-decision="accept">好呀，安排上</button>
       </view>
-      <button wx:else class="btn ghost" bindtap="cancel">撤回这次点菜</button>
+      <button hover-class="none" wx:else class="btn ghost" bindtap="cancel">撤回这次点菜</button>
     </view>
-    <button wx:else class="btn" bindtap="go" data-page="today">
+    <button hover-class="none" wx:else class="btn" bindtap="go" data-page="today">
       <g-icon name="utensils" size="21" tone="light" />
       去看当天菜单
     </button>
@@ -54,7 +54,7 @@
       <view class="h3 strong">
         {{decision==='accept'?'好呀，给你安排上':'这次先不做，也好好说'}}
       </view>
-      <button bindtap="closeReply">×</button>
+      <button hover-class="none" bindtap="closeReply">×</button>
     </view>
     <label class="form-label">
       回一句话
@@ -67,6 +67,6 @@
       maxlength="300"
       placeholder="比如：好呀，今晚早点回家吃饭"
     />
-    <button class="btn" bindtap="confirmReply" loading="{{actionBusy}}">发送这份回音</button>
+    <button hover-class="none" class="btn" bindtap="confirmReply" loading="{{actionBusy}}">发送这份回音</button>
   </view>
 </view>

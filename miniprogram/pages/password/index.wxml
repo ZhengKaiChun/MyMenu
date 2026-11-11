@@ -31,14 +31,14 @@
           <text>已阅读并同意服务协议与隐私说明</text>
         </label>
       </checkbox-group>
-      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
         <g-icon name="key" size="21" tone="light" />
         登录，回到小家
       </button>
-      <button class="btn secondary" bindtap="go" data-page="register" loading="{{actionBusy}}">
+      <button hover-class="none" class="btn secondary" bindtap="go" data-page="register" loading="{{actionBusy}}">
         还没有账号？去注册
       </button>
-      <button class="text-btn" bindtap="go" data-page="recover">找回密码 ›</button>
+      <button hover-class="none" class="text-btn" bindtap="go" data-page="recover">找回密码 ›</button>
     </view>
   </scroll-view>
 </g-shell>

@@ -138,6 +138,17 @@ test('native controllers register, create household, save a real recipe and subm
     ingredients: [{ name: '番茄', quantity: 2, unit: '个' }],
     steps: [{ text: '洗净番茄，切块炒熟。', imageId: null }],
   });
+  const fieldReturn = editor.field({
+    type: 'input',
+    currentTarget: { dataset: { list: 'ingredients', index: 0, field: 'name' } },
+    detail: { value: '中文番茄' },
+  });
+  assert.equal(
+    fieldReturn,
+    undefined,
+    'native input handlers must not return a Promise or replacement string',
+  );
+  assert.equal(editor.data.ingredients[0].name, '中文番茄');
   await editor.save();
   assert.equal(editor.data.error, '');
   const menu = runtime.instance('menu');

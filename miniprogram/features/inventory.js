@@ -1,4 +1,17 @@
 const { createPage, go, session, api, familyPath, decorate } = require('../lib/page');
+function inventoryGroups(page) {
+  const names = ['蔬菜', '肉禽', '蛋奶', '海鲜', '主食', '调味', '其他'];
+  page.setData({
+    groups: names
+      .map((name) => ({
+        name,
+        items: page.data.items.filter(
+          (i) => (names.includes(i.category) ? i.category : '其他') === name,
+        ),
+      }))
+      .filter((g) => g.items.length),
+  });
+}
 function inventoryPage(personal) {
   return createPage({
     data: {
@@ -23,6 +36,7 @@ function inventoryPage(personal) {
         canMatch: session.family?.role === 'cook',
       });
       this.setData({ items: this.data.allItems.filter((i) => i.name.includes(this.data.query)) });
+      inventoryGroups(this);
     },
     methods: {
       search(e) {
@@ -30,6 +44,7 @@ function inventoryPage(personal) {
           query: e.detail.value,
           items: this.data.allItems.filter((i) => i.name.includes(e.detail.value)),
         });
+        inventoryGroups(this);
       },
       add() {
         go('ingredientEdit', { scope: personal ? 'personal' : 'family' });
@@ -47,7 +62,11 @@ function inventoryPage(personal) {
         await this.onShow();
       },
       async showImport() {
-        this.setData({ personalItems: await api.request('/inventory'), showImport: true });
+        this.setData({
+          personalItems: await api.request('/inventory'),
+          showImport: true,
+          importIds: [],
+        });
       },
       closeImport() {
         this.setData({ showImport: false });
@@ -102,7 +121,9 @@ exports.ingredientEdit = createPage({
           },
         },
       );
-      wx.navigateBack();
+      wx.redirectTo({
+        url: this.data.scope === 'personal' ? '/pages/personal/index' : '/pages/pantry/index',
+      });
     },
   },
 });
@@ -154,6 +175,12 @@ exports.shopping = createPage({
       await savePrep.call(
         this,
         this.data.items.map((i) => ({ ...i, checked: i.owned || i.checked })),
+      );
+    },
+    async none() {
+      await savePrep.call(
+        this,
+        this.data.items.map((i) => ({ ...i, checked: false })),
       );
     },
     async all() {

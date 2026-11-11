@@ -40,7 +40,7 @@
           <text>已阅读并同意服务协议与隐私说明</text>
         </label>
       </checkbox-group>
-      <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+      <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
         <g-icon name="user" size="21" tone="light" />
         注册并进入
       </button>

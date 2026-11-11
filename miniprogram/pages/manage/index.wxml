@@ -2,26 +2,19 @@
 <g-shell title="菜谱与合集管理" back="{{true}}">
   <view class="page-content flush page-manage">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-    <view class="manager-head">
-      <view class="h2">把拿手菜，排好队</view>
-      <text class="caption copy small-text">拖动把手排序；点编辑修改菜品</text>
-    </view>
-    <view class="manager-share-line">
-      <button bindtap="go" data-page="shareRecipes">分享拿手菜 ↗</button>
-    </view>
-    <view class="manager-toolbar">
-      <button bindtap="addCollection">
+<view class="manager-compact"><view class="h3">菜谱与合集</view><button hover-class="none" class="text-btn" bindtap="go" data-page="shareRecipes">分享菜谱 ↗</button></view>    <view class="manager-toolbar">
+      <button hover-class="none" bindtap="addCollection">
         <g-icon name="plus" size="21" />
         添加合集
       </button>
-      <button bindtap="go" data-page="editDish">
+      <button hover-class="none" bindtap="go" data-page="editDish">
         <g-icon name="book" size="21" />
         添加菜品
       </button>
     </view>
     <view class="menu-catalog manager-catalog">
       <scroll-view class="menu-rail manager-rail" scroll-y>
-        <button bindtap="category" data-id="all">
+        <button hover-class="none" bindtap="category" data-id="all">
           <g-icon name="utensils" />
           <text>全部</text>
         </button>
@@ -30,7 +23,7 @@
           wx:key="id"
           class="manager-category {{category===item.id?'active':''}}"
         >
-          <button data-id="{{item.id}}" bindtap="category">
+          <button hover-class="none" data-id="{{item.id}}" bindtap="category">
             <view
               class="drag-grip"
               data-id="{{item.id}}"
@@ -44,11 +37,11 @@
             <text>{{item.name}}</text>
           </button>
           <view class="cat-actions">
-            <button data-id="{{item.id}}" bindtap="renameCollection">✎</button>
-            <button data-id="{{item.id}}" data-dir="-1" data-type="collections" bindtap="move">
+            <button hover-class="none" data-id="{{item.id}}" bindtap="renameCollection">✎</button>
+            <button hover-class="none" data-id="{{item.id}}" data-dir="-1" data-type="collections" bindtap="move">
               ↑
             </button>
-            <button data-id="{{item.id}}" bindtap="deleteCollection">×</button>
+            <button hover-class="none" data-id="{{item.id}}" bindtap="deleteCollection">×</button>
           </view>
         </view>
       </scroll-view>
@@ -69,13 +62,13 @@
             <view class="h3 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}} 分钟</text>
             <view class="manager-actions">
-              <button bindtap="go" data-page="editDish" data-id="{{item.id}}">编辑</button>
-              <button bindtap="moveCollection" data-id="{{item.id}}">移动合集</button>
-              <button bindtap="remove" data-id="{{item.id}}">删除</button>
+              <button hover-class="none" bindtap="go" data-page="editDish" data-id="{{item.id}}">编辑</button>
+              <button hover-class="none" bindtap="moveCollection" data-id="{{item.id}}">移动</button>
+              <button hover-class="none" bindtap="remove" data-id="{{item.id}}">删除</button>
             </view>
             <view class="sort-actions">
-              <button bindtap="move" data-id="{{item.id}}" data-dir="-1">↑</button>
-              <button bindtap="move" data-id="{{item.id}}" data-dir="1">↓</button>
+              <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="-1">↑</button>
+              <button hover-class="none" bindtap="move" data-id="{{item.id}}" data-dir="1">↓</button>
             </view>
           </view>
         </view>
@@ -87,8 +80,9 @@
   </view>
   <view slot="dock" class="dock">
     <view class="row">
-      <button class="btn secondary" bindtap="discard">放弃修改</button>
-      <button class="btn" bindtap="saveMenu" loading="{{saving}}">保存全部修改</button>
+      <button hover-class="none" class="btn secondary" bindtap="discard">放弃修改</button>
+      <button hover-class="none" class="btn" bindtap="saveMenu" loading="{{saving}}">保存全部修改</button>
     </view>
   </view>
 </g-shell>
+<view wx:if="{{showMove}}" class="modal-mask" bindtap="closeMove"><view class="modal move-picker" catchtap="noop"><view class="h3">移动到哪个合集？</view><text class="caption">选择后暂存，点击保存全部修改后生效</text><button hover-class="none" wx:for="{{moveTargets}}" wx:key="id" class="list-row" bindtap="selectMove" data-id="{{item.id}}"><view class="link-label"><g-icon name="book" size="24"/><text>{{item.name}}</text></view><text>›</text></button><button hover-class="none" class="btn secondary" bindtap="closeMove">取消</button></view></view>

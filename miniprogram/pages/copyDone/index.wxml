@@ -19,7 +19,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="open" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="open" loading="{{actionBusy}}">
       <g-icon name="home" size="21" tone="light" />
       去这个小家，看看菜谱
     </button>

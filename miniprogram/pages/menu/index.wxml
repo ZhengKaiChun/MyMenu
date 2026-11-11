@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="给我饭" back="{{false}}">
+<g-shell title="给我饭" back="{{true}}">
   <view class="page-content flush page-menu">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
     <view class="menu-schedule">
@@ -10,7 +10,7 @@
         </view>
       </picker>
       <view class="meal-switch">
-        <button
+        <button hover-class="none"
           wx:for="{{['早餐','午餐','晚餐']}}"
           wx:key="*this"
           class="{{slot===item?'active':''}}"
@@ -20,7 +20,7 @@
           {{item}}
         </button>
       </view>
-      <button class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
+      <button hover-class="none" class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
     </view>
     <view class="menu-search">
       <view class="search row">
@@ -28,14 +28,14 @@
         <input placeholder="搜索菜名" bindinput="search" value="{{search}}" />
       </view>
     </view>
-    <view class="menu-heading"><text class="h3 strong">{{family.name}}</text></view>
+    <view class="menu-heading"><text class="h3 grow strong">小家菜单</text><text class="menu-family-label">{{family.name}}</text></view>
     <view class="menu-catalog">
       <scroll-view class="menu-rail" scroll-y>
-        <button class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
+        <button hover-class="none" class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
           <g-icon name="utensils" size="27" />
           <text class="strong rail-label">全部</text>
         </button>
-        <button
+        <button hover-class="none"
           wx:for="{{collections}}"
           wx:key="id"
           class="{{category===item.id?'active':''}}"
@@ -52,11 +52,11 @@
           <text>{{dishes.length}} 道</text>
         </view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish">
-          <button class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
+          <button hover-class="none" class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
             <image class="food" src="{{item.cover}}" mode="aspectFill" />
           </button>
           <view class="menu-dish-info">
-            <button class="h3 strong" bindtap="go" data-page="dish" data-id="{{item.id}}">
+            <button hover-class="none" class="h3 strong" bindtap="go" data-page="dish" data-id="{{item.id}}">
               {{item.name}}
             </button>
             <view class="copy dish-description">{{item.intro}}</view>
@@ -65,7 +65,7 @@
               <text class="tag">{{item.servings}} 人份</text>
             </view>
             <view class="dish-bottom">
-              <button class="dish-add" bindtap="add" data-id="{{item.id}}">
+              <button hover-class="none" class="dish-add" bindtap="add" data-id="{{item.id}}">
                 <text wx:if="{{quantities[item.id]}}" class="strong">{{quantities[item.id]}}</text>
                 <text wx:if="{{quantities[item.id]}}">＋</text>
                 <block wx:else>
@@ -86,15 +86,15 @@
   </view>
   <view slot="dock" class="dock dock-menu">
     <view class="basket-bar">
-      <button class="basket-count" bindtap="cart">
+      <button hover-class="none" class="basket-count" bindtap="cart">
         <g-icon name="utensils" size="30" />
         <text class="basket-badge">{{count}}</text>
       </button>
-      <button class="basket-summary" bindtap="cart">
+      <button hover-class="none" class="basket-summary" bindtap="cart">
         <text class="strong">{{count?'已选 '+count+' 份':'选几道想吃的菜'}}</text>
         <text class="caption copy small-text">{{util.shortDate(date)}} · {{slot}}</text>
       </button>
-      <button class="btn small" bindtap="checkout">
+      <button hover-class="none" class="btn small" bindtap="checkout">
         <g-icon name="check" size="18" />
         确认点菜
       </button>
@@ -106,21 +106,21 @@
   <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">小猪的菜篮</view>
-      <button class="close" bindtap="cart">×</button>
+      <button hover-class="none" class="close" bindtap="cart">×</button>
     </view>
     <scroll-view scroll-y style="max-height: 52vh">
       <view wx:for="{{cart}}" wx:key="id" class="row list-row cart-dish">
         <image class="food" src="{{item.cover}}" mode="aspectFill" />
         <text class="grow">{{item.name}}</text>
         <view class="row">
-          <button class="pill" bindtap="minus" data-id="{{item.id}}">−</button>
+          <button hover-class="none" class="pill" bindtap="minus" data-id="{{item.id}}">−</button>
           <text>{{item.quantity}}</text>
-          <button class="pill" bindtap="add" data-id="{{item.id}}">＋</button>
+          <button hover-class="none" class="pill" bindtap="add" data-id="{{item.id}}">＋</button>
         </view>
       </view>
     </scroll-view>
     <text wx:if="{{!cart.length}}" class="caption copy small-text">还没选菜，去挑一道喜欢的吧。</text>
-    <button class="btn" bindtap="checkout">
+    <button hover-class="none" class="btn" bindtap="checkout">
       <g-icon name="check" size="21" tone="" />
       确认日期和菜品
     </button>

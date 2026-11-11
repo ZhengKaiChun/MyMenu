@@ -8,10 +8,10 @@
           <view class="overline">DAYS TASTE BETTER TOGETHER</view>
           <view class="h2">每一天，都好好吃饭。</view>
         </view>
-        <button class="text-btn" bindtap="go" data-page="history">回味 ›</button>
+        <button hover-class="none" class="text-btn" bindtap="go" data-page="history">回味 ›</button>
       </view>
       <view class="datebar">
-        <button
+        <button hover-class="none"
           wx:for="{{weekDays}}"
           wx:key="date"
           class="date {{item.on?'on':''}}"
@@ -59,7 +59,7 @@
             </view>
             <text class="caption copy small-text">合计{{item.quantity}}份</text>
           </view>
-          <button
+          <button hover-class="none"
             wx:if="{{item.ownLineId}}"
             class="text-btn swap-button"
             catchtap="swapDish"
@@ -73,11 +73,11 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock dock-with-tabs">
-    <button wx:if="{{isCook}}" class="btn" bindtap="prep">
+    <button hover-class="none" wx:if="{{isCook}}" class="btn" bindtap="prep">
       <g-icon tone="light" name="basket" size="22" />
       准备这一天的食材
     </button>
-    <button wx:else class="btn" bindtap="go" data-page="menu">
+    <button hover-class="none" wx:else class="btn" bindtap="go" data-page="menu">
       <g-icon name="utensils" size="21" tone="light" />
       我也来点一道
     </button>

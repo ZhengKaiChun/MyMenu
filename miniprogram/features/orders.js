@@ -93,18 +93,49 @@ async function loadRequests() {
     })),
   );
   this.setData({
-    notifications: notifications
-      .filter((n) => !n.read_at && n.type.startsWith('dissolution'))
-      .slice(0, 10),
+    notifications: notifications.filter(
+      (n) => n.family_id === session.family.id || n.type === 'dissolution.complete',
+    ),
     orders: mapped,
     changes: await decorateChanges(changes),
     isCook: session.family.role === 'cook',
   });
 }
 exports.requests = createPage({
-  data: { orders: [], changes: [], notifications: [] },
+  data: { orders: [], changes: [], notifications: [], selectedNotes: [], allNotes: false },
   reload: loadRequests,
   methods: {
+    selectNotes(e) {
+      this.setData({
+        selectedNotes: e.detail.value,
+        allNotes: e.detail.value.length === this.data.notifications.length,
+      });
+    },
+    allNotes() {
+      const all = !this.data.allNotes;
+      this.setData({
+        allNotes: all,
+        selectedNotes: all ? this.data.notifications.map((n) => n.id) : [],
+      });
+    },
+    async deleteNotes() {
+      if (!this.data.selectedNotes.length) return;
+      const x = await new Promise((resolve) =>
+        require('../lib/dialog').show({
+          title: '删除这些通知？',
+          content: '只删除通知，点菜和回音记录仍保留。',
+          success: resolve,
+        }),
+      );
+      if (!x.confirm) return;
+      await api.request('/notifications/delete', {
+        method: 'POST',
+        body: { ids: this.data.selectedNotes },
+      });
+      this.setData({ selectedNotes: [], allNotes: false });
+      await loadRequests.call(this);
+    },
+
     async notification(e) {
       const item = this.data.notifications.find((n) => n.id === e.currentTarget.dataset.id);
       await api.request('/notifications/' + item.id + '/read', { method: 'POST', body: {} });
@@ -112,7 +143,9 @@ exports.requests = createPage({
         require('../lib/dialog').show({ title: '小家消息', content: item.body, showCancel: false });
         return;
       }
-      go('dissolve', { familyId: item.family_id });
+      if (item.type.startsWith('order.')) go('requestDetail', { id: item.entity_id });
+      else if (item.type.startsWith('change.')) go('changeDetail', { id: item.entity_id });
+      else go('dissolve', { familyId: item.family_id });
     },
   },
 });

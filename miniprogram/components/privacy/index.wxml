@@ -3,12 +3,12 @@
     <view class="h3">让小家，也保护好你</view>
     <view class="muted" style="margin: 18px 0">
       选择头像、上传菜品图片等功能，需要你主动授权。请先阅读
-      <button class="text-btn" bindtap="contract">《{{contract}}》</button>
+      <button hover-class="none" class="text-btn" bindtap="contract">《{{contract}}》</button>
       ，不同意也可以继续使用其他功能。
     </view>
     <view class="row">
-      <button class="btn secondary" bindtap="decline">暂不授权</button>
-      <button
+      <button hover-class="none" class="btn secondary" bindtap="decline">暂不授权</button>
+      <button hover-class="none"
         class="btn"
         id="privacy-agree"
         open-type="agreePrivacyAuthorization"

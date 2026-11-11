@@ -14,7 +14,7 @@
           data-field="query"
           bindinput="input"
         />
-        <button bindtap="search">搜索</button>
+        <button hover-class="none" bindtap="search">搜索</button>
       </view>
       <view wx:for="{{results}}" wx:key="id" class="card">
         <view class="dish">
@@ -23,7 +23,7 @@
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">命中 {{item.matched}} 项 · 还需 {{util.join(item.missing)}}</text>
           </view>
-          <button class="text-btn" bindtap="go" data-page="recipe" data-id="{{item.id}}">
+          <button hover-class="none" class="text-btn" bindtap="go" data-page="recipe" data-id="{{item.id}}">
             做法 ›
           </button>
         </view>

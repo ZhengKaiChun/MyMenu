@@ -14,7 +14,7 @@
         </view>
         <view class="memo-meals">
           <text class="strong">今天要做</text>
-          <button
+          <button hover-class="none"
             wx:for="{{dishes}}"
             wx:key="dishId"
             bindtap="go"
@@ -25,8 +25,8 @@
           </button>
         </view>
         <view class="memo-tools">
-          <button bindtap="owned">勾选已有食材</button>
-          <button bindtap="all">勾选全部</button>
+          <button hover-class="none" bindtap="owned">勾选已有食材</button>
+          <button hover-class="none" bindtap="all">全部勾选</button><button hover-class="none" bindtap="none">取消全部</button>
         </view>
         <view class="memo-items">
           <view
@@ -52,7 +52,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
       <g-icon name="utensils" size="21" tone="light" />
       看全家今日菜单
     </button>

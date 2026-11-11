@@ -8,8 +8,7 @@ function go(page, query = {}) {
   if (getCurrentPages().slice(-1)[0]?.route === 'pages/' + page + '/index' && !qs) return;
   const roots = ['home', 'menu', 'today', 'pantry', 'family'];
   if (roots.includes(page)) wx.reLaunch({ url });
-  else if (getCurrentPages().length >= 8) wx.redirectTo({ url });
-  else wx.navigateTo({ url });
+  else wx.redirectTo({ url });
 }
 function createPage(options) {
   const output = {
@@ -60,7 +59,8 @@ function createPage(options) {
     },
     input(e) {
       // Do not overwrite a native input during IME composition.
-      this.data[e.currentTarget.dataset.field] = e.detail.value;
+      const field = e?.currentTarget?.dataset?.field || e?.target?.dataset?.field;
+      if (field && e?.detail && e.detail.value !== undefined) this.data[field] = e.detail.value;
     },
     async run(fn, ...args) {
       try {
@@ -101,6 +101,15 @@ function createPage(options) {
   };
   for (const [name, fn] of Object.entries(options.methods || {}))
     output[name] = function (...args) {
+      if (args[0]?.type === 'input' || name === 'field') {
+        try {
+          const value = fn.apply(this, args);
+          if (value?.catch) value.catch((e) => this.setData({ error: e.message || '输入未完成' }));
+        } catch (e) {
+          this.setData({ error: e.message || '输入未完成' });
+        }
+        return;
+      }
       if (this.data.actionBusy) return;
       this.setData({ actionBusy: true });
       return this.run(fn, ...args).finally(() => this.setData({ actionBusy: false }));

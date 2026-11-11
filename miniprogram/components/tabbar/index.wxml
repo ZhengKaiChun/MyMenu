@@ -1,5 +1,5 @@
 <view class="native-tabbar">
-  <button
+  <button hover-class="none"
     wx:for="{{tabs}}"
     wx:key="id"
     class="native-tab {{active===item.id?'on':''}}"

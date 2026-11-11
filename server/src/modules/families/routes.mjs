@@ -234,6 +234,18 @@ export function familyRoutes(app, { db, route }) {
         )
       ).rows,
   );
+  route(
+    'POST',
+    '/notifications/delete',
+    z.object({ ids: z.array(z.uuid()).min(1).max(100) }).strict(),
+    async (r) => {
+      const deleted = await db.query(
+        'DELETE FROM notifications WHERE user_id=$1 AND id=ANY($2::uuid[]) RETURNING id',
+        [r.user.id, r.body.ids],
+      );
+      return { deleted: deleted.rows.length };
+    },
+  );
   route('POST', '/notifications/:id/read', z.object({}).strict(), async (r) => {
     await db.query('UPDATE notifications SET read_at=now() WHERE id=$1 AND user_id=$2', [
       r.params.id,

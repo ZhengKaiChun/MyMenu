@@ -123,6 +123,12 @@ test('standalone import preview runs without HTTP and preserves separate device-
       replacementId: 'preview-dish-1',
       reason: '想换个口味',
     });
+    const change = (await call('GET', base + '/changes', eater)).find((x) => x.id === c.id);
+    assert.equal(change.meal_date, today());
+    assert.equal(change.slot, line.slot);
+    assert.equal(change.quantity, line.quantity);
+    assert.equal(change.new_snapshot.ingredients, undefined);
+    assert.equal(change.new_snapshot.steps, undefined);
     await call('POST', base + '/changes/' + c.id + '/reply', cook, {
       decision: 'accept',
       reply: '安排',

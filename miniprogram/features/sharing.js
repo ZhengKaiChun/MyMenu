@@ -41,6 +41,7 @@ function parcel(received) {
       const gift = await api.request('/shares/' + encodeURIComponent(token));
       gift.dishes = await decorate(gift.dishes, token);
       this.setData({ gift, token });
+      this.setData({ shareCover: await require('../lib/share-cover')(this, gift.dishes) });
     },
     methods: {
       receive() {
@@ -53,6 +54,7 @@ function parcel(received) {
     onShareAppMessage() {
       return {
         title: '这几道拿手菜，想请你也尝尝',
+        imageUrl: this.data.shareCover || '/assets/recipe-share.png',
         path: '/pages/recipeGift/index?token=' + encodeURIComponent(this.data.token),
       };
     },

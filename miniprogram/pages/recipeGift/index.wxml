@@ -39,9 +39,11 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="save" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="save" loading="{{actionBusy}}">
       <g-icon name="check" size="21" tone="light" />
       收下这份味道 · 保存到小家
     </button>
   </view>
 </g-shell>
+
+<canvas type="2d" id="shareCoverCanvas" style="position:fixed;left:-1000px;top:0;width:500px;height:400px;pointer-events:none"/>

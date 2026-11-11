@@ -13,11 +13,11 @@
         <g-pig wx:else index="7" size="68" />
         <view>
           <view class="h2">{{user.nickname}}</view>
-          <button class="text-btn" bindtap="go" data-page="profile">修改头像与昵称 ›</button>
+          <button hover-class="none" class="text-btn" bindtap="go" data-page="profile">修改头像与昵称 ›</button>
         </view>
       </view>
       <view class="card">
-        <button
+        <button hover-class="none"
           wx:if="{{capabilities.wechat && !capabilities.preview}}"
           class="list-row"
           bindtap="bindWechat"
@@ -25,7 +25,7 @@
           <text>绑定微信身份</text>
           <text>›</text>
         </button>
-        <button
+        <button hover-class="none"
           wx:if="{{capabilities.subscriptionTemplateId}}"
           class="list-row"
           bindtap="subscribe"
@@ -38,20 +38,10 @@
           <text class="caption copy small-text">站内回音已开启</text>
         </view>
       </view>
-      <view class="card">
-        <button class="btn secondary" bindtap="go" data-page="personal" loading="{{actionBusy}}">
-          <g-icon name="basket" size="21" tone="" />
-          个人现有食材
-        </button>
-        <button class="btn secondary" bindtap="go" data-page="history" loading="{{actionBusy}}">
-          最近三个月的吃饭记录
-        </button>
-      </view>
-      <button wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="bindPhone">
+<view class="settings-tools"><button hover-class="none" class="list-row" bindtap="go" data-page="personal"><view class="link-label"><g-icon name="basket"/><text>个人现有食材</text></view><text>›</text></button><button hover-class="none" class="list-row" bindtap="go" data-page="history"><view class="link-label"><g-icon name="calendar"/><text>最近三个月的吃饭记录</text></view><text>›</text></button></view>      <button hover-class="none" wx:if="{{capabilities.sms}}" class="btn secondary" bindtap="bindPhone">
         绑定／修改手机号
       </button>
-      <button class="btn secondary" bindtap="logout" loading="{{actionBusy}}">退出登录</button>
-      <button class="btn ghost" bindtap="deleteAccount" loading="{{actionBusy}}">注销账号</button>
+<view class="row settings-actions"><button hover-class="none" class="btn logout-red" bindtap="logout">退出登录</button><button hover-class="none" class="btn ghost" bindtap="deleteAccount">注销账号</button></view>
     </view>
   </scroll-view>
 </g-shell>

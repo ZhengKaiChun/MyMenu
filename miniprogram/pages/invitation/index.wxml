@@ -26,6 +26,6 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="accept" loading="{{actionBusy}}">接受邀请，回家吃饭</button>
+    <button hover-class="none" class="btn" bindtap="accept" loading="{{actionBusy}}">接受邀请，回家吃饭</button>
   </view>
 </g-shell>

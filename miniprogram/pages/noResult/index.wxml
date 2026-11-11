@@ -8,7 +8,7 @@
         <view class="h2">{{title}}</view>
         <text class="muted">{{message}}</text>
         <view style="margin-top: 25px">
-          <button class="btn secondary" bindtap="go" data-page="home" loading="{{actionBusy}}">
+          <button hover-class="none" class="btn secondary" bindtap="go" data-page="home" loading="{{actionBusy}}">
             <g-icon name="home" size="21" tone="" />
             返回我的小家
           </button>

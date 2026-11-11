@@ -13,7 +13,7 @@
           <view class="h4 strong">{{item.nickname}}</view>
           <text class="caption copy small-text">{{item.identity}} · {{item.role==='cook'?'饲养员':'大懒猪'}}</text>
         </view>
-        <button wx:if="{{isOwner}}" class="text-btn" data-id="{{item.user_id}}" bindtap="role">
+        <button hover-class="none" wx:if="{{isOwner}}" class="text-btn" data-id="{{item.user_id}}" bindtap="role">
           权限 ›
         </button>
       </view>

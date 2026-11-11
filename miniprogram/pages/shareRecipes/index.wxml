@@ -9,7 +9,7 @@
       </view>
       <view class="share-selection-top">
         <text>{{selected.length}}／{{dishes.length}}道已选</text>
-        <button bindtap="all">{{all?'取消全选':'一键全选'}}</button>
+        <button hover-class="none" bindtap="all">{{all?'取消全选':'一键全选'}}</button>
       </view>
       <checkbox-group bindchange="select">
         <label wx:for="{{dishes}}" wx:key="id" class="recipe-share-row">
@@ -24,7 +24,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
       <g-icon name="envelope" size="21" tone="light" />
       装进信封，预览分享
     </button>

@@ -14,12 +14,12 @@
           <view class="h4 strong">{{item.snapshot.name}}</view>
           <text class="caption copy small-text">{{util.date(item.meal_date)}} · {{item.slot}} · {{item.quantity}}份</text>
         </view>
-        <button class="text-btn" bindtap="swap" data-id="{{item.id}}" disabled="{{item.changing}}">
+        <button hover-class="none" class="text-btn" bindtap="swap" data-id="{{item.id}}" disabled="{{item.changing}}">
           {{item.changing?'换菜等回音':'申请更换'}}
         </button>
       </view>
       <view class="section-title"><view class="h3 strong">换菜进度</view></view>
-      <button
+      <button hover-class="none"
         wx:for="{{changes}}"
         wx:key="id"
         class="change-card"
@@ -47,7 +47,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="go" data-page="today" loading="{{actionBusy}}">
       <g-icon name="utensils" size="21" tone="light" />
       看全家今日菜单
     </button>

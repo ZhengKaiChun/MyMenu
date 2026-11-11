@@ -8,7 +8,7 @@
         <text class="muted">{{gift.dishes.length}}道菜，含完整用料与步骤。</text>
       </view>
       <view class="copy-home-list">
-        <button
+        <button hover-class="none"
           wx:for="{{homes}}"
           wx:key="id"
           class="copy-home {{target===item.id?'selected':''}}"
@@ -23,7 +23,7 @@
           </view>
           <text>{{target===item.id?'✓':'○'}}</text>
         </button>
-        <button
+        <button hover-class="none"
           class="copy-home new-home {{target==='new'?'selected':''}}"
           data-id="new"
           bindtap="target"
@@ -48,20 +48,20 @@
       </view>
       <view class="section-title"><view class="h3 strong">怎么收进菜谱</view></view>
       <view class="copy-modes">
-        <button class="{{mode==='add'?'selected':''}}" bindtap="mode" data-mode="add">
+        <button hover-class="none" class="{{mode==='add'?'selected':''}}" bindtap="mode" data-mode="add">
           <view class="h3 strong">新增</view>
           <text class="caption copy small-text">原菜保留，同名自动加后缀</text>
         </button>
-        <button class="{{mode==='overwrite'?'selected':''}}" bindtap="mode" data-mode="overwrite">
+        <button hover-class="none" class="{{mode==='overwrite'?'selected':''}}" bindtap="mode" data-mode="overwrite">
           <view class="h3 strong">覆盖</view>
           <text class="caption copy small-text">确认范围后再替换</text>
         </button>
       </view>
       <view wx:if="{{mode==='overwrite'}}" class="overwrite-scope">
-        <button bindtap="scope" data-scope="matching">
+        <button hover-class="none" bindtap="scope" data-scope="matching">
           {{scope==='matching'?'●':'○'}} 覆盖同名菜，其他菜保留
         </button>
-        <button bindtap="scope" data-scope="whole">
+        <button hover-class="none" bindtap="scope" data-scope="whole">
           {{scope==='whole'?'●':'○'}} 整本替换，原菜单退出展示
         </button>
       </view>
@@ -69,7 +69,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="preview" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="preview" loading="{{actionBusy}}">
       <g-icon name="book" size="21" tone="light" />
       看一下，确认复制
     </button>
@@ -92,8 +92,8 @@
       '原有其他菜谱保留，不影响分享者的小家。'}}
     </view>
     <view class="row">
-      <button class="btn secondary" bindtap="close" loading="{{actionBusy}}">再检查一下</button>
-      <button class="btn accent" bindtap="commit" loading="{{actionBusy}}">
+      <button hover-class="none" class="btn secondary" bindtap="close" loading="{{actionBusy}}">再检查一下</button>
+      <button hover-class="none" class="btn accent" bindtap="commit" loading="{{actionBusy}}">
         <g-icon name="book" size="21" tone="light" />
         确认复制并保存
       </button>

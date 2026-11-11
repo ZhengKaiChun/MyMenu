@@ -5,7 +5,7 @@
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="row">
         <view class="h2">{{dish.name}}</view>
-        <button class="pill" bindtap="toggle">{{textOnly?'图文版':'纯文字'}}</button>
+        <button hover-class="none" class="pill" bindtap="toggle">{{textOnly?'图文版':'纯文字'}}</button>
       </view>
       <text class="muted">{{dish.minutes}} 分钟 · {{dish.servings}} 人份</text>
       <image wx:if="{{!textOnly}}" src="{{dish.cover}}" class="food mid" mode="aspectFill" />

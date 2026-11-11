@@ -10,15 +10,15 @@
       </view>
       <view class="card">
         <view class="row">
-          <button class="text-btn" data-dir="-1" bindtap="month">‹</button>
+          <button hover-class="none" class="text-btn" data-dir="-1" bindtap="month">‹</button>
           <text class="strong">{{calendarYear}} 年 {{calendarMonth}} 月</text>
-          <button class="text-btn" data-dir="1" bindtap="month">›</button>
+          <button hover-class="none" class="text-btn" data-dir="1" bindtap="month">›</button>
         </view>
         <view class="calendar history-calendar">
           <view wx:for="{{weekLabels}}" wx:key="*this" class="weekday">{{item}}</view>
           <block wx:for="{{cells}}" wx:key="id">
             <view wx:if="{{item.blank}}" />
-            <button
+            <button hover-class="none"
               wx:else
               class="{{item.on?'on':''}} {{item.dot?'dot':''}}"
               data-date="{{item.date}}"
@@ -41,7 +41,7 @@
             <text class="caption copy small-text">{{item.quantity}}份 · 一起好好吃饭</text>
             <text class="tag">{{meal.slot}}</text>
           </view>
-          <button
+          <button hover-class="none"
             wx:if="{{isCook}}"
             class="text-btn"
             data-page="recipe"

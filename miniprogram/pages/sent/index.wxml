@@ -24,10 +24,10 @@
           <view>{{accepted?'已经加入当天做饭清单。':'等饲养员回一句温柔的好呀。'}}</view>
         </view>
         <view style="margin-top: 28px">
-          <button class="btn" bindtap="go" data-page="requests" loading="{{actionBusy}}">
+          <button hover-class="none" class="btn" bindtap="go" data-page="requests" loading="{{actionBusy}}">
             看看开饭回音
           </button>
-          <button class="btn secondary" bindtap="go" data-page="today" loading="{{actionBusy}}">
+          <button hover-class="none" class="btn secondary" bindtap="go" data-page="today" loading="{{actionBusy}}">
             <g-icon name="utensils" size="21" tone="" />
             看看全家今日菜单
           </button>

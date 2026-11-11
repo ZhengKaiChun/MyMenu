@@ -14,8 +14,8 @@
       maxlength="100"
     />
     <view class="actions">
-      <button wx:if="{{showCancel}}" class="secondary" bindtap="cancel">{{cancelText}}</button>
-      <button class="primary" bindtap="confirm">{{confirmText}}</button>
+      <button hover-class="none" wx:if="{{showCancel}}" class="secondary" bindtap="cancel">{{cancelText}}</button>
+      <button hover-class="none" class="primary" bindtap="confirm">{{confirmText}}</button>
     </view>
   </view>
 </view>

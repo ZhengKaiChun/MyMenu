@@ -16,7 +16,7 @@
       </view>
       <view class="section-title"><view class="h3 strong">这次想换成</view></view>
       <view class="swap-options">
-        <button
+        <button hover-class="none"
           wx:for="{{dishes}}"
           wx:key="id"
           class="swap-option {{selected===item.id?'selected':''}}"
@@ -40,7 +40,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
       <g-icon name="utensils" size="21" tone="light" />
       发送换菜申请
     </button>

@@ -199,15 +199,23 @@ const manageMethods = {
       changed(this);
     }
   },
-  async moveCollection(e) {
+  moveCollection(e) {
     const id = e.currentTarget.dataset.id;
-    const choices = session.menuDraft.collections;
-    const x = await new Promise((resolve, reject) =>
-      wx.showActionSheet({ itemList: choices.map((c) => c.name), success: resolve, fail: reject }),
-    );
-    const d = session.menuDraft.dishes.find((d) => d.id === id);
-    d.collectionId = choices[x.tapIndex].id;
-    if (session.menuDraft.recipes[id]) session.menuDraft.recipes[id].collectionId = d.collectionId;
+    const draft = session.menuDraft;
+    if (!draft?.dishes.some((d) => d.id === id)) throw Error('请重新打开这道菜');
+    this.setData({ showMove: true, movingId: id, moveTargets: draft.collections });
+  },
+  closeMove() {
+    this.setData({ showMove: false });
+  },
+  selectMove(e) {
+    const draft = session.menuDraft,
+      target = draft.collections.find((c) => c.id === e.currentTarget.dataset.id),
+      dish = draft.dishes.find((d) => d.id === this.data.movingId);
+    if (!target || !dish) throw Error('合集已变化，请重试');
+    dish.collectionId = target.id;
+    if (draft.recipes[dish.id]) draft.recipes[dish.id].collectionId = target.id;
+    this.setData({ showMove: false });
     changed(this);
   },
   move(e) {
@@ -244,18 +252,21 @@ const manageMethods = {
   },
   async saveMenu() {
     const d = session.menuDraft;
-    this.setData({saving:true});
-    try { await api.request(familyPath('/menu-layout'), {
-      method: 'PUT',
-      body: {
-        version: d.version,
-        collections: d.collections.map((c) => ({ id: c.id, name: c.name })),
-        dishes: d.dishes.map((x) => ({ id: x.id, collectionId: x.collectionId })),
-        deletedDishIds: d.deleted.filter((id) => !id.startsWith('draft-')),
-        recipes: Object.entries(d.recipes).map(([id, body]) => ({ id, body })),
-      },
-    });
-    } finally {this.setData({saving:false});}
+    this.setData({ saving: true });
+    try {
+      await api.request(familyPath('/menu-layout'), {
+        method: 'PUT',
+        body: {
+          version: d.version,
+          collections: d.collections.map((c) => ({ id: c.id, name: c.name })),
+          dishes: d.dishes.map((x) => ({ id: x.id, collectionId: x.collectionId })),
+          deletedDishIds: d.deleted.filter((id) => !id.startsWith('draft-')),
+          recipes: Object.entries(d.recipes).map(([id, body]) => ({ id, body })),
+        },
+      });
+    } finally {
+      this.setData({ saving: false });
+    }
     session.menuDraft = null;
     if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
     await manageLoad.call(this);
@@ -289,7 +300,7 @@ exports.editDish = createPage({
   },
   async reload() {
     if (this.loaded) return;
-    this.setData({inDraft:!!session.menuDraft});
+    this.setData({ inDraft: !!session.menuDraft });
     const menu = session.menuDraft
       ? { family: session.menuDraft.family, collections: session.menuDraft.collections }
       : await api.request(familyPath('/menu'));
@@ -330,7 +341,10 @@ exports.editDish = createPage({
       });
     },
     field(e) {
+      if (e?.detail?.value === undefined) return;
       const { list, index, field } = e.currentTarget.dataset;
+      if (!['ingredients', 'steps'].includes(list) || !this.data[list]?.[Number(index)] || !field)
+        return;
       this.data[list][Number(index)][field] =
         field === 'quantity' ? Number(e.detail.value) : e.detail.value;
       if (wx.enableAlertBeforeUnload)
@@ -408,7 +422,7 @@ exports.editDish = createPage({
         else session.menuDraft.dishes[index] = row;
         session.menuDraft.dirty = true;
         if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
-        wx.navigateBack();
+        wx.redirectTo({ url: '/pages/manage/index' });
         return;
       }
       await api.request(familyPath('/dishes' + (this.query.id ? '/' + this.query.id : '')), {

@@ -1,7 +1,7 @@
 <view class="shell">
   <view class="nav" style="padding-top:{{top}}px;height:{{top+navHeight}}px">
     <view class="nav-inner" style="height:{{navHeight}}px">
-      <button wx:if="{{back}}" class="back" bindtap="back" aria-label="返回">‹</button>
+      <button hover-class="none" wx:if="{{back}}" class="back" bindtap="back" aria-label="返回">‹</button>
       <text class="nav-title">{{title}}</text>
     </view>
   </view>

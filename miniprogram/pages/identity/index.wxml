@@ -8,7 +8,7 @@
         <view class="muted">称呼只是亲昵，不改变管理权限。</view>
       </view>
       <view class="two">
-        <button
+        <button hover-class="none"
           wx:for="{{names}}"
           wx:key="*this"
           class="identity-option {{selected===item?'on':''}}"
@@ -22,7 +22,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button class="btn" bindtap="submit" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">
       <g-icon name="user" size="21" tone="light" />
       保存我的家庭称呼
     </button>
