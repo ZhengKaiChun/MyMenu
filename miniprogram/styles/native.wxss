@@ -450,3 +450,229 @@ button.basket-summary {
 .page-calendar .today-empty {
   padding: 14px 12px 16px;
 }
+
+/* 2026-11-11: compact ordering, aligned inventory, and bounded family carousel. */
+.home-houses {
+  height: 263px;
+  margin: 0 -2px 18px;
+}
+.home-houses swiper-item {
+  padding: 0 4px 20px;
+  box-sizing: border-box;
+}
+.home-houses .house-card {
+  height: 239px;
+  margin: 0;
+}
+.home-houses .house-main {
+  min-height: 119px;
+}
+.menu-schedule {
+  padding: 8px 14px 9px 20px;
+  gap: 8px;
+}
+.menu-schedule > picker {
+  flex: 1;
+  min-width: 0;
+}
+.menu-schedule .meal-switch {
+  margin: 0;
+  flex: none;
+}
+.menu-schedule .menu-inbox {
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  border-radius: 11px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-heading {
+  padding-top: 4px;
+  padding-bottom: 10px;
+}
+.pantry-item .grow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 46px;
+}
+.pantry-item .h4 {
+  line-height: 1.45;
+  margin: 0 0 4px;
+}
+.pantry-item .caption {
+  display: block;
+  line-height: 1.45;
+  margin: 0;
+}
+.page-match .card {
+  padding: 0 13px;
+  margin: 15px 0;
+}
+.page-match .dish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.page-match .dish .grow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.page-match .dish .food {
+  width: 82px;
+  height: 84px;
+  border-radius: 16px 7px 16px 16px;
+  flex: none;
+}
+.page-match .dish .caption {
+  font-size: 10px;
+  line-height: 1.6;
+  white-space: normal;
+}
+.page-shopping .ingredient {
+  display: flex;
+  align-items: center;
+}
+.page-shopping .memo-items .ingredient {
+  min-height: 55px;
+}
+.page-shopping .memo-foot {
+  display: block;
+}
+.page-today .today-dish {
+  cursor: pointer;
+}
+.orderer-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.swap-button {
+  flex: none;
+  min-width: 38px;
+  text-align: right;
+}
+.manager-actions {
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.manager-dish {
+  min-width: 0;
+}
+.manager-dish .grow {
+  min-width: 0;
+}
+
+.datebar {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+}
+.datebar > button.date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 0;
+  flex: 1;
+  min-height: 61px;
+  padding: 7px 1px;
+}
+.datebar > picker {
+  width: 30px;
+  flex: none;
+}
+.datebar > picker .date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 61px;
+}
+.datebar .date > .strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.datebar .date > text:first-child {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.search > input {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+}
+.search > button {
+  flex: none;
+  width: auto;
+  white-space: nowrap;
+  min-width: 32px;
+  font-size: 12px;
+}
+.pantry-item .grow {
+  height: 46px;
+  min-height: 46px;
+  gap: 4px;
+  justify-content: center;
+}
+.pantry-item .h4 {
+  height: 20px;
+  line-height: 20px;
+  flex: none;
+  padding: 0;
+  margin: 0;
+}
+.pantry-item .caption {
+  height: 16px;
+  line-height: 16px;
+  flex: none;
+  padding: 0;
+  margin: 0;
+}
+.page-match .dish .grow {
+  gap: 5px;
+  min-height: 0;
+}
+.page-match .dish .h4 {
+  margin: 0;
+  line-height: 20px;
+  height: auto;
+  flex: none;
+}
+.page-match .dish .caption {
+  line-height: 16px;
+  flex: none;
+  margin: 0;
+}
+.page-family .list-row {
+  min-height: 49px;
+  padding: 10px 0;
+}
+.memo-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #b2945f;
+}
+.memo-head > .caption {
+  letter-spacing: 0;
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.pantry-item>.grow {display:block!important;height:auto!important;min-height:0!important;}
+.pantry-item>.grow>.h4 {display:block;line-height:20px;height:20px;margin:0 0 3px;padding:0;}
+.pantry-item>.grow>.caption {display:block;line-height:16px;height:auto;margin:0;padding:0;}
+.page-match .dish>.grow {display:block;}
+.page-match .dish>.grow>.h4 {margin:0 0 5px;}

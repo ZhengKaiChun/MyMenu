@@ -21,9 +21,7 @@
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
-            <text class="caption copy small-text">
-              命中 {{item.matched}} 项 · 还需 {{util.join(item.missing)}}
-            </text>
+            <text class="caption copy small-text">命中 {{item.matched}} 项 · 还需 {{util.join(item.missing)}}</text>
           </view>
           <button class="text-btn" bindtap="go" data-page="recipe" data-id="{{item.id}}">
             做法 ›

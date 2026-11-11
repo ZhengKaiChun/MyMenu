@@ -2,16 +2,6 @@
 <g-shell title="给我饭" back="{{false}}">
   <view class="page-content flush page-menu">
     <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-    <view class="menu-mast">
-      <view class="grow">
-        <view class="menu-house">
-          <view class="h2">{{family.name}}</view>
-          <text class="tag good">{{family.role==='cook'?'饲养员':'大懒猪'}}</text>
-        </view>
-        <text class="caption copy small-text">家庭菜单 · {{family.memberCount || 2}} 位成员</text>
-      </view>
-      <button class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
-    </view>
     <view class="menu-schedule">
       <picker mode="date" value="{{date}}" bindchange="date">
         <view class="date-trigger native-date">
@@ -30,6 +20,7 @@
           {{item}}
         </button>
       </view>
+      <button class="menu-inbox" bindtap="go" data-page="requests"><g-icon name="bell" /></button>
     </view>
     <view class="menu-search">
       <view class="search row">
@@ -37,13 +28,7 @@
         <input placeholder="搜索菜名" bindinput="search" value="{{search}}" />
       </view>
     </view>
-    <view class="menu-heading">
-      <text class="h3 grow strong">小家菜单</text>
-      <button bindtap="go" data-page="today">今日菜单 ›</button>
-      <button bindtap="go" data-page="requests">
-        {{family.role==='cook'?'吃饭申请':'我的回音'}} ›
-      </button>
-    </view>
+    <view class="menu-heading"><text class="h3 strong">{{family.name}}</text></view>
     <view class="menu-catalog">
       <scroll-view class="menu-rail" scroll-y>
         <button class="{{category==='all'?'active':''}}" bindtap="category" data-id="all">
@@ -94,9 +79,7 @@
         <view wx:if="{{!dishes.length}}" class="empty">
           <g-icon name="book" size="45" />
           <view class="h3 strong">这里还没有菜</view>
-          <text class="caption copy small-text">
-            {{family.role==='cook'?'去小家里的菜谱管理添加第一道拿手菜':'等饲养员录入菜品后，就能点菜啦'}}
-          </text>
+          <text class="caption copy small-text">{{family.role==='cook'?'去小家里的菜谱管理添加第一道拿手菜':'等饲养员录入菜品后，就能点菜啦'}}</text>
         </view>
       </scroll-view>
     </view>
@@ -119,8 +102,8 @@
   </view>
   <g-tabbar slot="tabs" active="menu" />
 </g-shell>
-<view wx:if="{{showCart}}" class="modal-mask sheet-mask">
-  <view class="sheet">
+<view wx:if="{{showCart}}" class="modal-mask sheet-mask" bindtap="dismissModal">
+  <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">小猪的菜篮</view>
       <button class="close" bindtap="cart">×</button>
@@ -136,9 +119,7 @@
         </view>
       </view>
     </scroll-view>
-    <text wx:if="{{!cart.length}}" class="caption copy small-text">
-      还没选菜，去挑一道喜欢的吧。
-    </text>
+    <text wx:if="{{!cart.length}}" class="caption copy small-text">还没选菜，去挑一道喜欢的吧。</text>
     <button class="btn" bindtap="checkout">
       <g-icon name="check" size="21" tone="" />
       确认日期和菜品

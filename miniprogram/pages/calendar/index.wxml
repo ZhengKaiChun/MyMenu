@@ -1,5 +1,5 @@
 <wxs module="util" src="../../lib/format.wxs" />
-<g-shell title="我们的小家饭历" back="{{false}}">
+<g-shell title="我们的小家饭历" back="{{true}}">
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-calendar">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
@@ -41,35 +41,31 @@
           <view class="h3 grow strong">{{meal.slot}}</view>
           <text class="caption copy small-text">{{meal.dishes.length}}道菜</text>
         </view>
-        <view wx:for="{{meal.dishes}}" wx:key="dishId" class="today-dish">
+        <view
+          wx:for="{{meal.dishes}}"
+          wx:key="dishId"
+          class="today-dish"
+          bindtap="openRecipe"
+          data-id="{{item.dishId}}"
+        >
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.snapshot.name}}</view>
             <view class="orderer-list">
               <view wx:for="{{item.sources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
                 <g-pig index="{{source.pig}}" size="26" />
-                <text>{{source.identity}} · {{source.nickname}} {{source.quantity}}份</text>
-                <button
-                  wx:if="{{isCook}}"
-                  class="text-btn"
-                  style="font-size: 9px"
-                  data-id="{{source.id}}"
-                  bindtap="done"
-                >
-                  {{source.done?'已吃到':'标记做好'}}
-                </button>
+                <text>{{source.identity}}</text>
               </view>
             </view>
             <text class="caption copy small-text">合计{{item.quantity}}份</text>
           </view>
           <button
-            wx:if="{{isCook}}"
-            class="text-btn"
-            bindtap="go"
-            data-page="recipe"
-            data-id="{{item.dishId}}"
+            wx:if="{{item.ownLineId}}"
+            class="text-btn swap-button"
+            catchtap="swapDish"
+            data-id="{{item.ownLineId}}"
           >
-            做法 ›
+            换菜
           </button>
         </view>
         <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没安排，去点一道吧。</view>

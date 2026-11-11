@@ -19,7 +19,8 @@ function inventoryPage(personal) {
           ...i,
           icon: { 番茄: 'tomato', 鸡蛋: 'egg', 牛奶: 'milk', 西兰花: 'leaf' }[i.name] || 'basket',
         })),
-        isCook: personal || session.family?.role === 'cook',
+        isCook: true,
+        canMatch: session.family?.role === 'cook',
       });
       this.setData({ items: this.data.allItems.filter((i) => i.name.includes(this.data.query)) });
     },

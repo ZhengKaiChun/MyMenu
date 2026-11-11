@@ -23,9 +23,7 @@
               type="text"
             />
           </view>
-          <text class="caption copy small-text">
-            创建后默认成为饲养员，称呼为野生小猪。菜谱和食材以后慢慢添加。
-          </text>
+          <text class="caption copy small-text">创建后默认成为饲养员，称呼为野生小猪。菜谱和食材以后慢慢添加。</text>
         </view>
       </view>
     </view>

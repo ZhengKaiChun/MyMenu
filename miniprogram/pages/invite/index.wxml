@@ -58,8 +58,8 @@
     </view>
   </view>
 </g-shell>
-<view wx:if="{{showCode}}" class="modal-mask">
-  <view class="modal">
+<view wx:if="{{showCode}}" class="modal-mask" bindtap="dismissModal">
+  <view class="modal" catchtap="noop">
     <view class="h3 strong">凭这张邀请，回家吃饭</view>
     <view class="invite-pass">
       <view class="pass-top">给我饭 · 小家通行证</view>

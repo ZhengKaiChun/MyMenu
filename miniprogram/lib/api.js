@@ -63,6 +63,13 @@ async function image(id, fallback = '/assets/food-placeholder.png', shareToken) 
   }
 }
 async function upload(path) {
+  if (wx.cropImage) {
+    const out = await new Promise((resolve, reject) =>
+      wx.cropImage({ src: path, cropScale: '1:1', success: resolve, fail: reject }),
+    );
+    path = out.tempFilePath;
+  }
+
   if (isPreview()) return preview().upload(path);
   return new Promise((resolve, reject) =>
     wx.uploadFile({

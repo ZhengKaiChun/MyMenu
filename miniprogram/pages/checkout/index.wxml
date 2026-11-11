@@ -24,9 +24,7 @@
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
-            <text class="caption copy small-text">
-              {{item.minutes}}分钟 · 每份{{item.servings}}人份
-            </text>
+            <text class="caption copy small-text">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>
             <view class="order-qty">
               <button data-id="{{item.id}}" data-dir="-1" bindtap="quantity">−</button>
               <text class="strong">{{item.quantity}}</text>
@@ -64,8 +62,8 @@
   </view>
 </g-shell>
 
-<view wx:if="{{showDate}}" class="modal-mask sheet-mask">
-  <view class="sheet">
+<view wx:if="{{showDate}}" class="modal-mask sheet-mask" bindtap="dismissModal">
+  <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">想在哪天，好好吃饭</view>
       <button class="close" bindtap="closeDate">×</button>

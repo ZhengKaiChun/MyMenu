@@ -27,15 +27,15 @@ export const recipe = z
     coverId: uuid.nullable().optional(),
     minutes: z.number().int().min(1).max(1440),
     servings: z.number().int().min(1).max(99),
-    ingredients: z.array(ingredient).min(1).max(100),
+    ingredients: z.array(ingredient).max(100).default([]),
     steps: z
       .array(
         z
           .object({ text: z.string().trim().min(1).max(3000), imageId: uuid.nullable().optional() })
           .strict(),
       )
-      .min(1)
-      .max(80),
+      .max(80)
+      .default([]),
     version: z.number().int().positive().optional(),
   })
   .strict();

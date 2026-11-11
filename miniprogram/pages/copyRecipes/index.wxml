@@ -19,9 +19,7 @@
           <g-icon name="home" size="31" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
-            <text class="caption copy small-text">
-              {{item.role==='cook'?'你可以管理':'仅吃饭身份，不能导入'}}
-            </text>
+            <text class="caption copy small-text">{{item.role==='cook'?'你可以管理':'仅吃饭身份，不能导入'}}</text>
           </view>
           <text>{{target===item.id?'✓':'○'}}</text>
         </button>
@@ -77,8 +75,8 @@
     </button>
   </view>
 </g-shell>
-<view wx:if="{{showConfirm}}" class="modal-mask">
-  <view class="modal copy-confirm">
+<view wx:if="{{showConfirm}}" class="modal-mask" bindtap="dismissModal">
+  <view catchtap="noop" class="modal copy-confirm">
     <view class="copy-confirm-icon"><g-icon name="book" size="34" /></view>
     <view class="h3 strong">把{{preview.count}}道味道，收进小家</view>
     <text class="copy-destination">{{preview.target}}</text>

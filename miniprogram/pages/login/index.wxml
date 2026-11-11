@@ -34,9 +34,7 @@
               和
               <text bindtap="legal">隐私说明</text>
             </view>
-            <text class="small-text">
-              {{capabilities.preview?'本机体验，数据仅保存在当前设备':'首次登录将创建独立账号'}}
-            </text>
+            <text class="small-text">{{capabilities.preview?'本机体验，数据仅保存在当前设备':'首次登录将创建独立账号'}}</text>
           </view>
         </label>
       </checkbox-group>

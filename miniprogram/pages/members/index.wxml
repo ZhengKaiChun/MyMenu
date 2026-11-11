@@ -11,9 +11,7 @@
         <g-pig index="{{util.pigIndex(item.identity)}}" size="48" />
         <view class="grow">
           <view class="h4 strong">{{item.nickname}}</view>
-          <text class="caption copy small-text">
-            {{item.identity}} · {{item.role==='cook'?'饲养员':'大懒猪'}}
-          </text>
+          <text class="caption copy small-text">{{item.identity}} · {{item.role==='cook'?'饲养员':'大懒猪'}}</text>
         </view>
         <button wx:if="{{isOwner}}" class="text-btn" data-id="{{item.user_id}}" bindtap="role">
           权限 ›

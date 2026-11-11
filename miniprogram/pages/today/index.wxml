@@ -17,25 +17,7 @@
           <text>换一天 ⌄</text>
         </view>
       </picker>
-      <button class="change-entry" bindtap="go" data-page="changes">
-        <g-icon name="envelope" size="22" />
-        <text>已点的菜想换一道？</text>
-        <text class="grow">申请换菜 ›</text>
-      </button>
-      <view class="today-summary">
-        <view class="strong">
-          {{total}}
-          <text class="small-text">道菜已安排</text>
-        </view>
-        <view class="strong">
-          {{quantity}}
-          <text class="small-text">份点菜</text>
-        </view>
-        <view class="strong">
-          {{memberCount}}
-          <text class="small-text">位成员</text>
-        </view>
-      </view>
+
       <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" class="today-meal">
         <view
           class="row section-head"
@@ -48,35 +30,31 @@
           <view class="h3 grow strong">{{meal.slot}}</view>
           <text class="caption copy small-text">{{meal.dishes.length}}道菜</text>
         </view>
-        <view wx:for="{{meal.dishes}}" wx:key="dishId" class="today-dish">
+        <view
+          wx:for="{{meal.dishes}}"
+          wx:key="dishId"
+          class="today-dish"
+          bindtap="openRecipe"
+          data-id="{{item.dishId}}"
+        >
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.snapshot.name}}</view>
             <view class="orderer-list">
               <view wx:for="{{item.sources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
                 <g-pig index="{{source.pig}}" size="26" />
-                <text>{{source.identity}} · {{source.nickname}} {{source.quantity}}份</text>
-                <button
-                  wx:if="{{isCook}}"
-                  class="text-btn"
-                  style="font-size: 9px"
-                  data-id="{{source.id}}"
-                  bindtap="done"
-                >
-                  {{source.done?'已吃到':'标记做好'}}
-                </button>
+                <text>{{source.identity}}</text>
               </view>
             </view>
             <text class="caption copy small-text">合计{{item.quantity}}份</text>
           </view>
           <button
-            wx:if="{{isCook}}"
-            class="text-btn"
-            bindtap="go"
-            data-page="recipe"
-            data-id="{{item.dishId}}"
+            wx:if="{{item.ownLineId}}"
+            class="text-btn swap-button"
+            catchtap="swapDish"
+            data-id="{{item.ownLineId}}"
           >
-            做法 ›
+            换菜
           </button>
         </view>
         <view wx:if="{{!meal.dishes.length}}" class="today-empty">这顿还没安排，去点一道吧。</view>

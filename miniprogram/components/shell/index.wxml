@@ -10,3 +10,5 @@
   <view class="shell-tabs"><slot name="tabs" /></view>
 </view>
 <g-privacy />
+
+<g-dialog />

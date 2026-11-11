@@ -16,13 +16,6 @@
           <button class="text-btn" bindtap="go" data-page="profile">修改头像与昵称 ›</button>
         </view>
       </view>
-      <view wx:if="{{capabilities.preview}}" class="preview-switch">
-        <text class="caption">本机体验 · 数据仅在当前设备保存</text>
-        <view class="row">
-          <button class="pill" bindtap="previewRole" data-role="cook">体验饲养员</button>
-          <button class="pill" bindtap="previewRole" data-role="eater">体验大懒猪</button>
-        </view>
-      </view>
       <view class="card">
         <button
           wx:if="{{capabilities.wechat && !capabilities.preview}}"

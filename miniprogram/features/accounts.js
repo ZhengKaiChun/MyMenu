@@ -54,7 +54,7 @@ exports.login = createPage({
       );
     },
     legal() {
-      wx.showModal({
+      require('../lib/dialog').show({
         title: '隐私与服务说明',
         content:
           '我们仅为账号、小家菜谱、点餐和消息使用你主动提供的信息。菜谱做法只向饲养员及你主动分享的收件人开放。可以退出登录或申请注销，正式上线前需在微信后台配置并审核隐私声明。',
@@ -227,7 +227,7 @@ exports.settings = createPage({
     },
     async deleteAccount() {
       const answer = await new Promise((resolve) =>
-        wx.showModal({
+        require('../lib/dialog').show({
           title: '注销账号',
           content:
             '注销会撤销登录会话。创建者须先转让或按全员同意流程解散小家；此操作不能直接撤销。',

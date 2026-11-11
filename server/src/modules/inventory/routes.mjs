@@ -27,7 +27,7 @@ export function inventoryRoutes(app, { db, route }) {
       db.transaction(async (tx) => {
         if (scope === 'family') {
           await familyLock(tx, r.params.familyId);
-          await member(tx, r.user.id, r.params.familyId, 'cook');
+          await member(tx, r.user.id, r.params.familyId);
         }
         const owner = scope === 'personal' ? r.user.id : r.params.familyId;
         const out = await tx.query(
@@ -45,7 +45,7 @@ export function inventoryRoutes(app, { db, route }) {
         db.transaction(async (tx) => {
           if (scope === 'family') {
             await familyLock(tx, r.params.familyId);
-            await member(tx, r.user.id, r.params.familyId, 'cook');
+            await member(tx, r.user.id, r.params.familyId);
           }
           let out = await tx.query(
             `UPDATE inventories SET name=$3,quantity=$4,unit=$5,category=$6,version=version+1 WHERE id=$1 AND ${column}=$2 AND version=$7 RETURNING id`,
@@ -67,7 +67,7 @@ export function inventoryRoutes(app, { db, route }) {
       db.transaction(async (tx) => {
         if (scope === 'family') {
           await familyLock(tx, r.params.familyId);
-          await member(tx, r.user.id, r.params.familyId, 'cook');
+          await member(tx, r.user.id, r.params.familyId);
         }
         await tx.query(`DELETE FROM inventories WHERE id=$1 AND ${column}=$2`, [
           r.params.id,
@@ -84,7 +84,7 @@ export function inventoryRoutes(app, { db, route }) {
     async (r) =>
       db.transaction(async (tx) => {
         await familyLock(tx, r.params.familyId);
-        await member(tx, r.user.id, r.params.familyId, 'cook');
+        await member(tx, r.user.id, r.params.familyId);
         for (const iid of r.body.ids) {
           let i = (
             await tx.query('SELECT * FROM inventories WHERE id=$1 AND user_id=$2', [iid, r.user.id])
@@ -152,7 +152,7 @@ export function inventoryRoutes(app, { db, route }) {
     async (r) =>
       db.transaction(async (tx) => {
         await familyLock(tx, r.params.familyId);
-        await member(tx, r.user.id, r.params.familyId, 'cook');
+        await member(tx, r.user.id, r.params.familyId);
         for (const i of r.body.items)
           await tx.query(
             'INSERT INTO prep_checks(family_id,meal_date,name,unit,checked) VALUES($1,$2,$3,$4,$5) ON CONFLICT(family_id,meal_date,name,unit) DO UPDATE SET checked=EXCLUDED.checked',

@@ -26,6 +26,143 @@ export async function recipeSnapshot(db, dishId) {
     : null;
 }
 export function recipeRoutes(app, { db, route }) {
+  const localId = z.string().min(1).max(120);
+  route(
+    'PUT',
+    '/families/:familyId/menu-layout',
+    z
+      .object({
+        version: z.number().int().positive(),
+        collections: z
+          .array(z.object({ id: localId, name }).strict())
+          .min(1)
+          .max(100),
+        dishes: z.array(z.object({ id: localId, collectionId: localId }).strict()).max(1000),
+        deletedDishIds: z.array(z.uuid()).max(1000),
+        recipes: z
+          .array(
+            z
+              .object({
+                id: localId,
+                body: recipe.omit({ collectionId: true }).extend({ collectionId: localId }),
+              })
+              .strict(),
+          )
+          .max(1000),
+      })
+      .strict(),
+    async (r) =>
+      db.transaction(async (tx) => {
+        await familyLock(tx, r.params.familyId);
+        const m = await member(tx, r.user.id, r.params.familyId, 'cook');
+        demand(
+          m.version === r.body.version,
+          409,
+          'MENU_VERSION',
+          '菜单已被其他成员修改，请重新载入',
+        );
+        const b = r.body,
+          fid = r.params.familyId;
+        demand(
+          new Set(b.collections.map((c) => c.id)).size === b.collections.length &&
+            new Set(b.collections.map((c) => c.name)).size === b.collections.length &&
+            new Set(b.dishes.map((d) => d.id)).size === b.dishes.length &&
+            new Set(b.recipes.map((d) => d.id)).size === b.recipes.length,
+          400,
+          'DUPLICATE',
+          '合集或菜品重复',
+        );
+        const oldC = (await tx.query('SELECT id FROM collections WHERE family_id=$1', [fid])).rows;
+        const oldD = (
+          await tx.query('SELECT id FROM dishes WHERE family_id=$1 AND NOT archived', [fid])
+        ).rows;
+        demand(
+          oldD.every((d) => b.dishes.some((x) => x.id === d.id) || b.deletedDishIds.includes(d.id)),
+          409,
+          'MENU_INCOMPLETE',
+          '菜单草稿缺少菜品',
+        );
+        const cmap = {},
+          dmap = {};
+        for (const c of oldC)
+          await tx.query('UPDATE collections SET name=$2 WHERE id=$1', [c.id, '__draft_' + c.id]);
+        for (const [sort, c] of b.collections.entries()) {
+          const existing = oldC.some((x) => x.id === c.id);
+          demand(
+            existing || c.id.startsWith('draft-'),
+            400,
+            'COLLECTION_OWNER',
+            '合集不属于当前小家',
+          );
+          const cid = existing ? c.id : id();
+          cmap[c.id] = cid;
+          if (existing)
+            await tx.query('UPDATE collections SET name=$2,sort_order=$3 WHERE id=$1', [
+              cid,
+              c.name,
+              sort,
+            ]);
+          else
+            await tx.query(
+              'INSERT INTO collections(id,family_id,name,sort_order) VALUES($1,$2,$3,$4)',
+              [cid, fid, c.name, sort],
+            );
+        }
+        for (const did of b.deletedDishIds) {
+          demand(
+            oldD.some((x) => x.id === did),
+            400,
+            'DISH_OWNER',
+            '菜品不属于当前小家',
+          );
+          await tx.query('UPDATE dishes SET archived=true,version=version+1 WHERE id=$1', [did]);
+        }
+        for (const entry of b.recipes) {
+          demand(
+            b.dishes.some((d) => d.id === entry.id),
+            400,
+            'RECIPE_TARGET',
+            '做法不在草稿菜单内',
+          );
+          const cid = cmap[entry.body.collectionId];
+          demand(cid, 400, 'COLLECTION_REQUIRED', '请选择保留的合集');
+          const existing = oldD.some((x) => x.id === entry.id);
+          demand(
+            existing || entry.id.startsWith('draft-'),
+            400,
+            'DISH_OWNER',
+            '菜品不属于当前小家',
+          );
+          const saved = await saveDish(tx, r.user.id, fid, existing ? entry.id : null, {
+            ...entry.body,
+            collectionId: cid,
+          });
+          dmap[entry.id] = saved.id;
+        }
+        for (const [sort, d] of b.dishes.entries()) {
+          const did = dmap[d.id] || d.id,
+            cid = cmap[d.collectionId];
+          demand(cid, 400, 'COLLECTION_REQUIRED', '请先移动被删除合集中的菜品');
+          const out = await tx.query(
+            'UPDATE dishes SET collection_id=$3,sort_order=$4,version=version+1 WHERE id=$1 AND family_id=$2 AND NOT archived RETURNING id',
+            [did, fid, cid, sort],
+          );
+          demand(out.rows.length, 400, 'DISH_OWNER', '菜品不属于当前小家');
+        }
+        const fallback = cmap[b.collections[0].id];
+        for (const c of oldC)
+          if (!Object.values(cmap).includes(c.id)) {
+            await tx.query('UPDATE dishes SET collection_id=$2 WHERE collection_id=$1', [
+              c.id,
+              fallback,
+            ]);
+            await tx.query('DELETE FROM collections WHERE id=$1', [c.id]);
+          }
+        await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [fid]);
+        await audit(tx, r.user.id, fid, 'menu.save', fid);
+        return { ok: true };
+      }),
+  );
   route('GET', '/families/:familyId/menu', null, async (r) => {
     const m = await member(db, r.user.id, r.params.familyId);
     const collections = (

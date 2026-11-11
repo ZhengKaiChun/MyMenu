@@ -19,15 +19,13 @@
         <view class="avatar"><g-icon name="{{item.icon}}" size="29" /></view>
         <view class="grow">
           <view class="h4 strong">{{item.name}}</view>
-          <text class="caption copy small-text">
-            {{item.quantity}} {{item.unit}} · {{item.category}}
-          </text>
+          <text class="caption copy small-text">{{item.quantity}} {{item.unit}} · {{item.category}}</text>
         </view>
         <button wx:if="{{isCook}}" class="text-btn" data-id="{{item.id}}" bindtap="edit">
           编辑
         </button>
       </view>
-      <button wx:if="{{isCook}}" class="btn secondary" bindtap="go" data-page="match">
+      <button wx:if="{{canMatch}}" class="btn secondary" bindtap="go" data-page="match">
         <g-icon name="basket" size="21" tone="" />
         看看这些食材能做什么
       </button>
@@ -41,8 +39,8 @@
   </view>
   <g-tabbar slot="tabs" active="pantry" />
 </g-shell>
-<view wx:if="{{showImport}}" class="modal-mask sheet-mask">
-  <view class="sheet">
+<view wx:if="{{showImport}}" class="modal-mask sheet-mask" bindtap="dismissModal">
+  <view class="sheet" catchtap="noop">
     <view class="sheet-title">
       <view class="h3 strong">带上我的现有食材</view>
       <button bindtap="closeImport">×</button>

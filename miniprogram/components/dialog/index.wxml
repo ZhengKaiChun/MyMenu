@@ -1,0 +1,21 @@
+<view wx:if="{{active}}" class="dialog-backdrop" bindtap="cancel">
+  <view class="dialog-paper" catchtap="noop">
+    <view class="postmark">给我饭 · 小家来信</view>
+    <view class="title">{{title}}</view>
+    <text wx:if="{{content}}" class="content">{{content}}</text>
+    <input
+      wx:if="{{editable}}"
+      class="field"
+      value="{{value}}"
+      placeholder="{{placeholderText}}"
+      bindinput="input"
+      focus="{{active}}"
+      adjust-position
+      maxlength="100"
+    />
+    <view class="actions">
+      <button wx:if="{{showCancel}}" class="secondary" bindtap="cancel">{{cancelText}}</button>
+      <button class="primary" bindtap="confirm">{{confirmText}}</button>
+    </view>
+  </view>
+</view>

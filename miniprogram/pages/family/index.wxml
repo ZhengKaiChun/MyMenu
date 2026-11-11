@@ -10,58 +10,95 @@
       <text class="muted">{{members.length}}位小猪，今天也要一起好好吃饭</text>
       <view class="card">
         <button class="list-row" bindtap="go" data-page="members">
-          <text>小家成员与身份</text>
+          <view class="link-label">
+            <g-icon name="people" size="25" />
+            <text>小家成员与身份</text>
+          </view>
           <text>›</text>
         </button>
         <button class="list-row" bindtap="go" data-page="identity">
-          <text>我的家庭称呼</text>
+          <view class="link-label">
+            <g-icon name="user" size="25" />
+            <text>我的家庭称呼</text>
+          </view>
           <text>›</text>
         </button>
         <button class="list-row" bindtap="go" data-page="requests">
-          <text>开饭回音</text>
+          <view class="link-label">
+            <g-icon name="bell" size="25" />
+            <text>开饭回音</text>
+          </view>
           <text>›</text>
         </button>
         <button class="list-row" bindtap="go" data-page="home">
-          <text>切换／创建其他小家</text>
+          <view class="link-label">
+            <g-icon name="home" size="25" />
+            <text>切换／创建其他小家</text>
+          </view>
           <text>›</text>
         </button>
         <button class="list-row" bindtap="go" data-page="settings">
-          <text>账号与设置</text>
+          <view class="link-label">
+            <g-icon name="settings" size="25" />
+            <text>账号与设置</text>
+          </view>
           <text>›</text>
         </button>
       </view>
       <view wx:if="{{family.role==='cook'}}" class="card">
-        <button class="btn secondary" bindtap="go" data-page="invite" loading="{{actionBusy}}">
-          <g-icon name="envelope" size="21" tone="" />
-          邀请小猪回家
+        <button class="list-row" bindtap="go" data-page="invite" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="envelope" size="25" />
+            <text>邀请小猪回家</text>
+          </view>
+          <text>›</text>
         </button>
-        <button class="btn secondary" bindtap="go" data-page="manage" loading="{{actionBusy}}">
-          <g-icon name="book" size="21" tone="" />
-          菜谱与合集管理
+        <button class="list-row" bindtap="go" data-page="manage" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="book" size="25" />
+            <text>菜谱与合集管理</text>
+          </view>
+          <text>›</text>
         </button>
-        <button
-          class="btn secondary"
-          bindtap="go"
-          data-page="shareRecipes"
-          loading="{{actionBusy}}"
-        >
-          <g-icon name="share" size="21" tone="" />
-          把拿手菜分享出去
+        <button class="list-row" bindtap="go" data-page="shareRecipes" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="share" size="25" />
+            <text>把拿手菜分享出去</text>
+          </view>
+          <text>›</text>
         </button>
       </view>
       <view wx:if="{{isOwner}}" class="card">
-        <button class="btn secondary" bindtap="rename" loading="{{actionBusy}}">
-          修改小家名称
+        <button class="list-row" bindtap="rename" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="edit" size="25" />
+            <text>修改小家名称</text>
+          </view>
+          <text>›</text>
         </button>
-        <button class="btn secondary" bindtap="transfer" loading="{{actionBusy}}">
-          转让创建者身份
+        <button class="list-row" bindtap="transfer" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="key" size="25" />
+            <text>转让创建者身份</text>
+          </view>
+          <text>›</text>
         </button>
-        <button class="btn ghost" bindtap="go" data-page="dissolve" loading="{{actionBusy}}">
-          解散小家 · 全员确认
+        <button class="list-row" bindtap="go" data-page="dissolve" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="home" size="25" />
+            <text>解散小家 · 全员确认</text>
+          </view>
+          <text>›</text>
         </button>
       </view>
       <view wx:else>
-        <button class="btn ghost" bindtap="leave" loading="{{actionBusy}}">退出这个小家</button>
+        <button class="list-row" bindtap="leave" loading="{{actionBusy}}">
+          <view class="link-label">
+            <g-icon name="door" size="25" />
+            <text>退出这个小家</text>
+          </view>
+          <text>›</text>
+        </button>
       </view>
       <button wx:if="{{proposal}}" class="change-entry" bindtap="go" data-page="dissolve">
         查看解散申请与全员确认进度 ›

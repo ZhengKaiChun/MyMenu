@@ -12,9 +12,7 @@
         <image class="food" src="{{item.cover}}" mode="aspectFill" />
         <view class="grow">
           <view class="h4 strong">{{item.snapshot.name}}</view>
-          <text class="caption copy small-text">
-            {{util.date(item.meal_date)}} · {{item.slot}} · {{item.quantity}}份
-          </text>
+          <text class="caption copy small-text">{{util.date(item.meal_date)}} · {{item.slot}} · {{item.quantity}}份</text>
         </view>
         <button class="text-btn" bindtap="swap" data-id="{{item.id}}" disabled="{{item.changing}}">
           {{item.changing?'换菜等回音':'申请更换'}}
@@ -44,9 +42,7 @@
             <text>{{item.new_snapshot.name}}</text>
           </view>
         </view>
-        <text class="caption copy small-text">
-          {{item.nickname}} · {{item.quantity}}份 · 查看回音 ›
-        </text>
+        <text class="caption copy small-text">{{item.nickname}} · {{item.quantity}}份 · 查看回音 ›</text>
       </button>
     </view>
   </scroll-view>

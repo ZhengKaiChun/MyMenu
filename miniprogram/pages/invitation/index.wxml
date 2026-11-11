@@ -22,9 +22,7 @@
         </view>
         <view class="letter-envelope-edge" />
       </view>
-      <text class="caption copy small-text">
-        {{invitation.role==='cook'?'加入后一起管理菜谱、准备三餐':'加入后可以点菜、看回音和全家菜单'}}
-      </text>
+      <text class="caption copy small-text">{{invitation.role==='cook'?'加入后一起管理菜谱、准备三餐':'加入后可以点菜、看回音和全家菜单'}}</text>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">

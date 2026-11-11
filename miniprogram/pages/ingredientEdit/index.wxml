@@ -16,9 +16,7 @@
           <view class="fridge-handle" />
           <text style="font-size: 8px; color: #929e71">OUR LITTLE FRIDGE</text>
           <view class="h2" style="font-size: 24px; color: #6e7f52">今天，收好一点新鲜</view>
-          <text class="caption copy small-text">
-            {{scope==='personal'?'存入我的个人食材库':'存入当前小家食材库'}}
-          </text>
+          <text class="caption copy small-text">{{scope==='personal'?'存入我的个人食材库':'存入当前小家食材库'}}</text>
         </view>
         <view class="fridge-shelf">
           <label class="form-label">食材名称</label>

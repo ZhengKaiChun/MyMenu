@@ -85,7 +85,7 @@ exports.family = createPage({
   methods: {
     async rename() {
       let result = await new Promise((resolve) =>
-        wx.showModal({
+        require('../lib/dialog').show({
           title: '给小家换个名字',
           editable: true,
           placeholderText: this.data.family.name,
@@ -114,7 +114,7 @@ exports.family = createPage({
     },
     async leave() {
       let answer = await new Promise((resolve) =>
-        wx.showModal({
+        require('../lib/dialog').show({
           title: '退出这个小家？',
           content: '个人账号和个人食材保留。',
           success: resolve,
@@ -201,6 +201,7 @@ exports.invite = createPage({
     return invitation
       ? {
           title: invitation.title,
+          imageUrl: '/assets/invitation-share.png',
           path: '/pages/invitation/index?token=' + encodeURIComponent(invitation.token),
         }
       : { title: '给我饭', path: '/pages/home/index' };

@@ -70,6 +70,7 @@
             <text class="caption copy small-text">{{item.minutes}} 分钟</text>
             <view class="manager-actions">
               <button bindtap="go" data-page="editDish" data-id="{{item.id}}">编辑</button>
+              <button bindtap="moveCollection" data-id="{{item.id}}">移动合集</button>
               <button bindtap="remove" data-id="{{item.id}}">删除</button>
             </view>
             <view class="sort-actions">
@@ -82,6 +83,12 @@
           <text class="caption copy small-text">点上方“添加菜品”，写下第一道拿手菜。</text>
         </view>
       </scroll-view>
+    </view>
+  </view>
+  <view slot="dock" class="dock">
+    <view class="row">
+      <button class="btn secondary" bindtap="discard">放弃修改</button>
+      <button class="btn" bindtap="saveMenu" loading="{{saving}}">保存全部修改</button>
     </view>
   </view>
 </g-shell>

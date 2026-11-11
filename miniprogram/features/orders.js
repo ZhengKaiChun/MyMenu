@@ -109,7 +109,7 @@ exports.requests = createPage({
       const item = this.data.notifications.find((n) => n.id === e.currentTarget.dataset.id);
       await api.request('/notifications/' + item.id + '/read', { method: 'POST', body: {} });
       if (item.type === 'dissolution.complete') {
-        wx.showModal({ title: '小家消息', content: item.body, showCancel: false });
+        require('../lib/dialog').show({ title: '小家消息', content: item.body, showCancel: false });
         return;
       }
       go('dissolve', { familyId: item.family_id });
@@ -170,7 +170,12 @@ async function loadToday() {
   let dishes = await decorate(meal.dishes.map((d) => ({ ...d, ...d.snapshot })));
   if (this.historyOnly)
     dishes = dishes
-      .map((d) => ({ ...d, sources: d.sources.filter((s) => s.done) }))
+      .map((d) => ({
+        ...d,
+        sources: d.sources.filter(
+          (s) => s.done || date < new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
+        ),
+      }))
       .filter((d) => d.sources.length)
       .map((d) => ({ ...d, quantity: d.sources.reduce((n, s) => n + s.quantity, 0) }));
   const sections = ['早餐', '午餐', '晚餐'].map((slot) => ({
@@ -180,6 +185,10 @@ async function loadToday() {
       .map((d) => ({
         ...d,
         sources: d.sources.map((s) => ({ ...s, pig: identityIndex[s.identity] || 7 })),
+        ownLineId:
+          date >= new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10)
+            ? d.sources.find((s) => s.userId === session.user.id && !s.done)?.id
+            : null,
       })),
   }));
   this.setData({
@@ -249,6 +258,13 @@ async function loadToday() {
   }
 }
 const todayMethods = {
+  openRecipe(e) {
+    if (session.family.role !== 'cook') return;
+    go('recipe', { id: e.currentTarget.dataset.id });
+  },
+  swapDish(e) {
+    go('swap', { id: e.currentTarget.dataset.id });
+  },
   async selectDate(e) {
     this.setData({ date: e.currentTarget.dataset.date });
     session.mealDate = this.data.date;

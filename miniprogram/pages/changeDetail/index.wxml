@@ -6,10 +6,7 @@
       <view wx:if="{{change}}">
         <view class="page-intro">
           <view class="h2">{{change.label}}</view>
-          <text class="muted">
-            {{change.nickname}} · {{util.date(change.meal_date)}} · {{change.slot}} ·
-            {{change.quantity}}份
-          </text>
+          <text class="muted">{{change.nickname}} · {{util.date(change.meal_date)}} · {{change.slot}} · {{change.quantity}}份</text>
         </view>
         <view class="change-letter">
           <text class="letter-kicker">A LITTLE CHANGE FOR OUR TABLE</text>

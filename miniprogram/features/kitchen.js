@@ -102,18 +102,39 @@ exports.dish = createPage({
     },
   },
 });
-async function manageLoad() {
-  const out = await api.request(familyPath('/menu'));
-  if (out.family.role !== 'cook') {
-    go('forbidden');
-    return;
-  }
-  this.setData({
-    family: out.family,
-    collections: out.collections,
-    allDishes: await decorate(out.dishes),
+function syncDraft(page) {
+  const d = session.menuDraft;
+  page.setData({
+    family: d.family,
+    collections: d.collections,
+    allDishes: d.dishes,
+    dirty: d.dirty,
   });
-  filterMenu(this);
+  filterMenu(page);
+}
+async function manageLoad() {
+  if (!session.menuDraft || session.menuDraft.family.id !== session.family.id) {
+    const out = await api.request(familyPath('/menu'));
+    if (out.family.role !== 'cook') {
+      go('forbidden');
+      return;
+    }
+    session.menuDraft = {
+      family: out.family,
+      version: out.family.version,
+      collections: out.collections,
+      dishes: await decorate(out.dishes),
+      recipes: {},
+      deleted: [],
+      dirty: false,
+    };
+  }
+  syncDraft(this);
+}
+function changed(page) {
+  session.menuDraft.dirty = true;
+  syncDraft(page);
+  if (wx.enableAlertBeforeUnload) wx.enableAlertBeforeUnload({ message: '菜单修改尚未保存' });
 }
 const manageMethods = {
   category(e) {
@@ -121,77 +142,82 @@ const manageMethods = {
     filterMenu(this);
   },
   async addCollection() {
-    const result = await new Promise((resolve) =>
-      wx.showModal({
-        title: '新建菜单合集',
-        editable: true,
-        placeholderText: '比如：下饭拿手菜',
-        success: resolve,
-      }),
+    const x = await new Promise((resolve) =>
+      require('../lib/dialog').show({ title: '新建合集', editable: true, success: resolve }),
     );
-    if (result.confirm && result.content) {
-      await api.request(familyPath('/collections'), {
-        method: 'POST',
-        body: { name: result.content },
-      });
-      await manageLoad.call(this);
+    if (x.confirm && x.content?.trim()) {
+      session.menuDraft.collections.push({ id: 'draft-' + api.uuid(), name: x.content.trim() });
+      changed(this);
     }
   },
   async renameCollection(e) {
-    const id = e.currentTarget.dataset.id;
-    const result = await new Promise((resolve) =>
-      wx.showModal({ title: '编辑合集名称', editable: true, success: resolve }),
+    const c = session.menuDraft.collections.find((c) => c.id === e.currentTarget.dataset.id);
+    const x = await new Promise((resolve) =>
+      require('../lib/dialog').show({
+        title: '合集名称',
+        editable: true,
+        content: c.name,
+        success: resolve,
+      }),
     );
-    if (result.confirm && result.content) {
-      await api.request(familyPath('/collections/' + id), {
-        method: 'PATCH',
-        body: { name: result.content },
-      });
-      await manageLoad.call(this);
+    if (x.confirm && x.content?.trim()) {
+      c.name = x.content.trim();
+      changed(this);
     }
   },
   async deleteCollection(e) {
-    const answer = await new Promise((resolve) =>
-      wx.showModal({
+    const id = e.currentTarget.dataset.id;
+    if (session.menuDraft.dishes.some((d) => d.collectionId === id))
+      throw Error('先把合集中的菜移到其他合集');
+    if (session.menuDraft.collections.length < 2) throw Error('至少保留一个合集');
+    const x = await new Promise((resolve) =>
+      require('../lib/dialog').show({
         title: '删除这个合集？',
-        content: '有菜品的合集请先移动菜品。',
+        content: '点击总保存后才会生效。',
         success: resolve,
       }),
     );
-    if (answer.confirm) {
-      await api.request(familyPath('/collections/' + e.currentTarget.dataset.id), {
-        method: 'DELETE',
-      });
+    if (x.confirm) {
+      session.menuDraft.collections = session.menuDraft.collections.filter((c) => c.id !== id);
       this.setData({ category: 'all' });
-      await manageLoad.call(this);
+      changed(this);
     }
   },
   async remove(e) {
-    const answer = await new Promise((resolve) =>
-      wx.showModal({
+    const id = e.currentTarget.dataset.id;
+    const x = await new Promise((resolve) =>
+      require('../lib/dialog').show({
         title: '删除这道菜？',
-        content: '将从点菜菜单移除，已点餐次及历史记录保留。',
+        content: '保存菜单后才会移除，历史点餐仍保留。',
         success: resolve,
       }),
     );
-    if (answer.confirm) {
-      await api.request(familyPath('/dishes/' + e.currentTarget.dataset.id), { method: 'DELETE' });
-      await manageLoad.call(this);
+    if (x.confirm) {
+      session.menuDraft.dishes = session.menuDraft.dishes.filter((d) => d.id !== id);
+      session.menuDraft.deleted.push(id);
+      delete session.menuDraft.recipes[id];
+      changed(this);
     }
   },
-  async move(e) {
-    const { id, dir, type } = e.currentTarget.dataset,
-      list = type === 'collections' ? this.data.collections : this.data.allDishes,
-      ids = list.map((d) => d.id),
-      i = ids.indexOf(id),
+  async moveCollection(e) {
+    const id = e.currentTarget.dataset.id;
+    const choices = session.menuDraft.collections;
+    const x = await new Promise((resolve, reject) =>
+      wx.showActionSheet({ itemList: choices.map((c) => c.name), success: resolve, fail: reject }),
+    );
+    const d = session.menuDraft.dishes.find((d) => d.id === id);
+    d.collectionId = choices[x.tapIndex].id;
+    if (session.menuDraft.recipes[id]) session.menuDraft.recipes[id].collectionId = d.collectionId;
+    changed(this);
+  },
+  move(e) {
+    const { id, dir, type } = e.currentTarget.dataset;
+    const list = type === 'collections' ? session.menuDraft.collections : session.menuDraft.dishes;
+    const i = list.findIndex((x) => x.id === id),
       j = i + Number(dir);
-    if (j < 0 || j >= ids.length) return;
-    [ids[i], ids[j]] = [ids[j], ids[i]];
-    await api.request(familyPath('/sort'), {
-      method: 'POST',
-      body: { type: type || 'dishes', ids },
-    });
-    await manageLoad.call(this);
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    changed(this);
   },
   dragStart(e) {
     this.drag = {
@@ -200,25 +226,49 @@ const manageMethods = {
       y: e.touches[0].clientY,
     };
   },
-  async dragEnd(e) {
+  dragEnd(e) {
     if (!this.drag) return;
-    const drag = this.drag;
+    const d = this.drag;
     this.drag = null;
-    const rows = drag.type === 'collections' ? this.data.collections : this.data.allDishes,
-      ids = rows.map((x) => x.id),
-      from = ids.indexOf(drag.id),
-      delta = Math.round(
-        (e.changedTouches[0].clientY - drag.y) / (drag.type === 'collections' ? 98 : 144),
-      ),
-      to = Math.max(0, Math.min(ids.length - 1, from + delta));
-    if (from < 0 || from === to) return;
-    ids.splice(to, 0, ids.splice(from, 1)[0]);
-    await api.request(familyPath('/sort'), { method: 'POST', body: { type: drag.type, ids } });
+    const list =
+      d.type === 'collections' ? session.menuDraft.collections : session.menuDraft.dishes;
+    const from = list.findIndex((x) => x.id === d.id),
+      to = Math.max(
+        0,
+        Math.min(list.length - 1, from + Math.round((e.changedTouches[0].clientY - d.y) / 110)),
+      );
+    if (from !== to) {
+      list.splice(to, 0, list.splice(from, 1)[0]);
+      changed(this);
+    }
+  },
+  async saveMenu() {
+    const d = session.menuDraft;
+    this.setData({saving:true});
+    try { await api.request(familyPath('/menu-layout'), {
+      method: 'PUT',
+      body: {
+        version: d.version,
+        collections: d.collections.map((c) => ({ id: c.id, name: c.name })),
+        dishes: d.dishes.map((x) => ({ id: x.id, collectionId: x.collectionId })),
+        deletedDishIds: d.deleted.filter((id) => !id.startsWith('draft-')),
+        recipes: Object.entries(d.recipes).map(([id, body]) => ({ id, body })),
+      },
+    });
+    } finally {this.setData({saving:false});}
+    session.menuDraft = null;
+    if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
+    await manageLoad.call(this);
+    wx.showToast({ title: '菜单已保存' });
+  },
+  async discard() {
+    session.menuDraft = null;
+    if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
     await manageLoad.call(this);
   },
 };
 exports.manage = createPage({
-  data: { allDishes: [], dishes: [], collections: [], category: 'all', search: '' },
+  data: { allDishes: [], dishes: [], collections: [], category: 'all', search: '', dirty: false },
   reload: manageLoad,
   methods: manageMethods,
 });
@@ -239,7 +289,10 @@ exports.editDish = createPage({
   },
   async reload() {
     if (this.loaded) return;
-    const menu = await api.request(familyPath('/menu'));
+    this.setData({inDraft:!!session.menuDraft});
+    const menu = session.menuDraft
+      ? { family: session.menuDraft.family, collections: session.menuDraft.collections }
+      : await api.request(familyPath('/menu'));
     if (menu.family.role !== 'cook') {
       go('forbidden');
       return;
@@ -250,7 +303,11 @@ exports.editDish = createPage({
       collectionName: menu.collections[0]?.name || '',
     });
     if (this.query.id) {
-      const d = await api.request(familyPath('/dishes/' + this.query.id + '/recipe'));
+      const d =
+        session.menuDraft?.recipes[this.query.id] ||
+        (await api.request(familyPath('/dishes/' + this.query.id + '/recipe')));
+      const moved = session.menuDraft?.dishes.find((x) => x.id === this.query.id);
+      if (moved) d.collectionId = moved.collectionId;
       this.setData({
         ...d,
         collectionName: menu.collections.find((c) => c.id === d.collectionId)?.name || '',
@@ -274,10 +331,8 @@ exports.editDish = createPage({
     },
     field(e) {
       const { list, index, field } = e.currentTarget.dataset;
-      this.setData({
-        [list + '[' + index + '].' + field]:
-          field === 'quantity' ? Number(e.detail.value) : e.detail.value,
-      });
+      this.data[list][Number(index)][field] =
+        field === 'quantity' ? Number(e.detail.value) : e.detail.value;
       if (wx.enableAlertBeforeUnload)
         wx.enableAlertBeforeUnload({ message: '菜谱还没有保存，要离开吗？' });
     },
@@ -331,14 +386,31 @@ exports.editDish = createPage({
         coverId: d.coverId || null,
         minutes: Number(d.minutes),
         servings: Number(d.servings),
-        ingredients: d.ingredients.map((i) => ({
-          name: i.name,
-          quantity: Number(i.quantity),
-          unit: i.unit,
-        })),
-        steps: d.steps.map((s) => ({ text: s.text, imageId: s.imageId || null })),
+        ingredients: d.ingredients
+          .filter((i) => i.name.trim())
+          .map((i) => ({
+            name: i.name,
+            quantity: Number(i.quantity),
+            unit: i.unit,
+          })),
+        steps: d.steps
+          .filter((s) => s.text.trim())
+          .map((s) => ({ text: s.text, imageId: s.imageId || null })),
         ...(d.version ? { version: d.version } : {}),
       };
+      if (session.menuDraft) {
+        if (!body.name.trim()) throw Error('请填写菜名');
+        const id = this.query.id || 'draft-' + api.uuid();
+        session.menuDraft.recipes[id] = body;
+        const row = { ...body, id, cover: d.cover };
+        const index = session.menuDraft.dishes.findIndex((x) => x.id === id);
+        if (index < 0) session.menuDraft.dishes.push(row);
+        else session.menuDraft.dishes[index] = row;
+        session.menuDraft.dirty = true;
+        if (wx.disableAlertBeforeUnload) wx.disableAlertBeforeUnload();
+        wx.navigateBack();
+        return;
+      }
       await api.request(familyPath('/dishes' + (this.query.id ? '/' + this.query.id : '')), {
         method: this.query.id ? 'PUT' : 'POST',
         body,

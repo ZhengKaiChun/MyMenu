@@ -17,27 +17,37 @@
           </view>
         </button>
       </view>
-      <view wx:for="{{families}}" wx:key="id" class="house-card">
-        <view class="house-topline">
-          <text>
-            <g-icon name="home" size="18" />
-            我的小家
-          </text>
-          <text class="tag good">{{item.role==='cook'?'饲养员':'大懒猪'}}</text>
-        </view>
-        <view class="house-main">
-          <view>
-            <view class="h3 strong">{{item.name}}</view>
-            <view class="house-members"><text>{{item.identity}} · 一起好好吃饭</text></view>
+      <swiper
+        wx:if="{{families.length}}"
+        class="home-houses"
+        indicator-dots="{{families.length>1}}"
+        next-margin="{{families.length>1?'22px':'0px'}}"
+        indicator-active-color="#b74f37"
+      >
+        <swiper-item wx:for="{{families}}" wx:key="id">
+          <view class="house-card">
+            <view class="house-topline">
+              <text>
+                <g-icon name="home" size="18" />
+                我的小家
+              </text>
+              <text class="tag good">{{item.role==='cook'?'饲养员':'大懒猪'}}</text>
+            </view>
+            <view class="house-main">
+              <view>
+                <view class="h3 strong">{{item.name}}</view>
+                <view class="house-members"><text>{{item.identity}} · 一起好好吃饭</text></view>
+              </view>
+              <view class="house-chef"><g-pig index="0" size="95" /></view>
+            </view>
+            <button class="house-enter" bindtap="enter" data-id="{{item.id}}">
+              <g-icon name="utensils" size="24" />
+              <text class="grow">看看今天吃什么</text>
+              <text class="strong">↗</text>
+            </button>
           </view>
-          <view class="house-chef"><g-pig index="0" size="95" /></view>
-        </view>
-        <button class="house-enter" bindtap="enter" data-id="{{item.id}}">
-          <g-icon name="utensils" size="24" />
-          <text class="grow">看看今天吃什么</text>
-          <text class="strong">↗</text>
-        </button>
-      </view>
+        </swiper-item>
+      </swiper>
       <view class="section-title">
         <view class="h3 strong">有家，就有饭</view>
         <text class="caption small-text">创建或加入另一个小家</text>

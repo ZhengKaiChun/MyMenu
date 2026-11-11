@@ -61,7 +61,8 @@
     "g-icon": "/components/icon/index",
     "g-pig": "/components/pig/index",
     "g-tabbar": "/components/tabbar/index",
-    "g-privacy": "/components/privacy/index"
+    "g-privacy": "/components/privacy/index",
+    "g-dialog": "/components/dialog/index"
   },
   "permission": {},
   "requiredPrivateInfos": []

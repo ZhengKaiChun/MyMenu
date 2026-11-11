@@ -5,14 +5,12 @@
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="memo-sheet">
         <view class="memo-head">
-          <text>
+          <view class="memo-kicker">
             <g-icon name="basket" size="19" />
-            FOR OUR TABLE
-          </text>
+            <text>FOR OUR TABLE</text>
+          </view>
           <view class="h2">备菜清单</view>
-          <text class="caption copy small-text">
-            {{date}} · {{items.length}}项食材 · 已备齐{{ready}}项
-          </text>
+          <text class="caption copy small-text">{{date}} · {{items.length}}项食材 · 已备齐{{ready}}项</text>
         </view>
         <view class="memo-meals">
           <text class="strong">今天要做</text>

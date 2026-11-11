@@ -144,7 +144,65 @@ function request(path, options = {}, token) {
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map(S.publicDish),
         };
-      else if (section === 'members') {
+      else if (section === 'menu-layout') {
+        cook();
+        S.demand(f.version === body.version, '菜单已被修改，请重新载入', 409);
+        S.demand(body.collections.length, '至少保留一个合集');
+        const old = db.dishes.filter((d) => d.family_id === fid && !d.archived);
+        S.demand(
+          old.every(
+            (d) => body.dishes.some((x) => x.id === d.id) || body.deletedDishIds.includes(d.id),
+          ),
+          '草稿缺少菜品',
+        );
+        const cmap = {};
+        const names = new Set();
+        for (const [sort, c] of body.collections.entries()) {
+          S.demand(!names.has(c.name) && c.name.trim(), '合集名称重复或为空');
+          names.add(c.name);
+          const existing = db.collections.find((x) => x.id === c.id && x.family_id === fid);
+          S.demand(existing || c.id.startsWith('draft-'), '合集不属于当前小家');
+          const cid = existing?.id || S.id();
+          cmap[c.id] = cid;
+          if (existing) Object.assign(existing, { name: c.name, sort_order: sort });
+          else db.collections.push({ id: cid, family_id: fid, name: c.name, sort_order: sort });
+        }
+        for (const id of body.deletedDishIds) {
+          const d = S.findDish(db, fid, id);
+          d.archived = true;
+          d.version++;
+        }
+        const dmap = {};
+        for (const e of body.recipes) {
+          const d = e.id.startsWith('draft-') ? null : S.findDish(db, fid, e.id);
+          if (d) S.demand(d.version === e.body.version, '菜品已更新', 409);
+          S.demand(e.body.name.trim() && cmap[e.body.collectionId], '请填写菜名并选择合集');
+          const out = {
+            ...e.body,
+            id: d?.id || S.id(),
+            family_id: fid,
+            collectionId: cmap[e.body.collectionId],
+            version: (d?.version || 0) + 1,
+            archived: false,
+          };
+          dmap[e.id] = out.id;
+          if (d) Object.assign(d, out);
+          else db.dishes.push(out);
+        }
+        for (const [sort, d] of body.dishes.entries()) {
+          const row = S.findDish(db, fid, dmap[d.id] || d.id);
+          S.demand(cmap[d.collectionId], '请先移动被删除合集中的菜品');
+          row.collectionId = cmap[d.collectionId];
+          row.sortOrder = sort;
+          row.version++;
+        }
+        const keep = Object.values(cmap);
+        for (const d of db.dishes)
+          if (d.family_id === fid && !keep.includes(d.collectionId)) d.collectionId = keep[0];
+        db.collections = db.collections.filter((c) => c.family_id !== fid || keep.includes(c.id));
+        f.version++;
+        out = { ok: true };
+      } else if (section === 'members') {
         if (method === 'GET')
           out = db.members
             .filter((x) => x.family_id === fid)
@@ -231,10 +289,7 @@ function request(path, options = {}, token) {
             d.version++;
             out = { ok: true };
           } else {
-            S.demand(
-              body.name?.trim() && body.ingredients?.length && body.steps?.length,
-              '请填写菜名、用料和步骤',
-            );
+            S.demand(body.name?.trim(), '请填写菜名');
             S.demand(
               body.ingredients.every(
                 (i) =>
@@ -282,7 +337,7 @@ function request(path, options = {}, token) {
         f.version++;
         out = { ok: true };
       } else if (section === 'inventory')
-        out = inventory(db, user, fid, method, parts.slice(3), body, cook);
+        out = inventory(db, user, fid, method, parts.slice(3), body, () => {});
       else if (section === 'prep') {
         cook();
         const date = query.date || body.date;
@@ -435,7 +490,7 @@ function request(path, options = {}, token) {
                   o.status === 'accepted' &&
                   o.meal_date >= query.from &&
                   o.meal_date <= query.to &&
-                  (query.done !== '1' || o.items.some((l) => l.done)),
+                  (query.done !== '1' || o.meal_date < today() || o.items.some((l) => l.done)),
               )
               .map((o) => o.meal_date),
           ),

@@ -21,9 +21,7 @@
               <view class="h4 strong">{{item.nickname}}</view>
               <text class="caption copy small-text">{{item.identity || '野生小猪'}}</text>
             </view>
-            <text class="tag">
-              {{item.decision==='agree'?'已同意':item.decision==='reject'?'不同意':'等确认'}}
-            </text>
+            <text class="tag">{{item.decision==='agree'?'已同意':item.decision==='reject'?'不同意':'等确认'}}</text>
           </view>
           <view class="copy-receipt">发起时已抄送其他所有成员。未全员同意前不会解散。</view>
         </view>
@@ -45,8 +43,8 @@
     <button wx:elif="{{isInitiator}}" class="btn ghost" bindtap="cancel">撤回解散申请</button>
   </view>
 </g-shell>
-<view wx:if="{{showConfirm}}" class="modal-mask">
-  <view class="crying-confirm">
+<view wx:if="{{showConfirm}}" class="modal-mask" bindtap="dismissModal">
+  <view class="crying-confirm" catchtap="noop">
     <image src="/assets/pigs-crying.png" mode="aspectFit" style="width: 100%; height: 120px" />
     <view class="h3 strong">真的，要解散小家吗？</view>
     <view class="muted" style="margin: 18px 0 23px">

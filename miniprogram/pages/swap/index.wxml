@@ -5,10 +5,7 @@
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="page-intro">
         <view class="h2">这顿，想换个口味</view>
-        <text class="muted">
-          {{util.date(source.meal_date)}} · {{source.slot}} ·
-          {{source.quantity}}份，日期与份数保持不变
-        </text>
+        <text class="muted">{{util.date(source.meal_date)}} · {{source.slot}} · {{source.quantity}}份，日期与份数保持不变</text>
       </view>
       <view class="swap-original">
         <text class="caption copy small-text">原来点了</text>

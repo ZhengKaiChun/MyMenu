@@ -33,17 +33,12 @@
         <view wx:for="{{gift.dishes}}" wx:key="id">
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <text>{{item.name}}</text>
-          <text class="caption copy small-text">
-            {{item.ingredients.length}}项用料 · {{item.steps.length}}步
-          </text>
+          <text class="caption copy small-text">{{item.ingredients.length}}项用料 · {{item.steps.length}}步</text>
         </view>
       </view>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
     <button class="btn" open-type="share">分享给微信好友</button>
-    <button class="btn secondary" bindtap="receive" loading="{{actionBusy}}">
-      预览对方收到的信
-    </button>
   </view>
 </g-shell>

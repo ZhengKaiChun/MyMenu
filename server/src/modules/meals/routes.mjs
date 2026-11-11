@@ -156,7 +156,7 @@ export function mealRoutes(app, { db, route }) {
     );
     return (
       await db.query(
-        "SELECT DISTINCT o.meal_date::text AS date FROM orders o JOIN order_lines l ON l.order_id=o.id WHERE o.family_id=$1 AND o.status='accepted' AND o.meal_date BETWEEN $2 AND $3 AND ($4::boolean=false OR l.done) ORDER BY date",
+        "SELECT DISTINCT o.meal_date::text AS date FROM orders o JOIN order_lines l ON l.order_id=o.id WHERE o.family_id=$1 AND o.status='accepted' AND o.meal_date BETWEEN $2 AND $3 AND ($4::boolean=false OR l.done OR o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date) ORDER BY date",
         [r.params.familyId, from, to, r.query.done === '1'],
       )
     ).rows.map((x) => ({

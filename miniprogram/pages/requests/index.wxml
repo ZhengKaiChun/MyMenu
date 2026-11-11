@@ -43,9 +43,7 @@
               <text>{{item.new_snapshot.name}}</text>
             </view>
           </view>
-          <text class="caption copy small-text">
-            {{item.nickname}} · {{item.quantity}}份 · 查看回音 ›
-          </text>
+          <text class="caption copy small-text">{{item.nickname}} · {{item.quantity}}份 · 查看回音 ›</text>
         </button>
       </view>
       <view wx:for="{{orders}}" wx:key="id" class="wish-ticket">
@@ -60,9 +58,7 @@
           <g-pig index="{{util.pigIndex(item.identity)}}" size="33" />
           <view>
             <view class="h4 strong">{{item.nickname}}的小小心愿</view>
-            <text class="caption copy small-text">
-              点了{{item.items.length}}道菜，想和你一起吃。
-            </text>
+            <text class="caption copy small-text">点了{{item.items.length}}道菜，想和你一起吃。</text>
           </view>
         </view>
         <view class="wish-foods">

@@ -4,7 +4,12 @@ function go(page, query = {}) {
   const qs = Object.keys(query)
     .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(query[k]))
     .join('&');
-  wx.navigateTo({ url: '/pages/' + page + '/index' + (qs ? '?' + qs : '') });
+  const url = '/pages/' + page + '/index' + (qs ? '?' + qs : '');
+  if (getCurrentPages().slice(-1)[0]?.route === 'pages/' + page + '/index' && !qs) return;
+  const roots = ['home', 'menu', 'today', 'pantry', 'family'];
+  if (roots.includes(page)) wx.reLaunch({ url });
+  else if (getCurrentPages().length >= 8) wx.redirectTo({ url });
+  else wx.navigateTo({ url });
 }
 function createPage(options) {
   const output = {
@@ -44,12 +49,18 @@ function createPage(options) {
       if (options.dispose) options.dispose.call(this);
     },
     noop() {},
+    dismissModal() {
+      const patch = {};
+      for (const k of Object.keys(this.data)) if (/^show[A-Z]/.test(k)) patch[k] = false;
+      this.setData(patch);
+    },
     go(e) {
       const d = e.currentTarget.dataset;
       go(d.page, d.id ? { id: d.id } : {});
     },
     input(e) {
-      this.setData({ [e.currentTarget.dataset.field]: e.detail.value });
+      // Do not overwrite a native input during IME composition.
+      this.data[e.currentTarget.dataset.field] = e.detail.value;
     },
     async run(fn, ...args) {
       try {
