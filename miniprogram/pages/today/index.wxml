@@ -18,8 +18,7 @@
         </view>
       </picker>
 
-      <view wx:if="{{isCook && isToday}}" class="cooking-inline-hint"><g-icon name="check" size="16"/><text>勾选自己做完的菜，明天计入成就</text></view>
-      <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" class="today-meal">
+      <view wx:for="{{sections}}" wx:key="slot" wx:for-item="meal" wx:for-index="mealIndex" class="today-meal {{mealIndex===0?'today-first-meal':''}}">
         <view
           class="row section-head"
           style="border-bottom: 1px solid #ddc7a4; padding-bottom: 9px"

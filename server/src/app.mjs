@@ -154,7 +154,7 @@ export async function buildApp(options = {}) {
       return { ok: true };
     }),
   );
-  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.11' }));
+  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.12' }));
   app.addHook('onClose', async () => {
     if (!options.db) await db.close();
   });

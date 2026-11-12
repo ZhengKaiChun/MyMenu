@@ -4722,6 +4722,9 @@ input[type='checkbox'] {
   justify-content: space-between;
   gap: 5px;
 }
+.page-today {
+  padding-top: 13px;
+}
 .today-heading text {
   font-size: 8px;
   letter-spacing: 1.5px;
@@ -4730,7 +4733,7 @@ input[type='checkbox'] {
 .today-heading .h2 {
   font-size: 25px;
   letter-spacing: -0.6px;
-  margin: 7px 0 0;
+  margin: 5px 0 0;
 }
 .today-heading .text-btn {
   font-size: 11px;
@@ -4746,7 +4749,7 @@ input[type='checkbox'] {
   background: #f2e5ce;
   border: 1px solid #e5cfac;
   border-radius: 14px;
-  margin: 19px 0 15px;
+  margin: 14px 0 8px;
   color: #87613a;
 }
 .today-date .sketch {
@@ -4782,6 +4785,9 @@ input[type='checkbox'] {
 }
 .today-meal {
   margin-top: 22px;
+}
+.today-first-meal {
+  margin-top: 12px;
 }
 .today-meal > .section-head {
   display: flex;

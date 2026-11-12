@@ -1,15 +1,3 @@
-.cooking-inline-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border: 1px dashed #c8c7a3;
-  background: #f2f0df;
-  color: #91946e;
-  border-radius: 12px;
-  font-size: 11px;
-  margin: 12px 0 4px;
-}
 .today-dish-actions {
   flex: none;
   width: 60px;
