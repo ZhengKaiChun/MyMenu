@@ -171,10 +171,12 @@ test('meal snapshot cover remains visible to family members after recipe photo c
   const cook = await register('snapshot_cook');
   const eater = await register('snapshot_eater');
   const outsider = await register('snapshot_outsider');
+  const observer = await register('snapshot_observer');
   const userId = async (username) =>
     (await db.query('SELECT id FROM users WHERE username=$1', [username])).rows[0].id;
   const cookId = await userId('snapshot_cook');
   const eaterId = await userId('snapshot_eater');
+  const observerId = await userId('snapshot_observer');
   const familyId = randomUUID();
   const collectionId = randomUUID();
   const dishId = randomUUID();
@@ -191,6 +193,11 @@ test('meal snapshot cover remains visible to family members after recipe photo c
     cookId,
     'cook',
     eaterId,
+    'eater',
+  ]);
+  await db.query('INSERT INTO members(family_id,user_id,role) VALUES($1,$2,$3)', [
+    familyId,
+    observerId,
     'eater',
   ]);
   await db.query('INSERT INTO collections(id,family_id,name) VALUES($1,$2,$3)', [
@@ -237,7 +244,14 @@ test('meal snapshot cover remains visible to family members after recipe photo c
     });
   assert.equal((await signed(eater.token)).statusCode, 200);
   assert.equal((await signed(cook.token)).statusCode, 200);
+  assert.equal((await signed(observer.token)).statusCode, 200);
   assert.equal((await signed(outsider.token)).statusCode, 404);
+  await db.query("UPDATE orders SET status='pending' WHERE id=$1", [orderId]);
+  assert.equal((await signed(eater.token)).statusCode, 200);
+  assert.equal((await signed(cook.token)).statusCode, 200);
+  assert.equal((await signed(observer.token)).statusCode, 404);
   await db.query("UPDATE orders SET status='rejected' WHERE id=$1", [orderId]);
-  assert.equal((await signed(eater.token)).statusCode, 404);
+  assert.equal((await signed(eater.token)).statusCode, 200);
+  assert.equal((await signed(cook.token)).statusCode, 200);
+  assert.equal((await signed(observer.token)).statusCode, 404);
 });

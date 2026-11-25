@@ -88,7 +88,7 @@ export function mediaRoutes(app, { db, config, route }) {
            JOIN members m ON m.family_id=o.family_id
            JOIN families f ON f.id=o.family_id
            WHERE m.user_id=$1 AND l.snapshot->>'coverId'=$2 AND f.deleted_at IS NULL
-             AND (o.status='accepted' OR (o.status='pending' AND (o.user_id=$1 OR m.role='cook')))
+             AND (o.status='accepted' OR o.user_id=$1 OR m.role='cook')
            LIMIT 1`,
           [r.user.id, mid],
         )
