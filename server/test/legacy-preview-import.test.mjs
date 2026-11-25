@@ -156,4 +156,12 @@ test('device preview recipes and read-only history import once without creating 
       .rows[0].n,
     0,
   );
+  const personal = {
+    sourceUserId: 'old-user',
+    inventory: [{ name: '蘑菇', quantity: 2, unit: '盒', category: '蔬菜', meatType: '' }],
+  };
+  assert.equal((await post('/me/legacy-personal', account.token, personal)).status, 200);
+  assert.equal((await post('/me/legacy-personal', account.token, personal)).alreadyImported, true);
+  assert.equal((await get('/inventory', account.token)).body[0].name, '蘑菇');
+  assert.equal((await get('/inventory', other.token)).body.length, 0);
 });

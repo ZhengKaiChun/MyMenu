@@ -590,10 +590,23 @@ test('native restore page imports local family into the selected formal account 
     ],
     inventories: [
       { family_id: 'preview-user-home', name: '南瓜', quantity: 1, unit: '个', category: '蔬菜' },
+      {
+        id: 'old-personal-item',
+        user_id: 'old-user',
+        name: '玉米',
+        quantity: 2,
+        unit: '根',
+        category: '蔬菜',
+      },
     ],
     orders: [],
     media: {},
     cookingRecords: [],
+    notifications: [],
+    changes: [],
+    checks: {},
+    operations: {},
+    sessions: {},
   };
   rt.wx.setStorageSync('geiwofan.preview.database.v1', old);
   const restore = rt.instance('restorePreview');
@@ -601,7 +614,9 @@ test('native restore page imports local family into the selected formal account 
   await restore.onShow();
   assert.equal(restore.data.account, 'restored_personal');
   assert.equal(restore.data.families[0].dishes, 1);
+  assert.equal(restore.data.personalCount, 1);
   await restore.toggle({ currentTarget: { dataset: { id: old.families[0].id } } });
+  await restore.togglePersonal();
   await restore.restore();
   assert.equal(restore.data.error, '');
   const api = rt.load(resolve(rt.root, 'lib/api.js'));
@@ -612,4 +627,5 @@ test('native restore page imports local family into the selected formal account 
     '蒸南瓜',
   );
   assert.equal(rt.wx.getStorageSync('geiwofan.preview.database.v1'), old);
+  assert.equal((await api.request('/inventory'))[0].name, '玉米');
 });

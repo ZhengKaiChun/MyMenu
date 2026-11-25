@@ -225,4 +225,39 @@ export function legacyImportRoutes(app, { db, route }) {
       }),
     { authLimit: true },
   );
+  route(
+    'POST',
+    '/me/legacy-personal',
+    z.object({ sourceUserId: sourceId, inventory: z.array(inventory).max(250) }).strict(),
+    async (r) =>
+      db.transaction(async (tx) => {
+        const source = 'personal:' + r.body.sourceUserId;
+        const existing = (
+          await tx.query('SELECT 1 FROM legacy_imports WHERE user_id=$1 AND source_id=$2', [
+            r.user.id,
+            source,
+          ])
+        ).rows.length;
+        if (existing) return { alreadyImported: true };
+        for (const i of r.body.inventory)
+          await tx.query(
+            'INSERT INTO inventories(id,user_id,name,quantity,unit,category,meat_type) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(user_id,name,unit) WHERE user_id IS NOT NULL DO NOTHING',
+            [
+              id(),
+              r.user.id,
+              i.name,
+              i.quantity,
+              i.unit,
+              i.category,
+              i.category === '肉类' ? i.meatType || '其他' : '',
+            ],
+          );
+        await tx.query('INSERT INTO legacy_imports(user_id,source_id) VALUES($1,$2)', [
+          r.user.id,
+          source,
+        ]);
+        return { alreadyImported: false, count: r.body.inventory.length };
+      }),
+    { authLimit: true },
+  );
 }

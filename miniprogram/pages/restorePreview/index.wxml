@@ -14,9 +14,13 @@
         <view class="restore-family-head"><g-icon name="pot" size="24"/><text>{{item.name}}</text><text class="restore-check">{{item.imported?'已找回':item.selected?'✓':'○'}}</text></view>
         <view class="restore-family-meta">{{item.dishes}} 道菜 · {{item.ingredients}} 种食材 · {{item.history}} 条旧点餐</view>
       </button>
+      <button wx:if="{{personalCount}}" hover-class="none" class="restore-family {{personalSelected?'selected':''}} {{personalImported?'imported':''}}" bindtap="togglePersonal" disabled="{{personalImported || actionBusy}}">
+        <view class="restore-family-head"><g-icon name="basket" size="24"/><text>旧个人食材库</text><text class="restore-check">{{personalImported?'已找回':personalSelected?'✓':'○'}}</text></view>
+        <view class="restore-family-meta">{{personalCount}} 种食材 · 已有同名食材会保留当前值</view>
+      </button>
       <view class="restore-note">旧预览数据会留在这台手机上。导入完成后，在“我的小家”里可查看新小家与旧饭历。</view>
       <view wx:if="{{progress}}" class="restore-progress">{{progress}}</view>
     </view>
   </scroll-view>
-  <view slot="dock" class="dock"><button hover-class="none" class="btn" disabled="{{!selectedCount || actionBusy}}" loading="{{actionBusy}}" bindtap="restore">找回 {{selectedCount}} 个小家</button></view>
+  <view slot="dock" class="dock"><button hover-class="none" class="btn" disabled="{{!selectedCount || actionBusy}}" loading="{{actionBusy}}" bindtap="restore">找回选中的旧数据</button></view>
 </g-shell>

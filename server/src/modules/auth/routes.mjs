@@ -112,6 +112,25 @@ export async function authRoutes(app, ctx) {
     },
     { public: true, authLimit: true },
   );
+  route(
+    'POST',
+    '/auth/wechat/check',
+    z.object({ code: z.string().min(1).max(256) }).strict(),
+    async (r) => {
+      const openid = await wechatOpenid(config, r.body.code);
+      const bound = (
+        await db.query(
+          "SELECT u.username,u.nickname FROM identities i JOIN users u ON u.id=i.user_id WHERE i.provider='wechat' AND i.subject=$1 AND u.deleted_at IS NULL",
+          [openid],
+        )
+      ).rows[0];
+      return {
+        state: bound ? 'bound' : 'available',
+        account: bound ? bound.username || bound.nickname || '微信账号' : null,
+      };
+    },
+    { public: true, authLimit: true },
+  );
   phoneRoutes(ctx, session);
   route('POST', '/auth/logout', z.object({}).strict(), async (r) => {
     await db.query('DELETE FROM sessions WHERE token_hash=$1', [r.tokenHash]);

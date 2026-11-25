@@ -3,8 +3,11 @@ const dates = require('../lib/dates');
 const config = require('../config/index');
 
 function oldDatabase() {
-  const db = wx.getStorageSync(config.previewDatabaseKey || 'geiwofan.preview.database.v1');
-  return db && db.schema === 1 && Array.isArray(db.families) ? db : null;
+  const raw = wx.getStorageSync(config.previewDatabaseKey || 'geiwofan.preview.database.v1');
+  // The preview reader upgrades older local shapes in memory; it never saves here.
+  return raw && raw.schema === 1 && Array.isArray(raw.families)
+    ? require('../preview/store').read()
+    : null;
 }
 function oldHistory(db, familyId) {
   const { min } = dates.bounds();
@@ -25,6 +28,19 @@ function identity(db, familyId, userId) {
 function mediaPath(db, oldId) {
   if (/^preview-food-[0-3]$/.test(oldId)) return '/assets/food-' + oldId.slice(-1) + '.jpg';
   return db.media && db.media[oldId];
+}
+function personalOwner(db) {
+  const token = wx.getStorageSync((config.previewSessionNamespace || 'menu.preview') + '.session');
+  return db.sessions?.[token] || db.families.find((f) => f.id !== 'preview-home')?.owner_id || null;
+}
+function inventoryItem(i) {
+  return {
+    name: i.name,
+    quantity: Number(i.quantity) || 0,
+    unit: i.unit,
+    category: ['蔬菜', '肉类', '蛋奶', '主食', '调味'].includes(i.category) ? i.category : '其他',
+    meatType: i.category === '肉类' ? i.meatType || '其他' : '',
+  };
 }
 async function buildFamily(db, f, uploadMedia) {
   const collections = (db.collections || [])
@@ -100,15 +116,7 @@ async function buildFamily(db, f, uploadMedia) {
     const { oldCoverId, ...fields } = row;
     history.push({ ...fields, coverId: await uploadMedia(oldCoverId) });
   }
-  const inventory = (db.inventories || [])
-    .filter((i) => i.family_id === f.id)
-    .map((i) => ({
-      name: i.name,
-      quantity: Number(i.quantity) || 0,
-      unit: i.unit,
-      category: ['蔬菜', '肉类', '蛋奶', '主食', '调味'].includes(i.category) ? i.category : '其他',
-      meatType: i.category === '肉类' ? i.meatType || '其他' : '',
-    }));
+  const inventory = (db.inventories || []).filter((i) => i.family_id === f.id).map(inventoryItem);
   return {
     sourceId: String(f.id),
     name: f.name,
@@ -120,7 +128,16 @@ async function buildFamily(db, f, uploadMedia) {
 }
 
 module.exports = createPage({
-  data: { families: [], account: '', selectedCount: 0, progress: '' },
+  data: {
+    families: [],
+    account: '',
+    selectedCount: 0,
+    progress: '',
+    personalCount: 0,
+    personalSelected: false,
+    personalImported: false,
+    oldUserId: '',
+  },
   async reload() {
     if (api.isPreview()) throw Error('请在正式版中找回旧预览数据');
     const db = oldDatabase();
@@ -129,6 +146,10 @@ module.exports = createPage({
       api.request('/me/legacy-imports'),
     ]);
     const done = new Set((imported.imports || []).map((x) => x.source_id));
+    const oldUserId = db ? personalOwner(db) : null;
+    const personalCount = oldUserId
+      ? (db.inventories || []).filter((i) => i.user_id === oldUserId).length
+      : 0;
     const families = db
       ? db.families
           .filter((f) => f.id !== 'preview-home' && !f.deleted_at)
@@ -147,6 +168,10 @@ module.exports = createPage({
       families,
       selectedCount: 0,
       progress: '',
+      oldUserId: oldUserId || '',
+      personalCount,
+      personalSelected: false,
+      personalImported: oldUserId ? done.has('personal:' + oldUserId) : false,
     });
   },
   methods: {
@@ -155,18 +180,34 @@ module.exports = createPage({
       const families = this.data.families.map((f) =>
         f.sourceId === id && !f.imported ? { ...f, selected: !f.selected } : f,
       );
-      this.setData({ families, selectedCount: families.filter((f) => f.selected).length });
+      this.setData({
+        families,
+        selectedCount:
+          families.filter((f) => f.selected).length + (this.data.personalSelected ? 1 : 0),
+      });
+    },
+    togglePersonal() {
+      if (!this.data.personalCount || this.data.personalImported) return;
+      const personalSelected = !this.data.personalSelected;
+      this.setData({
+        personalSelected,
+        selectedCount:
+          this.data.families.filter((f) => f.selected).length + (personalSelected ? 1 : 0),
+      });
     },
     async restore() {
       const selected = this.data.families.filter((f) => f.selected && !f.imported);
-      if (!selected.length) return;
+      const withPersonal = this.data.personalSelected && !this.data.personalImported;
+      if (!selected.length && !withPersonal) return;
       const answer = await new Promise((resolve) =>
         wx.showModal({
           title: '核对找回位置',
           content:
             '即将把 ' +
             selected.length +
-            ' 个旧小家复制到正式账号「' +
+            ' 个旧小家' +
+            (withPersonal ? '和个人食材' : '') +
+            '复制到正式账号「' +
             this.data.account +
             '」。旧成员需要重新邀请；旧饭历只读，现有小家不会被覆盖。',
           confirmText: '确认找回',
@@ -187,7 +228,6 @@ module.exports = createPage({
         uploaded.set(oldId, out.id);
         return out.id;
       };
-      let completed = 0;
       for (const item of selected) {
         const family = db.families.find((f) => f.id === item.sourceId);
         if (!family) continue;
@@ -195,9 +235,18 @@ module.exports = createPage({
         const body = await buildFamily(db, family, uploadMedia);
         this.setData({ progress: '正在保存「' + family.name + '」…' });
         await api.request('/me/legacy-imports', { method: 'POST', body });
-        completed++;
       }
-      wx.showToast({ title: '已找回 ' + completed + ' 个小家', icon: 'none' });
+      if (withPersonal) {
+        const inventory = (db.inventories || [])
+          .filter((i) => i.user_id === this.data.oldUserId)
+          .map(inventoryItem);
+        this.setData({ progress: '正在保存旧个人食材…' });
+        await api.request('/me/legacy-personal', {
+          method: 'POST',
+          body: { sourceUserId: this.data.oldUserId, inventory },
+        });
+      }
+      wx.showToast({ title: '旧数据已找回', icon: 'none' });
       go('home');
     },
   },

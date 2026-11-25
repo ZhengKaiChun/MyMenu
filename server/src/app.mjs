@@ -35,7 +35,17 @@ export async function buildApp(options = {}) {
     genReqId: () => id(),
   });
   await app.register(helmet);
-  await app.register(rateLimit, { max: 100, timeWindow: '1 minute', keyGenerator: (r) => r.ip });
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
+    keyGenerator: (r) => r.ip,
+    errorResponseBuilder: (_r, context) => {
+      const error = new Error('操作有点快，请在约 ' + Math.ceil(context.ttl / 1000) + ' 秒后重试');
+      error.statusCode = context.statusCode;
+      error.code = 'RATE_LIMIT';
+      return error;
+    },
+  });
   await app.register(multipart, {
     limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 1, parts: 2 },
   });
@@ -76,7 +86,11 @@ export async function buildApp(options = {}) {
     app.route({
       method,
       url,
-      config: options.authLimit ? { rateLimit: { max: 8, timeWindow: '1 minute' } } : undefined,
+      config: options.authLimit
+        ? { rateLimit: { max: 8, timeWindow: '1 minute' } }
+        : options.rateLimit
+          ? { rateLimit: options.rateLimit }
+          : undefined,
       preHandler: async (r) => {
         for (const [key, value] of Object.entries(r.params || {})) {
           if (key !== 'token') z.uuid().parse(value);
@@ -157,7 +171,7 @@ export async function buildApp(options = {}) {
       return { ok: true };
     }),
   );
-  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.19' }));
+  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.20' }));
   app.addHook('onClose', async () => {
     if (!options.db) await db.close();
   });

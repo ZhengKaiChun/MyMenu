@@ -47,11 +47,26 @@ exports.login = createPage({
       }
       if (!this.data.consent) throw Error('请先阅读并同意服务协议与隐私说明');
       if (!this.data.capabilities.wechat) throw Error('微信登录服务尚未配置，请先使用账号密码登录');
-      const out = await new Promise((resolve, reject) =>
-        wx.login({ success: resolve, fail: reject }),
+      const login = () =>
+        new Promise((resolve, reject) => wx.login({ success: resolve, fail: reject }));
+      const status = await api.request('/auth/wechat/check', {
+        method: 'POST',
+        body: { code: (await login()).code },
+      });
+      const answer = await new Promise((resolve) =>
+        wx.showModal({
+          title: status.state === 'bound' ? '核对微信登录账号' : '这个微信还没有账号',
+          content:
+            status.state === 'bound'
+              ? '继续后会进入「' + status.account + '」。请确认这是你要使用的账号。'
+              : '继续会新建“野生小猪”账号。旧预览数据不会自动出现，可登录后从设置里主动找回；如果已有账号，也可以先用账号密码登录再绑定微信。',
+          confirmText: status.state === 'bound' ? '确认进入' : '新建并登录',
+          success: resolve,
+        }),
       );
+      if (!answer.confirm) return;
       await afterLogin(
-        await api.request('/auth/wechat', { method: 'POST', body: { code: out.code } }),
+        await api.request('/auth/wechat', { method: 'POST', body: { code: (await login()).code } }),
       );
     },
     legal() {
