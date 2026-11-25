@@ -1,0 +1,32 @@
+<view wx:if="{{visible}}" class="flavor-mask" bindtap="close">
+  <view class="flavor-sheet" catchtap="noop">
+    <view class="flavor-handle" />
+    <view class="flavor-head">
+      <view>
+        <text class="flavor-kicker">给我饭 · 自选口味</text>
+        <text class="flavor-title">{{title}}</text>
+        <text class="flavor-dish">{{dishName}}</text>
+      </view>
+      <button hover-class="none" class="flavor-close" bindtap="close">×</button>
+    </view>
+    <scroll-view scroll-y class="flavor-scroll">
+      <view wx:for="{{groups}}" wx:for-item="group" wx:for-index="groupIndex" wx:key="id" class="flavor-group">
+        <view class="flavor-group-head">
+          <text class="flavor-index">{{groupIndex+1}}</text>
+          <text class="flavor-group-title">{{group.title}}</text>
+          <text class="flavor-mode">{{group.mode==='single'?'选 1 项':'可选多项'}}</text>
+        </view>
+        <view class="flavor-choices">
+          <button hover-class="none" wx:for="{{group.choices}}" wx:for-item="choice" wx:key="id" class="flavor-choice {{choice.checked?'selected':''}}" data-group="{{group.id}}" data-choice="{{choice.id}}" bindtap="choose">
+            <text class="choice-mark">{{choice.checked?'✓':group.mode==='single'?'○':'＋'}}</text>
+            <text class="choice-label">{{choice.label}}</text>
+          </button>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="flavor-footer">
+      <text>{{hint}}</text>
+      <button hover-class="none" class="flavor-confirm" bindtap="confirm">{{confirmText}}</button>
+    </view>
+  </view>
+</view>

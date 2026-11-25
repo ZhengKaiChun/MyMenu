@@ -120,3 +120,97 @@
   background: #f1dfa7;
   color: #764832;
 }
+.page-editDish {
+  padding-top: 7px;
+}
+.page-editDish > .h2 {
+  font-size: 21px;
+  margin-bottom: 10px;
+}
+.page-editDish > .form-label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.page-editDish input.input {
+  height: 42px;
+  line-height: 42px;
+  padding: 0 11px;
+}
+.page-editDish .cover-heading {
+  margin-top: 11px;
+  margin-bottom: 6px;
+}
+.page-editDish .cover-upload,
+.page-editDish .cover-upload .upload-placeholder {
+  min-height: 116px;
+}
+.page-editDish .section-title {
+  margin: 15px 0 8px;
+}
+.page-editDish .dish-preferences {
+  margin: 12px 0 3px;
+  padding: 10px 12px;
+}
+.page-editDish .featured-toggle {
+  padding-bottom: 8px;
+}
+.page-editDish .spice-heading {
+  margin: 8px 0 6px;
+}
+.page-editDish .spice-options button {
+  padding: 5px 4px !important;
+}
+.page-editDish .step {
+  padding: 10px;
+  margin: 10px 0;
+}
+.page-editDish .step .upload,
+.page-editDish .step .upload-placeholder {
+  min-height: 99px;
+}
+.page-editDish .add-step-btn {
+  min-height: 38px;
+  margin: 10px 0 !important;
+}
+.page-editDish .option-editor {
+  padding: 11px;
+  margin: 8px 0;
+  border-radius: 15px 15px 8px 15px;
+}
+.page-editDish .option-editor-head {
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.page-editDish .option-editor-head > text {
+  font-size: 12px;
+  flex: none;
+}
+.page-editDish .option-mode {
+  display: flex;
+  gap: 3px;
+  margin: 0 0 0 auto;
+}
+.page-editDish .option-mode button {
+  flex: none;
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 7px;
+}
+.page-editDish .option-remove {
+  flex: none;
+  margin: 0 0 0 5px;
+  padding: 3px;
+  font-size: 11px;
+  color: #b65e4b;
+}
+.page-editDish .option-editor .input {
+  height: 37px;
+  line-height: 37px;
+}
+.page-editDish .option-choice {
+  margin: 5px 0;
+}
+.page-editDish .option-add {
+  margin-top: 6px;
+  padding: 7px;
+}

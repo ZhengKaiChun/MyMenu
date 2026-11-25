@@ -1,6 +1,7 @@
 const config = require('../config/index'),
   session = require('./session');
 const imageCache = {};
+const pendingImages = {};
 const isPreview = () => config.mode === 'preview';
 const preview = () => require('../preview/index');
 function uuid() {
@@ -49,30 +50,39 @@ async function image(id, fallback = '/assets/food-placeholder.png', shareToken) 
   const cacheKey = session.token + ':' + (shareToken || '') + ':' + id;
   if (imageCache[cacheKey] && imageCache[cacheKey].expires > Date.now())
     return imageCache[cacheKey].path;
+  if (pendingImages[cacheKey]) return pendingImages[cacheKey];
+  const job = (async () => {
+    try {
+      const out = await request('/media/' + id + '/url', {
+        method: 'POST',
+        body: shareToken ? { shareToken } : {},
+      });
+      // Native image components can reject signed network URLs. Download through
+      // WeChat's configured download domain and render the local temporary file.
+      const path = await new Promise((resolve, reject) =>
+        wx.downloadFile({
+          url: out.url,
+          timeout: 12000,
+          success(result) {
+            if (result.statusCode === 200 && result.tempFilePath) resolve(result.tempFilePath);
+            else reject(new Error('IMAGE_DOWNLOAD_' + result.statusCode));
+          },
+          fail: reject,
+        }),
+      );
+      imageCache[cacheKey] = { path, expires: Date.now() + 240000 };
+      return path;
+    } catch (error) {
+      if (typeof console !== 'undefined' && console.warn)
+        console.warn('Dish image unavailable', error.code || error.errMsg || error.message);
+      return fallback;
+    }
+  })();
+  pendingImages[cacheKey] = job;
   try {
-    const out = await request('/media/' + id + '/url', {
-      method: 'POST',
-      body: shareToken ? { shareToken } : {},
-    });
-    // Native image components can reject signed network URLs. Download through
-    // WeChat's configured download domain and render the local temporary file.
-    const path = await new Promise((resolve, reject) =>
-      wx.downloadFile({
-        url: out.url,
-        timeout: 12000,
-        success(result) {
-          if (result.statusCode === 200 && result.tempFilePath) resolve(result.tempFilePath);
-          else reject(new Error('IMAGE_DOWNLOAD_' + result.statusCode));
-        },
-        fail: reject,
-      }),
-    );
-    imageCache[cacheKey] = { path, expires: Date.now() + 240000 };
-    return path;
-  } catch (error) {
-    if (typeof console !== 'undefined' && console.warn)
-      console.warn('Dish image unavailable', error.code || error.errMsg || error.message);
-    return fallback;
+    return await job;
+  } finally {
+    delete pendingImages[cacheKey];
   }
 }
 async function upload(path, options = {}) {

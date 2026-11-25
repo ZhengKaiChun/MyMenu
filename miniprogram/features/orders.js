@@ -435,6 +435,9 @@ exports.swap = createPage({
       const { id, rows } = flavors.finish(this, false);
       this.setData({ selected: id, selectedOptions: rows });
     },
+    closeOptions() {
+      this.setData({ showOptions: false });
+    },
     async submit() {
       if (!this.data.selected) throw Error('选择一道想替换的菜');
       const out = await api.request(familyPath('/changes'), {

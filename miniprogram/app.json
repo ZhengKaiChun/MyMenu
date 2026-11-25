@@ -68,7 +68,8 @@
     "g-pig": "/components/pig/index",
     "g-tabbar": "/components/tabbar/index",
     "g-privacy": "/components/privacy/index",
-    "g-dialog": "/components/dialog/index"
+    "g-dialog": "/components/dialog/index",
+    "g-flavor-sheet": "/components/flavorSheet/index"
   },
   "permission": {},
   "requiredPrivateInfos": []

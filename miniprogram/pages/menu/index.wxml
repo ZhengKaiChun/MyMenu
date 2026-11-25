@@ -41,10 +41,10 @@
           <text class="strong rail-label">{{item.name}}</text>
         </button>
       </scroll-view>
-      <scroll-view class="menu-dishes" scroll-y>
+      <scroll-view class="menu-dishes" scroll-y lower-threshold="120" bindscrolltolower="moreDishes">
         <view class="catalog-label">
           <text>{{category==='all'?'全部菜品':categoryName}}</text>
-          <text>{{dishes.length}} 道</text>
+          <text>{{matchedCount}} 道</text>
         </view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish"><g-icon wx:if="{{item.featured}}" class="featured-star" name="star" size="20"/>
           <button hover-class="none" class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
@@ -63,11 +63,12 @@
                 </view>
                 <view class="dish-spice"><g-icon wx:for="{{[1,2,3]}}" wx:for-item="level" wx:key="*this" name="{{level<=item.spiceLevel?'chili':'chili-outline'}}" size="15"/></view>
               </view>
-              <button hover-class="none" class="dish-add" bindtap="add" data-id="{{item.id}}">
-                <text wx:if="{{quantities[item.id]}}" class="strong">{{quantities[item.id]}}</text>
-                <text wx:if="{{quantities[item.id]}}">＋</text>
-                <block wx:else><g-icon name="bowl" size="20"/><text>想吃</text></block>
-              </button>
+              <view wx:if="{{quantities[item.id]}}" class="dish-quantity">
+                <button hover-class="none" aria-label="减少一份" bindtap="minus" data-id="{{item.id}}">−</button>
+                <text>{{quantities[item.id]}}</text>
+                <button hover-class="none" aria-label="增加一份" bindtap="add" data-id="{{item.id}}">＋</button>
+              </view>
+              <button wx:else hover-class="none" class="dish-add" bindtap="add" data-id="{{item.id}}"><g-icon name="bowl" size="17"/><text>想吃</text></button>
             </view>
           </view>
         </view>
@@ -121,4 +122,4 @@
     </button>
   </view>
 </view>
-<view wx:if="{{showOptions}}" class="modal-mask flavor-mask" bindtap="dismissModal"><view class="flavor-sheet" catchtap="noop"><view class="flavor-head"><view><text>这道菜，想怎么吃？</text><text>{{optionDishName}}</text></view><button hover-class="none" bindtap="dismissModal">×</button></view><scroll-view scroll-y class="flavor-scroll"><view wx:for="{{optionGroupsDisplay}}" wx:for-item="group" wx:key="id" class="flavor-group"><view class="flavor-group-head"><text>{{group.title}}</text><text>{{group.mode==='single'?'选 1 项':'可选多项'}}</text></view><view class="flavor-choices"><button hover-class="none" wx:for="{{group.choices}}" wx:for-item="choice" wx:key="id" class="{{choice.checked?'selected':''}}" data-group="{{group.id}}" data-choice="{{choice.id}}" bindtap="chooseOption"><text>{{choice.label}}</text><text>{{choice.checked?'✓':'＋'}}</text></button></view></view></scroll-view><button hover-class="none" class="btn flavor-confirm" bindtap="confirmOptions">选好了，放进菜篮</button></view></view>
+<g-flavor-sheet visible="{{showOptions}}" dish-name="{{optionDishName}}" groups="{{optionGroupsDisplay}}" title="这道菜，想怎么吃？" confirm-text="选好了，放进菜篮" bind:choose="chooseOption" bind:confirm="confirmOptions" bind:close="closeOptions" />

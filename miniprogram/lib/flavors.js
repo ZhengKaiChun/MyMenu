@@ -21,7 +21,9 @@ function display(groups, selections) {
   }));
 }
 function choose(page, event) {
-  const { group, choice } = event.currentTarget.dataset;
+  const { group, choice } = event.detail?.groupId
+    ? { group: event.detail.groupId, choice: event.detail.choiceId }
+    : event.currentTarget.dataset;
   const source = page.data.optionGroupsDisplay.find((x) => x.id === group);
   if (!source) return;
   const selections = { ...page.data.optionSelections };

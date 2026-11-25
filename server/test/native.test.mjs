@@ -95,6 +95,46 @@ test('all native WXML event handlers are implemented', () => {
     assert.ok(source.includes('<g-shell'), name + ' missing native shell');
   }
 });
+test('menu opens before photos finish and shows both quantity controls', async () => {
+  const runtime = nativeRuntime(null);
+  const session = runtime.load(resolve(runtime.root, 'lib/session.js'));
+  const api = runtime.load(resolve(runtime.root, 'lib/api.js'));
+  session.token = 'menu-render-test';
+  session.family = { id: 'family-render-test', role: 'cook', name: '测试小家' };
+  const collection = 'collection-render-test';
+  const dishes = Array.from({ length: 30 }, (_, i) => ({
+    id: 'dish-' + i,
+    name: '家常菜' + i,
+    coverId: 'photo-' + i,
+    collectionId: collection,
+    collectionIds: [collection],
+    optionGroups: [],
+  }));
+  api.request = async () => ({
+    family: session.family,
+    collections: [{ id: collection, name: '拿手好菜' }],
+    dishes,
+  });
+  let photoRequests = 0;
+  api.image = () => {
+    photoRequests++;
+    return new Promise(() => {});
+  };
+  const menu = runtime.instance('menu');
+  menu.onLoad({});
+  await menu.onShow();
+  assert.equal(menu.data.dishes.length, 12);
+  assert.equal(menu.data.matchedCount, 30);
+  assert.ok(photoRequests <= 3, 'photos should start with a small concurrent batch');
+  assert.equal(menu.data.dishes[0].cover, '/assets/food-placeholder.png');
+  await menu.add({ currentTarget: { dataset: { id: dishes[0].id } } });
+  assert.equal(menu.data.quantities[dishes[0].id], 1);
+  await menu.minus({ currentTarget: { dataset: { id: dishes[0].id } } });
+  assert.equal(menu.data.quantities[dishes[0].id], undefined);
+  await menu.moreDishes();
+  assert.equal(menu.data.dishes.length, 24);
+  menu.onUnload();
+});
 test('native controllers register, create household, save a real recipe and submit a real order', async (t) => {
   const { app } = await buildApp({
     config: {

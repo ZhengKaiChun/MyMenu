@@ -1,4 +1,63 @@
-@import '../../styles/flavors.wxss';
+.page-menu .dish-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  width: 83px;
+  height: 30px;
+  border: 1px solid #dab997;
+  border-radius: 10px;
+  background: #f7e9d1;
+  color: #70452f;
+}
+.page-menu .dish-quantity button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 28px;
+  min-width: 27px;
+  margin: 0;
+  padding: 0;
+  color: #76503a;
+  font-size: 17px;
+  line-height: 1;
+}
+.page-menu .dish-quantity > text {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.page-menu .menu-dish {
+  min-height: 103px;
+  padding: 9px 0;
+  gap: 9px;
+}
+.page-menu .menu-photo,
+.page-menu .menu-photo .food {
+  width: 89px;
+}
+.page-menu .menu-photo .food {
+  height: 88px;
+}
+.page-menu .menu-dish-info > .h3 {
+  font-size: 15px;
+  line-height: 1.35;
+  margin-bottom: 3px;
+}
+.page-menu .dish-description {
+  font-size: 10px;
+  line-height: 1.4;
+  max-height: 28px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.page-menu .dish-order-row .dish-add {
+  height: 28px;
+  min-height: 28px;
+  padding: 3px 8px;
+  font-size: 11px;
+}
 .cart-flavor {
   display: block;
   margin: 3px 0 0;

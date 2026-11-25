@@ -14,6 +14,44 @@ function cartRows(dishes) {
       optionSummary: flavors.summary(d, session.cartOptions?.[d.id]),
     }));
 }
+const coverPlaceholder = '/assets/food-placeholder.png';
+function loadVisibleCovers(page) {
+  if (!page.coverQueue) page.coverQueue = [];
+  if (!page.coverRequested) page.coverRequested = new Set();
+  const visibleIds = new Set(page.data.dishes.map((dish) => dish.id));
+  page.coverQueue = page.coverQueue.filter((id) => {
+    if (visibleIds.has(id)) return true;
+    page.coverRequested.delete(id);
+    return false;
+  });
+  for (const dish of page.data.dishes) {
+    if (!dish.coverId || dish.cover !== coverPlaceholder || page.coverRequested.has(dish.id))
+      continue;
+    page.coverRequested.add(dish.id);
+    page.coverQueue.push(dish.id);
+  }
+  while ((page.coverActive || 0) < 3 && page.coverQueue.length) {
+    const dishId = page.coverQueue.shift();
+    const dish = page.data.allDishes.find((d) => d.id === dishId);
+    if (!dish) continue;
+    page.coverActive = (page.coverActive || 0) + 1;
+    api
+      .image(dish.coverId, coverPlaceholder)
+      .then((cover) => {
+        if (page.coverDestroyed) return;
+        const allIndex = page.data.allDishes.findIndex((d) => d.id === dishId);
+        const visibleIndex = page.data.dishes.findIndex((d) => d.id === dishId);
+        const patch = {};
+        if (allIndex >= 0) patch['allDishes[' + allIndex + '].cover'] = cover;
+        if (visibleIndex >= 0) patch['dishes[' + visibleIndex + '].cover'] = cover;
+        if (Object.keys(patch).length) page.setData(patch);
+      })
+      .finally(() => {
+        page.coverActive--;
+        if (!page.coverDestroyed) loadVisibleCovers(page);
+      });
+  }
+}
 function filterMenu(page) {
   const list = page.data.allDishes.filter(
     (d) =>
@@ -28,7 +66,8 @@ function filterMenu(page) {
         (d.meatType || '其他') === page.data.meatType),
   );
   page.setData({
-    dishes: list,
+    dishes: page.data.isOrdering ? list.slice(0, page.data.visibleCount || 12) : list,
+    matchedCount: list.length,
     count: count(),
     cart: cartRows(page.data.allDishes),
     quantities: { ...session.cart },
@@ -37,6 +76,7 @@ function filterMenu(page) {
         ? '搜索结果'
         : page.data.collections.find((c) => c.id === page.data.category)?.name || '全部菜品',
   });
+  if (page.data.isOrdering) loadVisibleCovers(page);
 }
 exports.menu = createPage({
   data: {
@@ -46,6 +86,8 @@ exports.menu = createPage({
     category: 'all',
     search: '',
     count: 0,
+    matchedCount: 0,
+    visibleCount: 12,
     isOrdering: true,
     meatType: '',
     meatTypes: require('../lib/inventory-types').meatTypes,
@@ -60,11 +102,21 @@ exports.menu = createPage({
   },
   async reload() {
     const out = await api.request(familyPath('/menu'));
+    const previousCovers = new Map(this.data.allDishes.map((d) => [d.id, d]));
+    this.coverDestroyed = false;
+    this.coverQueue = [];
+    this.coverRequested = new Set();
     session.family = { ...session.family, ...out.family };
     this.setData({
       family: session.family,
       collections: out.collections,
-      allDishes: await decorate(out.dishes),
+      allDishes: out.dishes.map((d) => ({
+        ...d,
+        cover:
+          previousCovers.get(d.id)?.coverId === d.coverId
+            ? previousCovers.get(d.id).cover
+            : coverPlaceholder,
+      })),
       date: this.data.date || new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10),
     });
     if (!out.collections.some((c) => c.id === this.data.category))
@@ -77,9 +129,14 @@ exports.menu = createPage({
     filterMenu(this);
   },
   methods: {
+    moreDishes() {
+      if (this.data.visibleCount >= this.data.matchedCount) return;
+      this.setData({ visibleCount: this.data.visibleCount + 12 });
+      filterMenu(this);
+    },
     meatCategory(e) {
       const type = e.currentTarget.dataset.type;
-      this.setData({ meatType: this.data.meatType === type ? '' : type });
+      this.setData({ meatType: this.data.meatType === type ? '' : type, visibleCount: 12 });
       filterMenu(this);
     },
     category(e) {
@@ -87,11 +144,11 @@ exports.menu = createPage({
       const showMeatTabs = ['肉类', '肉禽', '荤菜'].includes(
         this.data.collections.find((c) => c.id === id)?.name,
       );
-      this.setData({ category: id, showMeatTabs, meatType: '' });
+      this.setData({ category: id, showMeatTabs, meatType: '', visibleCount: 12 });
       filterMenu(this);
     },
     search(e) {
-      this.setData({ search: e.detail.value });
+      this.setData({ search: e.detail.value, visibleCount: 12 });
       filterMenu(this);
     },
     date(e) {
@@ -105,7 +162,7 @@ exports.menu = createPage({
     add(e) {
       const id = e.currentTarget.dataset.id;
       const dish = this.data.allDishes.find((d) => d.id === id);
-      if (dish?.optionGroups?.length) {
+      if (dish?.optionGroups?.length && !session.cart[id]) {
         this.setData({ optionEdit: false });
         flavors.begin(this, dish);
         return;
@@ -128,10 +185,16 @@ exports.menu = createPage({
       else this.setData({ showCart: true });
       filterMenu(this);
     },
+    closeOptions() {
+      this.setData({ showOptions: false, showCart: this.data.optionEdit });
+    },
     minus(e) {
       const id = e.currentTarget.dataset.id;
       session.cart[id] = Math.max(0, (session.cart[id] || 0) - 1);
-      if (!session.cart[id]) delete session.cart[id];
+      if (!session.cart[id]) {
+        delete session.cart[id];
+        delete session.cartOptions[id];
+      }
       filterMenu(this);
     },
     cart() {
@@ -144,6 +207,9 @@ exports.menu = createPage({
       go('checkout');
     },
   },
+  dispose() {
+    this.coverDestroyed = true;
+  },
 });
 exports.dish = createPage({
   data: { dish: null, showOptions: false, optionGroupsDisplay: [], optionSelections: {} },
@@ -155,7 +221,7 @@ exports.dish = createPage({
   },
   methods: {
     add() {
-      if (this.data.dish.optionGroups?.length) {
+      if (this.data.dish.optionGroups?.length && !session.cart[this.data.dish.id]) {
         flavors.begin(this, this.data.dish);
         return;
       }
@@ -169,6 +235,9 @@ exports.dish = createPage({
       const { id } = flavors.finish(this);
       session.cart[id] = Math.min(99, (session.cart[id] || 0) + 1);
       wx.showToast({ title: '已放进菜篮', icon: 'none' });
+    },
+    closeOptions() {
+      this.setData({ showOptions: false });
     },
     recipe() {
       go('recipe', { id: this.data.dish.id });
