@@ -143,3 +143,101 @@ test('uploads are decoded, re-encoded and signed; malicious images and foreign a
     400,
   );
 });
+
+test('meal snapshot cover remains visible to family members after recipe photo changes', async (t) => {
+  const { app, db } = await buildApp({
+    config: {
+      production: false,
+      database: {},
+      origin: 'http://127.0.0.1:3000',
+      mediaKey: 'm'.repeat(32),
+      pepper: 'p'.repeat(32),
+      mediaDir: '.runtime/test-media',
+      wechatSecret: '',
+      allowDevAuth: false,
+    },
+    logger: false,
+  });
+  t.after(() => app.close());
+  const register = async (username) => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/register',
+      payload: { username, password: 'snapshot-test-password' },
+    });
+    assert.equal(response.statusCode, 200);
+    return response.json();
+  };
+  const cook = await register('snapshot_cook');
+  const eater = await register('snapshot_eater');
+  const outsider = await register('snapshot_outsider');
+  const userId = async (username) =>
+    (await db.query('SELECT id FROM users WHERE username=$1', [username])).rows[0].id;
+  const cookId = await userId('snapshot_cook');
+  const eaterId = await userId('snapshot_eater');
+  const familyId = randomUUID();
+  const collectionId = randomUUID();
+  const dishId = randomUUID();
+  const orderId = randomUUID();
+  const oldCoverId = randomUUID();
+  const currentCoverId = randomUUID();
+  await db.query('INSERT INTO families(id,name,owner_id) VALUES($1,$2,$3)', [
+    familyId,
+    '测试小家',
+    cookId,
+  ]);
+  await db.query('INSERT INTO members(family_id,user_id,role) VALUES($1,$2,$3),($1,$4,$5)', [
+    familyId,
+    cookId,
+    'cook',
+    eaterId,
+    'eater',
+  ]);
+  await db.query('INSERT INTO collections(id,family_id,name) VALUES($1,$2,$3)', [
+    collectionId,
+    familyId,
+    '拿手菜',
+  ]);
+  await db.query(
+    'INSERT INTO dishes(id,family_id,collection_id,name,cover_id) VALUES($1,$2,$3,$4,$5)',
+    [dishId, familyId, collectionId, '封面已更新的菜', currentCoverId],
+  );
+  await db.query('INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3)', [
+    dishId,
+    '[]',
+    '[]',
+  ]);
+  await db.query('INSERT INTO media(id,owner_id,filename,mime,size) VALUES($1,$2,$3,$4,$5)', [
+    oldCoverId,
+    cookId,
+    oldCoverId + '.jpg',
+    'image/jpeg',
+    123,
+  ]);
+  await db.query(
+    'INSERT INTO orders(id,family_id,user_id,meal_date,slot,status) VALUES($1,$2,$3,$4,$5,$6)',
+    [orderId, familyId, eaterId, '2026-11-25', '晚餐', 'accepted'],
+  );
+  await db.query(
+    'INSERT INTO order_lines(id,order_id,dish_id,quantity,snapshot) VALUES($1,$2,$3,$4,$5)',
+    [
+      randomUUID(),
+      orderId,
+      dishId,
+      1,
+      JSON.stringify({ id: dishId, name: '封面已更新的菜', coverId: oldCoverId }),
+    ],
+  );
+  const signed = async (token) =>
+    app.inject({
+      method: 'POST',
+      url: '/media/' + oldCoverId + '/url',
+      headers: { authorization: 'Bearer ' + token },
+      payload: {},
+    });
+  assert.equal((await signed(eater.token)).statusCode, 200);
+  assert.equal((await signed(cook.token)).statusCode, 200);
+  assert.equal((await signed(outsider.token)).statusCode, 404);
+  await db.query("UPDATE orders SET status='rejected' WHERE id=$1", [orderId]);
+  assert.equal((await signed(eater.token)).statusCode, 404);
+});

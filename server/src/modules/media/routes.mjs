@@ -79,6 +79,37 @@ export function mediaRoutes(app, { db, config, route }) {
           )
         ).rows.length;
     }
+    if (!allowed) {
+      // A meal keeps the photo it had when ordered, even if the recipe cover changes later.
+      allowed = (
+        await db.query(
+          `SELECT 1 FROM order_lines l
+           JOIN orders o ON o.id=l.order_id
+           JOIN members m ON m.family_id=o.family_id
+           JOIN families f ON f.id=o.family_id
+           WHERE m.user_id=$1 AND l.snapshot->>'coverId'=$2 AND f.deleted_at IS NULL
+             AND (o.status='accepted' OR (o.status='pending' AND (o.user_id=$1 OR m.role='cook')))
+           LIMIT 1`,
+          [r.user.id, mid],
+        )
+      ).rows.length;
+    }
+    if (!allowed) {
+      allowed = (
+        await db.query(
+          `SELECT 1 FROM changes c
+           JOIN order_lines l ON l.id=c.line_id
+           JOIN orders o ON o.id=l.order_id
+           JOIN members m ON m.family_id=o.family_id
+           JOIN families f ON f.id=o.family_id
+           WHERE m.user_id=$1 AND f.deleted_at IS NULL
+             AND (m.role='cook' OR o.user_id=$1)
+             AND (c.old_snapshot->>'coverId'=$2 OR c.new_snapshot->>'coverId'=$2)
+           LIMIT 1`,
+          [r.user.id, mid],
+        )
+      ).rows.length;
+    }
     demand(allowed, 404, 'MEDIA_NOT_FOUND', '图片不可用');
     const expires = Date.now() + 300000,
       signature = sign(config.mediaKey, mid + ':' + expires);
