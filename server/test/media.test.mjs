@@ -1,7 +1,8 @@
 import test from 'node:test';
+import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
-import { readFile, unlink, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { buildApp } from '../src/app.mjs';
 test('uploads are decoded, re-encoded and signed; malicious images and foreign access fail', async (t) => {
@@ -66,9 +67,9 @@ test('uploads are decoded, re-encoded and signed; malicious images and foreign a
   let mid = out.json().id,
     stored = (await db.query('SELECT * FROM media WHERE id=$1', [mid])).rows[0];
   t.after(() => unlink(join(dir, stored.filename)));
-  assert.equal(stored.mime, 'image/webp');
+  assert.equal(stored.mime, 'image/jpeg');
   const encoded = await readFile(join(dir, stored.filename));
-  assert.equal(encoded.subarray(0, 4).toString(), 'RIFF');
+  assert.equal(encoded.subarray(0, 3).toString('hex'), 'ffd8ff');
   let foreign = await app.inject({
     method: 'POST',
     url: '/media/' + mid + '/url',
@@ -86,7 +87,41 @@ test('uploads are decoded, re-encoded and signed; malicious images and foreign a
   const url = new URL(link.json().url);
   let image = await app.inject({ url: url.pathname + url.search });
   assert.equal(image.statusCode, 200);
-  assert.equal(image.headers['content-type'], 'image/webp');
+  assert.equal(image.headers['content-type'], 'image/jpeg');
+  assert.equal(image.rawPayload.subarray(0, 3).toString('hex'), 'ffd8ff');
+  const legacyId = randomUUID();
+  const legacyName = legacyId + '.webp';
+  const legacyJpegName = legacyId + '.jpg';
+  await writeFile(join(dir, legacyName), await sharp(png).webp().toBuffer());
+  const ownerId = (await db.query('SELECT id FROM users WHERE username=$1', ['image_owner']))
+    .rows[0].id;
+  await db.query('INSERT INTO media(id,owner_id,filename,mime,size) VALUES($1,$2,$3,$4,$5)', [
+    legacyId,
+    ownerId,
+    legacyName,
+    'image/webp',
+    (await readFile(join(dir, legacyName))).length,
+  ]);
+  t.after(async () => {
+    await unlink(join(dir, legacyName));
+    await unlink(join(dir, legacyJpegName));
+  });
+  const legacyLink = await app.inject({
+    method: 'POST',
+    url: '/media/' + legacyId + '/url',
+    headers: { authorization: 'Bearer ' + a.token },
+    payload: {},
+  });
+  assert.equal(legacyLink.statusCode, 200);
+  const legacyUrl = new URL(legacyLink.json().url);
+  const legacyImage = await app.inject({ url: legacyUrl.pathname + legacyUrl.search });
+  assert.equal(legacyImage.statusCode, 200);
+  assert.equal(legacyImage.headers['content-type'], 'image/jpeg');
+  assert.equal(legacyImage.rawPayload.subarray(0, 3).toString('hex'), 'ffd8ff');
+  assert.equal(
+    (await readFile(join(dir, legacyJpegName))).subarray(0, 3).toString('hex'),
+    'ffd8ff',
+  );
   url.searchParams.set('signature', '0'.repeat(64));
   assert.equal((await app.inject({ url: url.pathname + url.search })).statusCode, 403);
   let conflict = await app.inject({

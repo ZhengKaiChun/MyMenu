@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, rename, unlink } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import sharp from 'sharp';
 import { demand } from '../../core/errors.mjs';
@@ -27,20 +27,21 @@ export function mediaRoutes(app, { db, config, route }) {
       output = await sharp(input, { limitInputPixels: 20000000 })
         .rotate()
         .resize(1280, 1280, { fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 82 })
+        .flatten({ background: '#fffaf0' })
+        .jpeg({ quality: 84 })
         .toBuffer();
     } catch {
       demand(false, 400, 'IMAGE_INVALID', '图片无法读取');
     }
     const mid = randomUUID(),
-      filename = mid + '.webp';
+      filename = mid + '.jpg';
     await mkdir(root, { recursive: true });
     await writeFile(join(root, filename), output, { flag: 'wx' });
     await db.query('INSERT INTO media(id,owner_id,filename,mime,size) VALUES($1,$2,$3,$4,$5)', [
       mid,
       r.user.id,
       filename,
-      'image/webp',
+      'image/jpeg',
       output.length,
     ]);
     return { id: mid };
@@ -99,8 +100,30 @@ export function mediaRoutes(app, { db, config, route }) {
       '图片链接已失效',
     );
     const m = (await db.query('SELECT filename,mime FROM media WHERE id=$1', [mid])).rows[0];
-    demand(m && /^[a-f0-9-]+\.webp$/.test(m.filename), 404, 'MEDIA_NOT_FOUND', '图片不存在');
-    reply.header('Cache-Control', 'private,max-age=240').type(m.mime);
-    return readFile(join(root, m.filename));
+    demand(m && /^[a-f0-9-]+\.(webp|jpg)$/.test(m.filename), 404, 'MEDIA_NOT_FOUND', '图片不存在');
+    reply.header('Cache-Control', 'private,max-age=240').type('image/jpeg');
+    if (m.filename.endsWith('.jpg')) return readFile(join(root, m.filename));
+    // Existing WebP uploads are converted once and then served from an atomic JPEG sidecar.
+    const cachedPath = join(root, m.filename.replace(/\.webp$/, '.jpg'));
+    try {
+      return await readFile(cachedPath);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    const original = await readFile(join(root, m.filename));
+    const jpeg = await sharp(original, { limitInputPixels: 20000000 })
+      .flatten({ background: '#fffaf0' })
+      .jpeg({ quality: 84 })
+      .toBuffer();
+    const temporaryPath = cachedPath + '.' + randomUUID() + '.tmp';
+    try {
+      await writeFile(temporaryPath, jpeg, { flag: 'wx' });
+      await rename(temporaryPath, cachedPath);
+    } finally {
+      await unlink(temporaryPath).catch((error) => {
+        if (error.code !== 'ENOENT') throw error;
+      });
+    }
+    return jpeg;
   });
 }
