@@ -10,7 +10,7 @@ const credentials = z
       .trim()
       .regex(/^[a-zA-Z0-9_]{4,32}$/)
       .transform((s) => s.toLowerCase()),
-    password: z.string().min(10).max(128),
+    password: z.string().min(6).max(128),
   })
   .strict();
 async function wechatOpenid(config, code) {
@@ -128,6 +128,33 @@ export async function authRoutes(app, ctx) {
         state: bound ? 'bound' : 'available',
         account: bound ? bound.username || bound.nickname || '微信账号' : null,
       };
+    },
+    { public: true, authLimit: true },
+  );
+  route(
+    'POST',
+    '/auth/recover/wechat',
+    z.object({ code: z.string().min(1).max(256), password: z.string().min(6).max(128) }).strict(),
+    async (r) => {
+      const openid = await wechatOpenid(config, r.body.code);
+      const found = (
+        await db.query(
+          "SELECT u.* FROM identities i JOIN users u ON u.id=i.user_id WHERE i.provider='wechat' AND i.subject=$1 AND u.deleted_at IS NULL",
+          [openid],
+        )
+      ).rows[0];
+      demand(
+        found && found.username,
+        404,
+        'RECOVERY_ACCOUNT',
+        '这个微信尚未绑定账号密码，请使用微信登录或联系管理员',
+      );
+      const hashed = await passwordHash(r.body.password);
+      await db.transaction(async (tx) => {
+        await tx.query('UPDATE users SET password_hash=$2 WHERE id=$1', [found.id, hashed]);
+        await tx.query('DELETE FROM sessions WHERE user_id=$1', [found.id]);
+      });
+      return { ok: true };
     },
     { public: true, authLimit: true },
   );

@@ -1,13 +1,18 @@
 const { createPage, go, decorate, familyPath, session, api } = require('../lib/page');
 const groups = require('../lib/collections');
 const collectionPicker = require('../lib/collection-picker');
+const flavors = require('../lib/flavors');
 function count() {
   return Object.values(session.cart).reduce((n, x) => n + x, 0);
 }
 function cartRows(dishes) {
   return dishes
     .filter((d) => session.cart[d.id])
-    .map((d) => ({ ...d, quantity: session.cart[d.id] }));
+    .map((d) => ({
+      ...d,
+      quantity: session.cart[d.id],
+      optionSummary: flavors.summary(d, session.cartOptions?.[d.id]),
+    }));
 }
 function filterMenu(page) {
   const list = page.data.allDishes.filter(
@@ -48,6 +53,10 @@ exports.menu = createPage({
     date: '',
     slot: '晚餐',
     showCart: false,
+    showOptions: false,
+    optionGroupsDisplay: [],
+    optionSelections: {},
+    optionEdit: false,
   },
   async reload() {
     const out = await api.request(familyPath('/menu'));
@@ -95,7 +104,28 @@ exports.menu = createPage({
     },
     add(e) {
       const id = e.currentTarget.dataset.id;
+      const dish = this.data.allDishes.find((d) => d.id === id);
+      if (dish?.optionGroups?.length) {
+        this.setData({ optionEdit: false });
+        flavors.begin(this, dish);
+        return;
+      }
       session.cart[id] = Math.min(99, (session.cart[id] || 0) + 1);
+      filterMenu(this);
+    },
+    chooseOption(e) {
+      flavors.choose(this, e);
+    },
+    editCartOptions(e) {
+      const dish = this.data.allDishes.find((d) => d.id === e.currentTarget.dataset.id);
+      if (!dish) return;
+      this.setData({ showCart: false, optionEdit: true });
+      flavors.begin(this, dish);
+    },
+    confirmOptions() {
+      const { id } = flavors.finish(this);
+      if (!this.data.optionEdit) session.cart[id] = Math.min(99, (session.cart[id] || 0) + 1);
+      else this.setData({ showCart: true });
       filterMenu(this);
     },
     minus(e) {
@@ -116,7 +146,7 @@ exports.menu = createPage({
   },
 });
 exports.dish = createPage({
-  data: { dish: null },
+  data: { dish: null, showOptions: false, optionGroupsDisplay: [], optionSelections: {} },
   async reload() {
     const out = await api.request(familyPath('/menu')),
       dish = out.dishes.find((d) => d.id === this.query.id);
@@ -125,7 +155,19 @@ exports.dish = createPage({
   },
   methods: {
     add() {
+      if (this.data.dish.optionGroups?.length) {
+        flavors.begin(this, this.data.dish);
+        return;
+      }
       session.cart[this.data.dish.id] = Math.min(99, (session.cart[this.data.dish.id] || 0) + 1);
+      wx.showToast({ title: '已放进菜篮', icon: 'none' });
+    },
+    chooseOption(e) {
+      flavors.choose(this, e);
+    },
+    confirmOptions() {
+      const { id } = flavors.finish(this);
+      session.cart[id] = Math.min(99, (session.cart[id] || 0) + 1);
       wx.showToast({ title: '已放进菜篮', icon: 'none' });
     },
     recipe() {
@@ -372,6 +414,7 @@ exports.editDish = createPage({
     meatTypes: require('../lib/inventory-types').meatTypes,
     spiceLevel: 1,
     ingredients: [{ name: '', quantity: 1, unit: '个' }],
+    optionGroups: [],
     steps: [{ text: '', imageId: null }],
     version: null,
   },
@@ -430,6 +473,64 @@ exports.editDish = createPage({
       this.setData({ spiceLevel: Number(e.currentTarget.dataset.level) });
     },
     ...collectionPicker.methods,
+    optionInput(e) {
+      if (e?.detail?.value === undefined) return;
+      const { group, choice, field } = e.currentTarget.dataset;
+      const target = this.data.optionGroups[Number(group)];
+      if (!target) return;
+      if (field === 'title') target.title = e.detail.value;
+      if (field === 'label' && target.choices[Number(choice)])
+        target.choices[Number(choice)].label = e.detail.value;
+    },
+    addOptionGroup() {
+      this.setData({
+        optionGroups: [
+          ...this.data.optionGroups,
+          { id: api.uuid(), title: '', mode: 'single', choices: [{ id: api.uuid(), label: '' }] },
+        ],
+      });
+    },
+    removeOptionGroup(e) {
+      this.setData({
+        optionGroups: this.data.optionGroups.filter(
+          (_, i) => i !== Number(e.currentTarget.dataset.group),
+        ),
+      });
+    },
+    optionMode(e) {
+      const i = Number(e.currentTarget.dataset.group);
+      this.setData({ ['optionGroups[' + i + '].mode']: e.currentTarget.dataset.mode });
+    },
+    addOptionChoice(e) {
+      const i = Number(e.currentTarget.dataset.group);
+      this.setData({
+        ['optionGroups[' + i + '].choices']: [
+          ...this.data.optionGroups[i].choices,
+          { id: api.uuid(), label: '' },
+        ],
+      });
+    },
+    removeOptionChoice(e) {
+      const i = Number(e.currentTarget.dataset.group),
+        j = Number(e.currentTarget.dataset.choice);
+      this.setData({
+        ['optionGroups[' + i + '].choices']: this.data.optionGroups[i].choices.filter(
+          (_, k) => k !== j,
+        ),
+      });
+    },
+    moveIngredient(e) {
+      const i = Number(e.currentTarget.dataset.index),
+        j = i + Number(e.currentTarget.dataset.dir);
+      const ingredients = [...this.data.ingredients];
+      if (j < 0 || j >= ingredients.length) return;
+      [ingredients[i], ingredients[j]] = [ingredients[j], ingredients[i]];
+      this.setData({ ingredients });
+    },
+    importantStep(e) {
+      const i = Number(e.currentTarget.dataset.index);
+      this.setData({ ['steps[' + i + '].important']: !this.data.steps[i].important });
+    },
     field(e) {
       if (e?.detail?.value === undefined) return;
       const { list, index, field } = e.currentTarget.dataset;
@@ -521,11 +622,25 @@ exports.editDish = createPage({
             quantity: Number(i.quantity),
             unit: i.unit,
           })),
+        optionGroups: d.optionGroups.map((g) => ({
+          id: g.id,
+          title: (g.title || '').trim(),
+          mode: g.mode,
+          choices: g.choices
+            .filter((c) => c.label?.trim())
+            .map((c) => ({ id: c.id, label: c.label.trim() })),
+        })),
         steps: d.steps
           .filter((s) => s.text?.trim() || s.imageId)
-          .map((s) => ({ text: s.text || '', imageId: s.imageId || null })),
+          .map((s) => ({
+            text: s.text || '',
+            imageId: s.imageId || null,
+            important: !!s.important,
+          })),
         ...(d.version ? { version: d.version } : {}),
       };
+      if (body.optionGroups.some((g) => !g.title || !g.choices.length))
+        throw Error('请补全口味组名称和至少一个选项');
       if (session.menuDraft) {
         if (!body.name.trim()) throw Error('请填写菜名');
         const id = this.query.id || 'draft-' + api.uuid();
@@ -549,7 +664,7 @@ exports.editDish = createPage({
   },
 });
 exports.recipe = createPage({
-  data: { dish: null, textOnly: false },
+  data: { dish: null, textOnly: false, importantOnly: false, visibleSteps: [] },
   async reload() {
     const d = await api.request(familyPath('/dishes/' + this.query.id + '/recipe'));
     this.setData({
@@ -564,10 +679,22 @@ exports.recipe = createPage({
         ),
       },
     });
+    this.setData({
+      visibleSteps: this.data.dish.steps.map((s, index) => ({ ...s, number: index + 1 })),
+    });
   },
   methods: {
     toggle() {
       this.setData({ textOnly: !this.data.textOnly });
+    },
+    focusSteps() {
+      const importantOnly = !this.data.importantOnly;
+      this.setData({
+        importantOnly,
+        visibleSteps: this.data.dish.steps
+          .map((s, index) => ({ ...s, number: index + 1 }))
+          .filter((s) => !importantOnly || s.important),
+      });
     },
   },
 });

@@ -1,6 +1,6 @@
 <g-shell id="page-shell" title="给我饭" back="{{false}}">
   <view class="home-fixed">
-    <view class="page-content page-home">
+    <view class="page-content page-home {{families.length?'':'home-empty'}}">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="home-top">
         <view>
@@ -17,6 +17,7 @@
           </view>
         </button>
       </view>
+      <view wx:if="{{!families.length}}" class="empty-home-illustration"><view class="empty-home-art"><g-icon name="home" size="62"/><g-icon name="pot" size="39"/></view><view class="empty-home-copy"><text>一张餐桌，等你来布置</text><text>建一个小家，或走进 TA 的小家</text></view></view>
       <view wx:if="{{families.length}}" class="home-families"><swiper
         wx:if="{{families.length}}"
         class="home-houses"

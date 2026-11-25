@@ -5,7 +5,7 @@ import { member, familyLock, atomic, notify, dateAllowed, isoDate } from '../../
 import { demand } from '../../core/errors.mjs';
 import { note, decision } from '../../core/validation.mjs';
 import { recipeSnapshot } from '../recipes/routes.mjs';
-import { publicSnapshot } from '../meals/routes.mjs';
+import { publicSnapshot, selectedOptions } from '../meals/routes.mjs';
 export function changeRoutes(app, { db, route }) {
   route('GET', '/families/:familyId/changes', null, async (r) => {
     let m = await member(db, r.user.id, r.params.familyId);
@@ -24,7 +24,19 @@ export function changeRoutes(app, { db, route }) {
   route(
     'POST',
     '/families/:familyId/changes',
-    z.object({ lineId: z.uuid(), replacementId: z.uuid(), reason: note }).strict(),
+    z
+      .object({
+        lineId: z.uuid(),
+        replacementId: z.uuid(),
+        reason: note,
+        selectedOptions: z
+          .array(
+            z.object({ groupId: z.uuid(), choiceIds: z.array(z.uuid()).min(1).max(30) }).strict(),
+          )
+          .max(20)
+          .optional(),
+      })
+      .strict(),
     async (r) =>
       atomic(db, r.user.id, r.headers['idempotency-key'], 'change.create', r.body, async (tx) => {
         await familyLock(tx, r.params.familyId);
@@ -59,6 +71,10 @@ export function changeRoutes(app, { db, route }) {
         );
         let cid = id(),
           snapshot = await recipeSnapshot(tx, replacement.id);
+        snapshot.selectedOptions = selectedOptions(
+          snapshot.optionGroups || [],
+          r.body.selectedOptions || [],
+        );
         await tx.query(
           "INSERT INTO changes(id,line_id,user_id,replacement_id,line_version,status,reason,old_snapshot,new_snapshot) VALUES($1,$2,$3,$4,$5,'pending',$6,$7,$8)",
           [

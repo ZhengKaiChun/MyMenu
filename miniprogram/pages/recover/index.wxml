@@ -5,8 +5,12 @@
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="page-intro">
         <view class="h2">别急，小家还在这里</view>
-        <text class="muted">验证码由短信服务发送，请勿向别人透露。</text>
+        <text class="muted">选择你已绑定的身份，验证后重新设置密码。</text>
       </view>
+      <view class="recover-methods"><button hover-class="none" wx:if="{{capabilities.wechat&&!preview}}" class="{{method==='wechat'?'active':''}}" data-method="wechat" bindtap="method">微信验证</button><button hover-class="none" wx:if="{{capabilities.sms}}" class="{{method==='phone'?'active':''}}" data-method="phone" bindtap="method">手机验证码</button><button hover-class="none" class="{{method==='help'?'active':''}}" data-method="help" bindtap="method">人工协助</button></view>
+      <view wx:if="{{method==='wechat'}}" class="recover-note">将通过当前微信身份验证。请使用此前绑定此账号的微信，重设后原有登录会退出。</view>
+      <view wx:if="{{method==='help'}}" class="recover-note">未绑定微信、短信服务尚未开通，或绑定身份已无法使用？请用注册时的信息联系运营者 2834389993@qq.com，核实身份后处理。请勿发送旧密码。</view>
+      <block wx:if="{{method==='phone'}}">
       <label class="form-label">手机号</label>
       <input
         class="input"
@@ -31,6 +35,8 @@
           {{countdown?countdown+'秒':'获取验证码'}}
         </button>
       </view>
+      </block>
+      <block wx:if="{{method!=='help'}}">
       <label class="form-label">新密码</label>
       <input
         class="input"
@@ -38,12 +44,13 @@
         data-field="password"
         bindinput="input"
         password="true"
-        placeholder="至少10位的独特密码"
+        placeholder="至少6位，建议使用独特密码"
       />
       <button hover-class="none" class="btn" style="margin-top: 22px" bindtap="submit">
         <g-icon name="lock" size="21" tone="light" />
-        验证并重设密码
+        验证身份并重设密码
       </button>
+      </block>
       <button hover-class="none" class="btn secondary" bindtap="go" data-page="password">返回账号登录</button>
     </view>
   </scroll-view>

@@ -40,6 +40,7 @@
           <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.snapshot.name}}</view>
+            <text wx:if="{{item.optionSummary}}" class="today-option-summary">{{item.optionSummary}}</text>
             <view class="orderer-list">
               <view wx:for="{{item.displaySources}}" wx:key="id" wx:for-item="source" class="orderer-chip">
                 <g-pig index="{{source.pig}}" size="26" />

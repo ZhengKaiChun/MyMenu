@@ -17,11 +17,12 @@ export const publicDish = (d) => ({
   featured: d.featured,
   meatType: d.meat_type,
   spiceLevel: d.spice_level,
+  optionGroups: d.option_groups || d.optionGroups || [],
 });
 export async function recipeSnapshot(db, dishId) {
   const r = (
     await db.query(
-      `SELECT d.*,r.ingredients,r.steps,c.name AS category,
+      `SELECT d.*,r.ingredients,r.steps,r.option_groups,c.name AS category,
        ARRAY(SELECT dc.collection_id FROM dish_collections dc JOIN collections cc ON cc.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY cc.sort_order,cc.id) AS collection_ids,
        ARRAY(SELECT cc.name FROM dish_collections dc JOIN collections cc ON cc.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY cc.sort_order,cc.id) AS categories
        FROM dishes d JOIN recipes r ON r.dish_id=d.id JOIN collections c ON c.id=d.collection_id WHERE d.id=$1`,
@@ -35,6 +36,7 @@ export async function recipeSnapshot(db, dishId) {
         categories: r.categories,
         ingredients: r.ingredients,
         steps: r.steps,
+        optionGroups: r.option_groups || [],
       }
     : null;
 }
@@ -213,7 +215,7 @@ export function recipeRoutes(app, { db, route }) {
     ).rows;
     let dishes = (
       await db.query(
-        `SELECT d.*,ARRAY(SELECT dc.collection_id FROM dish_collections dc JOIN collections c ON c.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY c.sort_order,c.id) AS collection_ids FROM dishes d WHERE d.family_id=$1 AND NOT d.archived ORDER BY d.sort_order,d.id`,
+        `SELECT d.*,r.option_groups,ARRAY(SELECT dc.collection_id FROM dish_collections dc JOIN collections c ON c.id=dc.collection_id WHERE dc.dish_id=d.id ORDER BY c.sort_order,c.id) AS collection_ids FROM dishes d JOIN recipes r ON r.dish_id=d.id WHERE d.family_id=$1 AND NOT d.archived ORDER BY d.sort_order,d.id`,
         [r.params.familyId],
       )
     ).rows.map(publicDish);
@@ -412,8 +414,13 @@ async function saveDish(tx, user, family, dishId, b) {
     );
   await setDishCollections(tx, family, did, collectionIds);
   await tx.query(
-    'INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps',
-    [did, JSON.stringify(b.ingredients), JSON.stringify(b.steps)],
+    'INSERT INTO recipes(dish_id,ingredients,steps,option_groups) VALUES($1,$2,$3,$4) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps,option_groups=EXCLUDED.option_groups',
+    [
+      did,
+      JSON.stringify(b.ingredients),
+      JSON.stringify(b.steps),
+      JSON.stringify(b.optionGroups || []),
+    ],
   );
   await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [family]);
   await audit(tx, user, family, 'dish.save', did);

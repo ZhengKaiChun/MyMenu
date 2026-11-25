@@ -72,9 +72,9 @@ function request(path, options = {}, token) {
       S.demand(/^[A-Za-z0-9_]{4,32}$/.test(body.username), '账号需要4–32位字母、数字或下划线');
       S.demand(
         typeof body.password === 'string' &&
-          body.password.length >= 10 &&
+          body.password.length >= 6 &&
           body.password.length <= 128,
-        '体验密码需要10–128位，请勿使用真实密码',
+        '体验密码需要6–128位，请勿使用真实密码',
       );
       S.demand(
         !db.users.some((u) => u.username?.toLowerCase() === body.username?.toLowerCase()),
@@ -427,7 +427,10 @@ function request(path, options = {}, token) {
             (o) => o.family_id === fid && o.meal_date === date && o.status === 'accepted',
           ))
             for (const l of o.items)
-              for (const i of l.snapshot.ingredients) {
+              for (const i of db.dishes.find((d) => d.id === l.dish_id && !d.archived)
+                ?.ingredients ||
+                l.snapshot.ingredients ||
+                []) {
                 const key = i.name + '|' + i.unit;
                 if (!map[key]) map[key] = { ...i, quantity: 0, sources: [] };
                 map[key].quantity += i.quantity * l.quantity;
@@ -515,11 +518,34 @@ function request(path, options = {}, token) {
                 !d.archived && Number.isInteger(i.quantity) && i.quantity > 0 && i.quantity <= 99,
                 '请选择有效菜品和份数',
               );
+              const groups = d.optionGroups || [],
+                selected = i.selectedOptions || [];
+              S.demand(groups.length === selected.length, '请为每组口味选择选项');
+              for (const group of groups) {
+                const row = selected.find((x) => x.groupId === group.id);
+                S.demand(
+                  row &&
+                    row.choiceIds.length &&
+                    (group.mode === 'multiple' || row.choiceIds.length === 1) &&
+                    new Set(row.choiceIds).size === row.choiceIds.length &&
+                    row.choiceIds.every((id) => group.choices.some((c) => c.id === id)),
+                  '口味选项已变化，请重新选择',
+                );
+              }
               return {
                 id: S.id(),
                 dish_id: d.id,
                 quantity: i.quantity,
-                snapshot: S.clone(d),
+                snapshot: {
+                  ...S.clone(d),
+                  selectedOptions: groups.map((g) => ({
+                    groupId: g.id,
+                    title: g.title,
+                    choices: g.choices.filter((c) =>
+                      selected.find((x) => x.groupId === g.id).choiceIds.includes(c.id),
+                    ),
+                  })),
+                },
                 done: false,
               };
             }),
@@ -816,6 +842,20 @@ function changes(db, user, fid, m, method, rid, action, b) {
     );
     const d = S.findDish(db, fid, b.replacementId);
     S.demand(d.id !== line.dish_id && !d.archived, '请选择另一道在售菜品');
+    const groups = d.optionGroups || [],
+      selected = b.selectedOptions || [];
+    S.demand(groups.length === selected.length, '请为每组口味选择选项');
+    for (const group of groups) {
+      const row = selected.find((x) => x.groupId === group.id);
+      S.demand(
+        row &&
+          row.choiceIds.length &&
+          (group.mode === 'multiple' || row.choiceIds.length === 1) &&
+          new Set(row.choiceIds).size === row.choiceIds.length &&
+          row.choiceIds.every((id) => group.choices.some((c) => c.id === id)),
+        '口味选项已变化，请重新选择',
+      );
+    }
     const c = {
       id: S.id(),
       family_id: fid,
@@ -827,7 +867,16 @@ function changes(db, user, fid, m, method, rid, action, b) {
       reason: b.reason || '',
       reply: '',
       old_snapshot: line.snapshot,
-      new_snapshot: S.clone(d),
+      new_snapshot: {
+        ...S.clone(d),
+        selectedOptions: groups.map((g) => ({
+          groupId: g.id,
+          title: g.title,
+          choices: g.choices.filter((c) =>
+            selected.find((x) => x.groupId === g.id).choiceIds.includes(c.id),
+          ),
+        })),
+      },
       created_at: new Date().toISOString(),
     };
     db.changes.push(c);

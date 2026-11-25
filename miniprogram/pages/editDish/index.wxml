@@ -69,6 +69,7 @@
         <button hover-class="none" class="add-row-btn" bindtap="addIngredient">＋ 添加用料</button>
       </view>
       <view wx:for="{{ingredients}}" wx:key="index" class="row" style="margin: 8px 0; gap: 7px">
+        <view class="ingredient-order"><button hover-class="none" data-index="{{index}}" data-dir="-1" bindtap="moveIngredient" disabled="{{index===0}}">↑</button><button hover-class="none" data-index="{{index}}" data-dir="1" bindtap="moveIngredient" disabled="{{index===ingredients.length-1}}">↓</button></view>
         <input
           class="input"
           style="flex: 2"
@@ -102,6 +103,15 @@
         />
         <button hover-class="none" class="text-btn" data-index="{{index}}" bindtap="removeIngredient">×</button>
       </view>
+      <view class="section-title"><view class="h3 strong">口味怎么选</view><button hover-class="none" class="add-row-btn" bindtap="addOptionGroup">＋ 添加选项组</button></view>
+      <view wx:if="{{!optionGroups.length}}" class="option-hint">例如“馄饨馅料”“汤底”，点菜时让家人自己选。</view>
+      <view wx:for="{{optionGroups}}" wx:for-item="group" wx:for-index="groupIndex" wx:key="id" class="option-editor">
+        <view class="option-editor-head"><text>口味 {{groupIndex+1}}</text><button hover-class="none" data-group="{{groupIndex}}" bindtap="removeOptionGroup">删除这组</button></view>
+        <input class="input" placeholder="这组叫什么？如：馅料" value="{{group.title}}" data-group="{{groupIndex}}" data-field="title" bindinput="optionInput" />
+        <view class="option-mode"><button hover-class="none" class="{{group.mode==='single'?'active':''}}" data-group="{{groupIndex}}" data-mode="single" bindtap="optionMode">单选</button><button hover-class="none" class="{{group.mode==='multiple'?'active':''}}" data-group="{{groupIndex}}" data-mode="multiple" bindtap="optionMode">多选</button></view>
+        <view wx:for="{{group.choices}}" wx:for-item="choice" wx:for-index="choiceIndex" wx:key="id" class="option-choice"><text class="option-bullet">{{choiceIndex+1}}</text><input class="input" placeholder="填写选项，如：鲜肉" value="{{choice.label}}" data-group="{{groupIndex}}" data-choice="{{choiceIndex}}" data-field="label" bindinput="optionInput"/><button hover-class="none" data-group="{{groupIndex}}" data-choice="{{choiceIndex}}" bindtap="removeOptionChoice">×</button></view>
+        <button hover-class="none" class="option-add" data-group="{{groupIndex}}" bindtap="addOptionChoice">＋ 添加一个选项</button>
+      </view>
       <view class="section-title">
         <view class="h3 strong">制作步骤</view>
         <text class="caption copy small-text">步骤图选填</text>
@@ -109,6 +119,7 @@
       <view wx:for="{{steps}}" wx:key="index" class="step">
         <view class="row">
           <text class="step-num">步骤 {{index+1}}</text>
+          <button hover-class="none" class="important-button {{item.important?'active':''}}" data-index="{{index}}" bindtap="importantStep">{{item.important?'★ 重点步骤':'☆ 设为重点'}}</button>
           <button hover-class="none" class="text-btn" data-index="{{index}}" bindtap="removeStep">删除此步</button>
         </view>
         <button hover-class="none"

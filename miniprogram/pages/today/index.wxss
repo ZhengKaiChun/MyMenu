@@ -1,0 +1,7 @@
+.today-option-summary {
+  display: block;
+  margin: 3px 0;
+  color: #a47858;
+  font-size: 11px;
+  line-height: 1.45;
+}

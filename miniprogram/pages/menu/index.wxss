@@ -1,0 +1,10 @@
+@import '../../styles/flavors.wxss';
+.cart-flavor {
+  display: block;
+  margin: 3px 0 0;
+  padding: 0;
+  color: #ab7657;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: left;
+}

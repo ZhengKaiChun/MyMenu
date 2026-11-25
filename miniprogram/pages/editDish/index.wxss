@@ -1,0 +1,122 @@
+.ingredient-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: none;
+}
+.ingredient-order button {
+  width: 27px;
+  height: 27px;
+  line-height: 25px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #dbcab5;
+  border-radius: 8px;
+  background: #fff9ee;
+  color: #76533d;
+  font-size: 15px;
+}
+.ingredient-order button[disabled] {
+  opacity: 0.3;
+}
+.option-hint {
+  padding: 13px 15px;
+  color: #9b8068;
+  font-size: 12px;
+  background: #f9f0df;
+  border-radius: 13px;
+  margin: 8px 0 14px;
+}
+.option-editor {
+  padding: 15px;
+  margin: 12px 0;
+  background: #fff9ef;
+  border: 1px solid #e9d9c1;
+  border-radius: 20px 20px 10px 20px;
+  box-shadow: 0 3px 0 #efe3d0;
+}
+.option-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #694331;
+  font-size: 14px;
+  font-weight: 700;
+}
+.option-editor-head button {
+  font-size: 11px;
+  color: #b65e4b;
+  padding: 4px 0;
+  margin: 0;
+}
+.option-mode {
+  display: flex;
+  gap: 7px;
+  margin: 10px 0 12px;
+}
+.option-mode button {
+  flex: 1;
+  padding: 7px 0;
+  margin: 0;
+  border-radius: 10px;
+  background: #f3e8d8;
+  color: #806954;
+  font-size: 12px;
+}
+.option-mode button.active {
+  background: #704735;
+  color: #fff9ef;
+}
+.option-choice {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 6px 0;
+}
+.option-choice .input {
+  flex: 1;
+  min-width: 0;
+}
+.option-bullet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ebdac0;
+  color: #7f604b;
+  font-size: 11px;
+  flex: none;
+}
+.option-choice button {
+  flex: none;
+  width: 27px;
+  padding: 0;
+  margin: 0;
+  color: #b65e4b;
+  font-size: 20px;
+}
+.option-add {
+  width: 100%;
+  margin: 9px 0 0;
+  padding: 9px;
+  border: 1px dashed #cdb699;
+  border-radius: 10px;
+  background: #fcf5e8;
+  color: #785741;
+  font-size: 12px;
+}
+.important-button {
+  margin: 0 0 0 auto;
+  padding: 6px 9px;
+  background: #f8efd9;
+  color: #987956;
+  border-radius: 9px;
+  font-size: 11px;
+}
+.important-button.active {
+  background: #f1dfa7;
+  color: #764832;
+}

@@ -17,7 +17,11 @@ async function load() {
     slot,
     dishes: dishes
       .filter((d) => d.slot === slot)
-      .map((d) => ({ ...d, sources: require('../lib/orderers')(d.sources) })),
+      .map((d) => ({
+        ...d,
+        optionSummary: require('../lib/selected-options')(d.snapshot),
+        sources: require('../lib/orderers')(d.sources),
+      })),
   }));
   const offset = (new Date(first + 'T12:00:00Z').getUTCDay() + 6) % 7;
   const length = Number(last.slice(-2)),

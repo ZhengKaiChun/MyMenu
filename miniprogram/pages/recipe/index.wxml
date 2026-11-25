@@ -15,9 +15,11 @@
         <text>{{item.quantity}} {{item.unit}}</text>
       </view>
       <view class="section-title"><view class="h3 strong">一步一步，把爱煮好</view></view>
+      <view class="recipe-focus"><button hover-class="none" class="{{importantOnly?'active':''}}" bindtap="focusSteps">{{importantOnly?'查看全部步骤':'只看重点步骤'}}</button><text>{{importantOnly?visibleSteps.length+' 个重点步骤':dish.steps.length+' 个步骤'}}</text></view>
+      <view wx:if="{{importantOnly&&!visibleSteps.length}}" class="option-hint">这道菜还没有标记重点步骤。</view>
       <view class="steps">
-        <view wx:for="{{dish.steps}}" wx:key="index" class="step">
-          <text class="step-num">STEP {{index+1}}</text>
+        <view wx:for="{{visibleSteps}}" wx:key="index" class="step">
+          <text class="step-num">STEP {{item.number}} {{item.important?'★ 重点':''}}</text>
           <image webp="{{true}}"
             wx:if="{{!textOnly ? item.image : false}}"
             src="{{item.image}}"

@@ -1,7 +1,7 @@
 const config = require('../config/index');
 const prefix =
   config.mode === 'preview' ? config.previewSessionNamespace || 'menu.preview' : 'menu';
-const state = { user: null, token: '', family: null, cart: {}, pendingLink: null };
+const state = { user: null, token: '', family: null, cart: {}, cartOptions: {}, pendingLink: null };
 module.exports = Object.assign(state, {
   restore() {
     try {
@@ -19,6 +19,7 @@ module.exports = Object.assign(state, {
   setFamily(family) {
     state.family = family;
     state.cart = {};
+    state.cartOptions = {};
     wx.setStorageSync(prefix + '.family', family);
   },
   clear() {
@@ -27,6 +28,7 @@ module.exports = Object.assign(state, {
     state.user = null;
     state.family = null;
     state.cart = {};
+    state.cartOptions = {};
     state.menuDraft = null;
     state.menuManageView = null;
     wx.removeStorageSync(prefix + '.session');

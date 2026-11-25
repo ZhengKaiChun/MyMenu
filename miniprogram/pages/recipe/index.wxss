@@ -1,0 +1,28 @@
+.recipe-focus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 12px;
+  color: #aa9077;
+  font-size: 12px;
+}
+.recipe-focus button {
+  margin: 0;
+  padding: 7px 13px;
+  background: #f7ead6;
+  border: 1px solid #e4cfad;
+  border-radius: 10px;
+  color: #795137;
+  font-size: 12px;
+}
+.recipe-focus button.active {
+  background: #75513c;
+  color: #fff9ee;
+}
+.option-hint {
+  padding: 16px;
+  color: #9b8068;
+  background: #f9f0df;
+  border-radius: 13px;
+  font-size: 12px;
+}

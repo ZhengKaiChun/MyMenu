@@ -33,9 +33,9 @@ function credentials(db, user, body, currentToken) {
   if (body.newPassword) {
     S.demand(
       typeof body.newPassword === 'string' &&
-        body.newPassword.length >= 10 &&
+        body.newPassword.length >= 6 &&
         body.newPassword.length <= 128,
-      '密码需要10–128位',
+      '密码需要6–128位',
     );
     user.salt = S.id();
     user.passwordHash = hash(user.salt + body.newPassword);

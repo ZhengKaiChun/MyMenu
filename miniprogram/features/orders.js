@@ -1,4 +1,5 @@
 const { createPage, go, decorate, familyPath, session, api } = require('../lib/page');
+const flavors = require('../lib/flavors');
 const labels = {
   pending: '等你回音',
   accepted: '这顿安排啦',
@@ -14,7 +15,11 @@ exports.checkout = createPage({
     const dishes = await decorate(menu.dishes);
     const items = dishes
       .filter((d) => session.cart[d.id])
-      .map((d) => ({ ...d, quantity: session.cart[d.id] }));
+      .map((d) => ({
+        ...d,
+        quantity: session.cart[d.id],
+        optionSummary: flavors.summary(d, session.cartOptions?.[d.id]),
+      }));
     this.setData({
       items,
       count: items.reduce((n, d) => n + d.quantity, 0),
@@ -52,10 +57,15 @@ exports.checkout = createPage({
           date: this.data.date,
           slot: this.data.slot,
           note: this.data.note,
-          items: this.data.items.map((d) => ({ dishId: d.id, quantity: d.quantity })),
+          items: this.data.items.map((d) => ({
+            dishId: d.id,
+            quantity: d.quantity,
+            selectedOptions: session.cartOptions?.[d.id] || [],
+          })),
         },
       });
       session.cart = {};
+      session.cartOptions = {};
       session.lastOrder = out;
       session.mealDate = this.data.date;
       go('sent', {}, { replace: true });
@@ -262,6 +272,7 @@ async function loadToday() {
       .filter((d) => d.slot === slot)
       .map((d) => ({
         ...d,
+        optionSummary: require('../lib/selected-options')(d.snapshot),
         sources: d.sources.map((s) => ({ ...s, pig: identityIndex[s.identity] || 7 })),
         displaySources: require('../lib/orderers')(d.sources).map((s) => ({
           ...s,
@@ -379,7 +390,18 @@ exports.changes = createPage({
   },
 });
 exports.swap = createPage({
-  data: { source: null, dishes: [], allDishes: [], query: '', selected: '', reason: '' },
+  data: {
+    source: null,
+    dishes: [],
+    allDishes: [],
+    query: '',
+    selected: '',
+    selectedOptions: [],
+    reason: '',
+    showOptions: false,
+    optionGroupsDisplay: [],
+    optionSelections: {},
+  },
   async reload() {
     const lines = await api.request(familyPath('/my-lines'));
     const source = lines.find((l) => l.id === this.query.id);
@@ -399,7 +421,19 @@ exports.swap = createPage({
       });
     },
     pick(e) {
-      this.setData({ selected: e.currentTarget.dataset.id });
+      const dish = this.data.allDishes.find((d) => d.id === e.currentTarget.dataset.id);
+      if (dish?.optionGroups?.length) {
+        flavors.begin(this, dish);
+        return;
+      }
+      this.setData({ selected: e.currentTarget.dataset.id, selectedOptions: [] });
+    },
+    chooseOption(e) {
+      flavors.choose(this, e);
+    },
+    confirmOptions() {
+      const { id, rows } = flavors.finish(this, false);
+      this.setData({ selected: id, selectedOptions: rows });
     },
     async submit() {
       if (!this.data.selected) throw Error('选择一道想替换的菜');
@@ -408,6 +442,7 @@ exports.swap = createPage({
         body: {
           lineId: this.data.source.id,
           replacementId: this.data.selected,
+          selectedOptions: this.data.selectedOptions,
           reason: this.data.reason,
         },
       });

@@ -21,7 +21,7 @@ export function accountSettingsRoutes(app, { db, route }) {
           .regex(/^[A-Za-z0-9_]{4,32}$/)
           .transform((x) => x.toLowerCase()),
         currentPassword: z.string().max(128).default(''),
-        newPassword: z.string().min(10).max(128).optional(),
+        newPassword: z.string().min(6).max(128).optional(),
       })
       .strict(),
     async (r) =>

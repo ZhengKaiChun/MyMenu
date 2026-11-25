@@ -207,8 +207,13 @@ export function shareRoutes(app, { db, route }) {
         }
         await setDishCollections(tx, fid, did, targetIds);
         await tx.query(
-          'INSERT INTO recipes(dish_id,ingredients,steps) VALUES($1,$2,$3) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps',
-          [did, JSON.stringify(source.ingredients), JSON.stringify(source.steps)],
+          'INSERT INTO recipes(dish_id,ingredients,steps,option_groups) VALUES($1,$2,$3,$4) ON CONFLICT(dish_id) DO UPDATE SET ingredients=EXCLUDED.ingredients,steps=EXCLUDED.steps,option_groups=EXCLUDED.option_groups',
+          [
+            did,
+            JSON.stringify(source.ingredients),
+            JSON.stringify(source.steps),
+            JSON.stringify(source.optionGroups || []),
+          ],
         );
       }
       await tx.query('UPDATE families SET version=version+1 WHERE id=$1', [fid]);

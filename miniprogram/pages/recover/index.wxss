@@ -1,0 +1,29 @@
+.recover-methods {
+  display: flex;
+  gap: 8px;
+  margin: 13px 0 16px;
+}
+.recover-methods button {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 5px;
+  margin: 0;
+  border-radius: 11px;
+  background: #f4e9d8;
+  color: #8b6a50;
+  font-size: 12px;
+}
+.recover-methods button.active {
+  background: #694633;
+  color: #fff9f0;
+}
+.recover-note {
+  padding: 15px;
+  margin: 0 0 16px;
+  background: #faf0df;
+  border: 1px solid #e8d7bd;
+  border-radius: 16px;
+  color: #886a52;
+  font-size: 12px;
+  line-height: 1.7;
+}

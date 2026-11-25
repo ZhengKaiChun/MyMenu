@@ -106,7 +106,7 @@
     <scroll-view scroll-y style="height:{{cart.length > 4 ? 340 : cart.length * 76}}px;max-height:45vh">
       <view wx:for="{{cart}}" wx:key="id" class="row list-row cart-dish">
         <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
-        <text class="grow">{{item.name}}</text>
+        <view class="grow"><text>{{item.name}}</text><button hover-class="none" wx:if="{{item.optionGroups.length}}" class="cart-flavor" data-id="{{item.id}}" bindtap="editCartOptions">{{item.optionSummary || '选择口味'}} · 修改 ›</button></view>
         <view class="row">
           <button hover-class="none" class="pill" bindtap="minus" data-id="{{item.id}}"><view class="qty-symbol"/></button>
           <text>{{item.quantity}}</text>
@@ -121,3 +121,4 @@
     </button>
   </view>
 </view>
+<view wx:if="{{showOptions}}" class="modal-mask flavor-mask" bindtap="dismissModal"><view class="flavor-sheet" catchtap="noop"><view class="flavor-head"><view><text>这道菜，想怎么吃？</text><text>{{optionDishName}}</text></view><button hover-class="none" bindtap="dismissModal">×</button></view><scroll-view scroll-y class="flavor-scroll"><view wx:for="{{optionGroupsDisplay}}" wx:for-item="group" wx:key="id" class="flavor-group"><view class="flavor-group-head"><text>{{group.title}}</text><text>{{group.mode==='single'?'选 1 项':'可选多项'}}</text></view><view class="flavor-choices"><button hover-class="none" wx:for="{{group.choices}}" wx:for-item="choice" wx:key="id" class="{{choice.checked?'selected':''}}" data-group="{{group.id}}" data-choice="{{choice.id}}" bindtap="chooseOption"><text>{{choice.label}}</text><text>{{choice.checked?'✓':'＋'}}</text></button></view></view></scroll-view><button hover-class="none" class="btn flavor-confirm" bindtap="confirmOptions">选好了，放进菜篮</button></view></view>

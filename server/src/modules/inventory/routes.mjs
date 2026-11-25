@@ -139,9 +139,17 @@ export function inventoryRoutes(app, { db, route }) {
           date,
         ])
       ).rows;
+    const current = new Map(
+      (
+        await db.query(
+          `SELECT d.id,r.ingredients FROM dishes d JOIN recipes r ON r.dish_id=d.id WHERE d.family_id=$1 AND NOT d.archived AND d.id=ANY($2::uuid[])`,
+          [r.params.familyId, [...new Set(rows.map((l) => l.snapshot.id).filter(Boolean))]],
+        )
+      ).rows.map((d) => [d.id, d.ingredients]),
+    );
     let map = new Map();
     for (const l of rows)
-      for (const ing of l.snapshot.ingredients) {
+      for (const ing of current.get(l.snapshot.id) || l.snapshot.ingredients || []) {
         let key = ing.name + '|' + ing.unit;
         if (!map.has(key))
           map.set(key, { name: ing.name, unit: ing.unit, quantity: 0, sources: [] });

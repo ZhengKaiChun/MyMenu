@@ -19,6 +19,18 @@ export const ingredient = z
     unit: z.string().trim().min(1).max(12),
   })
   .strict();
+export const optionGroup = z
+  .object({
+    id: uuid,
+    title: name,
+    mode: z.enum(['single', 'multiple']),
+    choices: z
+      .array(z.object({ id: uuid, label: name }).strict())
+      .min(1)
+      .max(30)
+      .refine((list) => new Set(list.map((c) => c.id)).size === list.length, '口味选项重复'),
+  })
+  .strict();
 export const recipe = z
   .object({
     name,
@@ -32,12 +44,18 @@ export const recipe = z
     minutes: z.number().int().min(1).max(1440),
     servings: z.number().int().min(1).max(99),
     ingredients: z.array(ingredient).max(100).default([]),
+    optionGroups: z
+      .array(optionGroup)
+      .max(20)
+      .refine((list) => new Set(list.map((g) => g.id)).size === list.length, '口味分组重复')
+      .default([]),
     steps: z
       .array(
         z
           .object({
             text: z.string().trim().max(3000).default(''),
             imageId: uuid.nullable().optional(),
+            important: z.boolean().default(false),
           })
           .strict()
           .refine((s) => s.text.length > 0 || !!s.imageId, '步骤需填写文字或添加图片'),

@@ -1,6 +1,6 @@
 module.exports = {
   mode: 'production',
   apiBase: 'https://givemefood.cn',
-  version: '0.2.0-rc.20',
+  version: '0.2.0-rc.21',
   appId: 'wx3ab03337b159fadd',
 };

@@ -21,6 +21,7 @@
           <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
+            <text wx:if="{{item.optionSummary}}" class="order-flavor-summary">{{item.optionSummary}}</text>
             <text class="caption copy small-text">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>
             <view class="order-qty">
               <button hover-class="none" data-id="{{item.id}}" data-dir="-1" bindtap="quantity"><view class="qty-symbol"/></button>

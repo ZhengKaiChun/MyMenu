@@ -1,0 +1,6 @@
+.diary-options {
+  display: block;
+  color: #a47858;
+  font-size: 11px;
+  line-height: 1.4;
+}

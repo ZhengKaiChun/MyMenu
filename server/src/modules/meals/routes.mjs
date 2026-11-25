@@ -5,6 +5,38 @@ import { member, familyLock, atomic, notify, audit, dateAllowed } from '../../co
 import { demand } from '../../core/errors.mjs';
 import { mealDate, slot, note, decision } from '../../core/validation.mjs';
 import { recipeSnapshot } from '../recipes/routes.mjs';
+const chosenSchema = z
+  .array(z.object({ groupId: z.uuid(), choiceIds: z.array(z.uuid()).min(1).max(30) }).strict())
+  .max(20)
+  .default([]);
+export function selectedOptions(groups, requested) {
+  demand(
+    requested.length === groups.length &&
+      new Set(requested.map((x) => x.groupId)).size === requested.length,
+    400,
+    'DISH_OPTIONS',
+    '请为每组口味选择选项',
+  );
+  return groups.map((group) => {
+    const selected = requested.find((x) => x.groupId === group.id);
+    demand(
+      selected &&
+        (group.mode === 'multiple' || selected.choiceIds.length === 1) &&
+        new Set(selected.choiceIds).size === selected.choiceIds.length &&
+        selected.choiceIds.every((id) => group.choices.some((c) => c.id === id)),
+      400,
+      'DISH_OPTIONS',
+      '口味选项已变化，请重新选择',
+    );
+    return {
+      groupId: group.id,
+      title: group.title,
+      choices: group.choices
+        .filter((c) => selected.choiceIds.includes(c.id))
+        .map((c) => ({ id: c.id, label: c.label })),
+    };
+  });
+}
 export function mealRoutes(app, { db, route }) {
   route(
     'POST',
@@ -15,7 +47,15 @@ export function mealRoutes(app, { db, route }) {
         slot,
         note,
         items: z
-          .array(z.object({ dishId: z.uuid(), quantity: z.number().int().min(1).max(99) }).strict())
+          .array(
+            z
+              .object({
+                dishId: z.uuid(),
+                quantity: z.number().int().min(1).max(99),
+                selectedOptions: chosenSchema.optional(),
+              })
+              .strict(),
+          )
           .min(1)
           .max(50),
       })
@@ -52,6 +92,10 @@ export function mealRoutes(app, { db, route }) {
             ).rows[0];
             demand(dish, 400, 'DISH_UNAVAILABLE', '菜篮中有菜品已下架，请重新选菜');
             const snapshot = await recipeSnapshot(tx, dish.id);
+            snapshot.selectedOptions = selectedOptions(
+              snapshot.optionGroups || [],
+              item.selectedOptions || [],
+            );
             await tx.query(
               'INSERT INTO order_lines(id,order_id,dish_id,quantity,snapshot) VALUES($1,$2,$3,$4,$5)',
               [id(), oid, dish.id, item.quantity, JSON.stringify(snapshot)],
@@ -197,7 +241,7 @@ export function mealRoutes(app, { db, route }) {
       ).rows;
       let grouped = new Map();
       for (const l of lines) {
-        let key = l.slot + ':' + l.dish_id;
+        let key = l.slot + ':' + l.dish_id + ':' + JSON.stringify(l.snapshot.selectedOptions || []);
         if (!grouped.has(key))
           grouped.set(key, {
             dishId: l.dish_id,
@@ -297,5 +341,7 @@ export function publicSnapshot(d) {
     category: d.category,
     featured: d.featured || false,
     spiceLevel: d.spiceLevel || 1,
+    optionGroups: d.optionGroups || [],
+    selectedOptions: d.selectedOptions || [],
   };
 }

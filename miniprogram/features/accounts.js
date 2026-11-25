@@ -157,20 +157,39 @@ exports.sms = createPage({
 });
 exports.recover = createPage({
   public: true,
-  data: { ...publicData, countdown: 0, capabilities: {} },
+  data: { ...publicData, countdown: 0, capabilities: {}, method: 'wechat' },
   async reload() {
-    this.setData({ capabilities: await api.request('/capabilities') });
+    const capabilities = await api.request('/capabilities');
+    this.setData({
+      capabilities,
+      method:
+        capabilities.wechat && !api.isPreview() ? 'wechat' : capabilities.sms ? 'phone' : 'help',
+    });
   },
   dispose() {
     if (this.timer) clearInterval(this.timer);
   },
   methods: {
     sendCode,
+    method(e) {
+      this.setData({ method: e.currentTarget.dataset.method });
+    },
     async submit() {
-      await api.request('/auth/recover', {
-        method: 'POST',
-        body: { phone: this.data.phone, code: this.data.code, password: this.data.password },
-      });
+      if (this.data.password.length < 6) throw Error('新密码至少需要6位');
+      if (this.data.method === 'wechat') {
+        const login = await new Promise((resolve, reject) =>
+          wx.login({ success: resolve, fail: reject }),
+        );
+        await api.request('/auth/recover/wechat', {
+          method: 'POST',
+          body: { code: login.code, password: this.data.password },
+        });
+      } else if (this.data.method === 'phone')
+        await api.request('/auth/recover', {
+          method: 'POST',
+          body: { phone: this.data.phone, code: this.data.code, password: this.data.password },
+        });
+      else throw Error('请选择可用的找回方式');
       wx.showToast({ title: '已重设，请重新登录', icon: 'none' });
       go('password', {}, { replace: true });
     },

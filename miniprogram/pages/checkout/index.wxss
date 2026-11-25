@@ -1,0 +1,7 @@
+.order-flavor-summary {
+  display: block;
+  margin-top: 3px;
+  color: #a57557;
+  font-size: 11px;
+  line-height: 1.5;
+}

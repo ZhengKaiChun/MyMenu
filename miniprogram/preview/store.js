@@ -140,6 +140,8 @@ function publicDish(d) {
     featured: !!d.featured,
     spiceLevel: d.spiceLevel || 1,
     meatType: d.meatType || '',
+    optionGroups: d.optionGroups || [],
+    selectedOptions: d.selectedOptions || [],
   };
 }
 function membership(db, user, fid, cook = false) {
@@ -199,7 +201,7 @@ function meals(db, fid, date) {
     (o) => o.family_id === fid && o.meal_date === date && o.status === 'accepted',
   ))
     for (const l of o.items) {
-      const key = o.slot + ':' + l.dish_id;
+      const key = o.slot + ':' + l.dish_id + ':' + JSON.stringify(l.snapshot.selectedOptions || []);
       if (!groups[key])
         groups[key] = {
           dishId: l.dish_id,

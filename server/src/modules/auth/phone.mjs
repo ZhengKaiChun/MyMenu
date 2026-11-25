@@ -183,7 +183,7 @@ export function phoneRoutes(ctx, session) {
   route(
     'POST',
     '/auth/recover',
-    z.object({ phone, code, password: z.string().min(10).max(128) }).strict(),
+    z.object({ phone, code, password: z.string().min(6).max(128) }).strict(),
     async (r) => {
       demand(smsEnabled(config, ctx.smsSender), 503, 'SMS_UNAVAILABLE', '短信找回暂未启用');
       await verify(r.body.phone, r.body.code);

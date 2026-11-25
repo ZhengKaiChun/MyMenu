@@ -4,14 +4,10 @@ const imageCache = {};
 const isPreview = () => config.mode === 'preview';
 const preview = () => require('../preview/index');
 function uuid() {
-  return (
-    'op-' +
-    Date.now() +
-    '-' +
-    Math.random().toString(36).slice(2) +
-    '-' +
-    Math.random().toString(36).slice(2)
-  );
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const n = Math.floor(Math.random() * 16);
+    return (c === 'x' ? n : (n & 3) | 8).toString(16);
+  });
 }
 function send(path, options) {
   return new Promise((resolve, reject) =>
