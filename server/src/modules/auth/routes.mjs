@@ -13,6 +13,21 @@ const credentials = z
     password: z.string().min(10).max(128),
   })
   .strict();
+async function wechatOpenid(config, code) {
+  demand(config.wechatSecret, 503, 'WECHAT_NOT_CONFIGURED', '微信身份绑定尚未配置');
+  const url = new URL('https://api.weixin.qq.com/sns/jscode2session');
+  url.search = new URLSearchParams({
+    appid: config.appid,
+    secret: config.wechatSecret,
+    js_code: code,
+    grant_type: 'authorization_code',
+  });
+  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  demand(response.ok, 502, 'WECHAT_UNAVAILABLE', '微信服务暂时不可用');
+  const out = await response.json();
+  demand(out.openid && !out.errcode, 401, 'WECHAT_CODE', '微信身份授权已过期，请重试');
+  return out.openid;
+}
 export async function authRoutes(app, ctx) {
   const { db, config, route } = ctx;
   let dummy = await passwordHash('invalid-credential-dummy-2026');
@@ -76,30 +91,19 @@ export async function authRoutes(app, ctx) {
     '/auth/wechat',
     z.object({ code: z.string().min(1).max(256) }).strict(),
     async (r) => {
-      demand(config.wechatSecret, 503, 'WECHAT_NOT_CONFIGURED', '微信登录暂未配置，请使用账号登录');
-      const url = new URL('https://api.weixin.qq.com/sns/jscode2session');
-      url.search = new URLSearchParams({
-        appid: config.appid,
-        secret: config.wechatSecret,
-        js_code: r.body.code,
-        grant_type: 'authorization_code',
-      });
-      const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      demand(response.ok, 502, 'WECHAT_UNAVAILABLE', '微信登录暂时不可用');
-      const data = await response.json();
-      demand(data.openid && !data.errcode, 401, 'WECHAT_CODE', '微信登录已过期，请重试');
+      const openid = await wechatOpenid(config, r.body.code);
       const u = await db.transaction(async (tx) => {
         let existing = (
           await tx.query(
             "SELECT u.* FROM identities i JOIN users u ON u.id=i.user_id WHERE i.provider='wechat' AND i.subject=$1 AND u.deleted_at IS NULL",
-            [data.openid],
+            [openid],
           )
         ).rows[0];
         if (existing) return existing;
         const uid = id();
         await tx.query('INSERT INTO users(id) VALUES($1)', [uid]);
         await tx.query("INSERT INTO identities(provider,subject,user_id) VALUES('wechat',$1,$2)", [
-          data.openid,
+          openid,
           uid,
         ]);
         return { id: uid, nickname: '野生小猪' };
@@ -115,24 +119,33 @@ export async function authRoutes(app, ctx) {
   });
   route(
     'POST',
+    '/me/wechat/check',
+    z.object({ code: z.string().min(1).max(256) }).strict(),
+    async (r) => {
+      const openid = await wechatOpenid(config, r.body.code);
+      const bound = (
+        await db.query(
+          "SELECT u.id,u.username,u.nickname FROM identities i JOIN users u ON u.id=i.user_id WHERE i.provider='wechat' AND i.subject=$1 AND u.deleted_at IS NULL",
+          [openid],
+        )
+      ).rows[0];
+      return {
+        state: !bound ? 'available' : bound.id === r.user.id ? 'current' : 'other',
+        account: bound ? bound.username || bound.nickname || '微信账号' : null,
+      };
+    },
+    { authLimit: true },
+  );
+  route(
+    'POST',
     '/me/wechat',
     z.object({ code: z.string().min(1).max(256) }).strict(),
     async (r) => {
-      demand(config.wechatSecret, 503, 'WECHAT_NOT_CONFIGURED', '微信身份绑定尚未配置');
-      const url = new URL('https://api.weixin.qq.com/sns/jscode2session');
-      url.search = new URLSearchParams({
-        appid: config.appid,
-        secret: config.wechatSecret,
-        js_code: r.body.code,
-        grant_type: 'authorization_code',
-      });
-      const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      const out = await response.json();
-      demand(out.openid && !out.errcode, 401, 'WECHAT_CODE', '微信身份授权已过期');
+      const openid = await wechatOpenid(config, r.body.code);
       await db.transaction(async (tx) => {
         let existing = (
           await tx.query("SELECT user_id FROM identities WHERE provider='wechat' AND subject=$1", [
-            out.openid,
+            openid,
           ])
         ).rows[0];
         demand(
@@ -146,19 +159,36 @@ export async function authRoutes(app, ctx) {
             r.user.id,
           ])
         ).rows[0];
-        demand(
-          !own || own.subject === out.openid,
-          409,
-          'IDENTITY_BOUND',
-          '此账号已绑定其他微信身份',
-        );
-        await tx.query(
-          "INSERT INTO identities(provider,subject,user_id) VALUES('wechat',$1,$2) ON CONFLICT DO NOTHING",
-          [out.openid, r.user.id],
-        );
+        demand(!own || own.subject === openid, 409, 'IDENTITY_BOUND', '此账号已绑定其他微信身份');
+        if (!existing)
+          await tx.query(
+            "INSERT INTO identities(provider,subject,user_id) VALUES('wechat',$1,$2)",
+            [openid, r.user.id],
+          );
       });
       return { ok: true };
     },
+  );
+  route(
+    'POST',
+    '/me/wechat/unbind',
+    z.object({ currentPassword: z.string().min(1).max(128) }).strict(),
+    async (r) => {
+      const valid = await passwordMatches(r.body.currentPassword, r.user.password_hash || dummy);
+      demand(
+        !!r.user.password_hash && valid && !!r.user.username,
+        403,
+        'PASSWORD_REQUIRED',
+        '请先设置账号密码，并填写当前密码',
+      );
+      const removed = await db.query(
+        "DELETE FROM identities WHERE provider='wechat' AND user_id=$1 RETURNING subject",
+        [r.user.id],
+      );
+      demand(removed.rows.length, 409, 'WECHAT_NOT_BOUND', '此账号尚未绑定微信');
+      return { ok: true };
+    },
+    { authLimit: true },
   );
   route('GET', '/me', null, async (r) => ({
     id: r.user.id,

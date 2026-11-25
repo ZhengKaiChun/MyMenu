@@ -1,0 +1,105 @@
+.restore-page {
+  padding-bottom: 24px;
+}
+.restore-letter {
+  padding: 25px 23px;
+  border: 1px solid #decaaa;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #fff7e7, #f7e7cc);
+  box-shadow: 0 7px 0 #eee0ca;
+  color: #5c3a2c;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.restore-letter-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9b6849;
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+.restore-letter > text {
+  font-size: 13px;
+  line-height: 1.75;
+  color: #806958;
+}
+.restore-target {
+  margin-top: 25px;
+  padding: 17px 20px;
+  background: #fff;
+  border-left: 4px solid #b75c43;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #856c58;
+}
+.restore-target-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #51392e;
+}
+.restore-title {
+  margin: 27px 0 13px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #51392e;
+}
+.restore-family {
+  width: 100%;
+  text-align: left;
+  display: block;
+  box-sizing: border-box;
+  padding: 17px 18px;
+  margin-bottom: 12px;
+  border: 1px solid #e5d8bf;
+  border-radius: 17px;
+  background: #fffaf1;
+  color: #51392e;
+}
+.restore-family.selected {
+  border: 2px solid #b75c43;
+  background: #fff4e4;
+  padding: 16px 17px;
+}
+.restore-family.imported {
+  opacity: 0.65;
+}
+.restore-family-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+.restore-family-head > text:nth-child(2) {
+  flex: 1;
+}
+.restore-check {
+  color: #b75c43;
+  font-size: 15px;
+}
+.restore-family-meta {
+  font-size: 12px;
+  color: #907c65;
+  margin-top: 8px;
+  padding-left: 34px;
+}
+.restore-note,
+.restore-empty {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #917f6d;
+  padding: 12px 2px;
+}
+.restore-progress {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 11px;
+  background: #f6ecda;
+  color: #694934;
+  font-size: 13px;
+}

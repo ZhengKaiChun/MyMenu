@@ -1,7 +1,12 @@
 const S = require('./store'),
   hash = require('./hash');
 function security(user) {
-  return { username: user.username || '', passwordSet: !!user.passwordHash, phoneBound: false };
+  return {
+    username: user.username || '',
+    passwordSet: !!user.passwordHash,
+    phoneBound: false,
+    wechatBound: false,
+  };
 }
 function credentials(db, user, body, currentToken) {
   S.demand(/^[A-Za-z0-9_]{4,32}$/.test(body.username), '账号需要4–32位字母、数字或下划线');

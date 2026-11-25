@@ -6,6 +6,9 @@ export function accountSettingsRoutes(app, { db, route }) {
     username: r.user.username || '',
     passwordSet: !!r.user.password_hash,
     phoneBound: !!r.user.phone_hash,
+    wechatBound: !!(
+      await db.query("SELECT 1 FROM identities WHERE provider='wechat' AND user_id=$1", [r.user.id])
+    ).rows.length,
   }));
   route(
     'POST',

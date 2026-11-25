@@ -80,6 +80,14 @@ export function mediaRoutes(app, { db, config, route }) {
         ).rows.length;
     }
     if (!allowed) {
+      allowed = (
+        await db.query(
+          'SELECT 1 FROM legacy_history h JOIN members m ON m.family_id=h.family_id JOIN families f ON f.id=h.family_id WHERE m.user_id=$1 AND h.cover_id=$2 AND f.deleted_at IS NULL LIMIT 1',
+          [r.user.id, mid],
+        )
+      ).rows.length;
+    }
+    if (!allowed) {
       // A meal keeps the photo it had when ordered, even if the recipe cover changes later.
       allowed = (
         await db.query(

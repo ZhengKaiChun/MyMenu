@@ -49,6 +49,7 @@
     "pages/expired/index",
     "pages/privacy/index",
     "pages/accountSecurity/index",
+    "pages/restorePreview/index",
     "pages/achievements/index",
     "pages/cookingRecord/index",
     "pages/cookingReminder/index"

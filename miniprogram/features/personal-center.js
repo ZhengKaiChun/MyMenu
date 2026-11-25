@@ -27,6 +27,28 @@ exports.accountSecurity = createPage({
       wx.showToast({ title: '账号已更新', icon: 'none' });
       go('settings', {}, { replace: true });
     },
+    async unbindWechat() {
+      if (!this.data.currentPassword) throw Error('请先在上方输入当前密码');
+      const answer = await new Promise((resolve) =>
+        wx.showModal({
+          title: '解除微信绑定',
+          content:
+            '这个账号的小家和菜谱会保留，之后只能用账号密码登录。解除后，可在另一个账号绑定此微信。',
+          confirmText: '确认解除',
+          success: resolve,
+        }),
+      );
+      if (!answer.confirm) return;
+      await api.request('/me/wechat/unbind', {
+        method: 'POST',
+        body: { currentPassword: this.data.currentPassword },
+      });
+      this.setData({
+        currentPassword: '',
+        security: { ...this.data.security, wechatBound: false },
+      });
+      wx.showToast({ title: '已解除，可换账号绑定', icon: 'none' });
+    },
   },
 });
 exports.achievements = createPage({

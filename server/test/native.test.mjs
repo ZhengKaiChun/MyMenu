@@ -444,6 +444,11 @@ test('formal avatar upload copies read-only package assets and removes the tempo
   assert.equal(events[0][1], '/assets/avatars/pig-3.png');
   assert.equal(events[1][1], events[0][2]);
   assert.equal(events[2][1], events[0][2]);
+  events.length = 0;
+  await api.upload('/assets/food-2.jpg', { crop: false });
+  assert.equal(events[0][1], '/assets/food-2.jpg');
+  assert.equal(events[1][1], events[0][2]);
+  assert.equal(events[2][1], events[0][2]);
 });
 
 test('personal inventory works independently and account updates replace the session', async (t) => {
@@ -538,4 +543,73 @@ test('production dish images use WeChat downloadFile before rendering and cache 
   assert.equal(await api.image('dish-cover'), '/tmp/wechat-dish.jpg');
   assert.equal(signed, 2);
   assert.equal(downloaded, 2);
+});
+
+test('native restore page imports local family into the selected formal account without clearing old storage', async (t) => {
+  const { app } = await buildApp({
+    config: {
+      production: false,
+      database: {},
+      origin: 'http://127.0.0.1:3000',
+      mediaKey: 'n'.repeat(32),
+      pepper: 'p'.repeat(32),
+      mediaDir: '.runtime/test-media',
+      wechatSecret: '',
+      allowDevAuth: false,
+    },
+    logger: false,
+  });
+  t.after(() => app.close());
+  const rt = nativeRuntime(app);
+  const register = rt.instance('register');
+  register.onLoad({});
+  register.setData({
+    username: 'restored_personal',
+    password: 'personal-password-123',
+    confirm: 'personal-password-123',
+    consent: true,
+  });
+  await register.submit();
+  const old = {
+    schema: 1,
+    users: [{ id: 'old-user', nickname: '旧小猪' }],
+    families: [{ id: 'preview-user-home', name: '旧日饭桌', owner_id: 'old-user' }],
+    members: [{ family_id: 'preview-user-home', user_id: 'old-user', identity: '猪妈妈' }],
+    collections: [{ id: 'old-collection', family_id: 'preview-user-home', name: '家常菜' }],
+    dishes: [
+      {
+        id: 'old-dish',
+        family_id: 'preview-user-home',
+        collectionId: 'old-collection',
+        name: '蒸南瓜',
+        minutes: 12,
+        servings: 2,
+        ingredients: [],
+        steps: [],
+      },
+    ],
+    inventories: [
+      { family_id: 'preview-user-home', name: '南瓜', quantity: 1, unit: '个', category: '蔬菜' },
+    ],
+    orders: [],
+    media: {},
+    cookingRecords: [],
+  };
+  rt.wx.setStorageSync('geiwofan.preview.database.v1', old);
+  const restore = rt.instance('restorePreview');
+  restore.onLoad({});
+  await restore.onShow();
+  assert.equal(restore.data.account, 'restored_personal');
+  assert.equal(restore.data.families[0].dishes, 1);
+  await restore.toggle({ currentTarget: { dataset: { id: old.families[0].id } } });
+  await restore.restore();
+  assert.equal(restore.data.error, '');
+  const api = rt.load(resolve(rt.root, 'lib/api.js'));
+  const families = await api.request('/families');
+  assert.equal(families.length, 1);
+  assert.equal(
+    (await api.request('/families/' + families[0].id + '/menu')).dishes[0].name,
+    '蒸南瓜',
+  );
+  assert.equal(rt.wx.getStorageSync('geiwofan.preview.database.v1'), old);
 });

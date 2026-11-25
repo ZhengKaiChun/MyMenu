@@ -1,0 +1,22 @@
+<g-shell id="page-shell" title="找回旧预览数据" back="{{true}}">
+  <scroll-view class="scroll" scroll-y>
+    <view class="page-content restore-page">
+      <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
+      <view class="restore-letter">
+        <view class="restore-letter-mark"><g-icon name="home" size="28"/><text>旧时光，带回家</text></view>
+        <view class="h2">把旧菜谱装进新小家</view>
+        <text>手机里的旧预览数据仍在。选择要找回的小家，菜谱、图片和食材会复制到正式账号；旧点餐会在对应日期过去后显示在只读饭历。</text>
+      </view>
+      <view class="restore-target"><text>导入到当前正式账号</text><text class="restore-target-name">{{account}}</text><text>请先核对账号。导入不会覆盖现有小家，也不会把旧预览成员变成正式成员；以后可以重新邀请他们。</text></view>
+      <view class="restore-title">选择要找回的小家</view>
+      <view wx:if="{{!families.length}}" class="restore-empty">这台手机暂时没有可找回的自建小家。请用保存旧数据的微信和手机打开本页。</view>
+      <button wx:for="{{families}}" wx:key="sourceId" hover-class="none" class="restore-family {{item.selected?'selected':''}} {{item.imported?'imported':''}}" data-id="{{item.sourceId}}" bindtap="toggle" disabled="{{item.imported || actionBusy}}">
+        <view class="restore-family-head"><g-icon name="pot" size="24"/><text>{{item.name}}</text><text class="restore-check">{{item.imported?'已找回':item.selected?'✓':'○'}}</text></view>
+        <view class="restore-family-meta">{{item.dishes}} 道菜 · {{item.ingredients}} 种食材 · {{item.history}} 条旧点餐</view>
+      </button>
+      <view class="restore-note">旧预览数据会留在这台手机上。导入完成后，在“我的小家”里可查看新小家与旧饭历。</view>
+      <view wx:if="{{progress}}" class="restore-progress">{{progress}}</view>
+    </view>
+  </scroll-view>
+  <view slot="dock" class="dock"><button hover-class="none" class="btn" disabled="{{!selectedCount || actionBusy}}" loading="{{actionBusy}}" bindtap="restore">找回 {{selectedCount}} 个小家</button></view>
+</g-shell>

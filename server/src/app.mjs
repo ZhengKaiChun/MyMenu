@@ -20,6 +20,7 @@ import { shareRoutes } from './modules/shares/routes.mjs';
 import { dissolutionRoutes } from './modules/dissolutions/routes.mjs';
 import { mediaRoutes } from './modules/media/routes.mjs';
 import { notificationRoutes } from './modules/notifications/wechat.mjs';
+import { legacyImportRoutes } from './modules/legacy-import/routes.mjs';
 export async function buildApp(options = {}) {
   const config = options.config || configFromEnv(),
     db = options.db || (await createDatabase(config.database));
@@ -116,6 +117,7 @@ export async function buildApp(options = {}) {
     dissolutionRoutes,
     mediaRoutes,
     notificationRoutes,
+    legacyImportRoutes,
   ])
     register(app, ctx);
   route('DELETE', '/me', z.object({ confirm: z.literal(true) }).strict(), async (r) =>
@@ -139,6 +141,7 @@ export async function buildApp(options = {}) {
       await tx.query('DELETE FROM cooking_records_legacy WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM cooking_records WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM achievement_totals WHERE user_id=$1', [r.user.id]);
+      await tx.query('DELETE FROM legacy_imports WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM members WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM sessions WHERE user_id=$1', [r.user.id]);
       await tx.query('DELETE FROM identities WHERE user_id=$1', [r.user.id]);
@@ -154,7 +157,7 @@ export async function buildApp(options = {}) {
       return { ok: true };
     }),
   );
-  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.18' }));
+  app.get('/health', async () => ({ ok: true, version: '0.2.0-rc.19' }));
   app.addHook('onClose', async () => {
     if (!options.db) await db.close();
   });

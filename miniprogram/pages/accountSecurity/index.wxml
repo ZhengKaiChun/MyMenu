@@ -6,4 +6,5 @@
 <label class="form-label">{{security.passwordSet?'新密码':'设置密码'}}</label><input class="input" password value="{{newPassword}}" bindinput="input" data-field="newPassword" placeholder="{{security.passwordSet?'10–128位，不修改密码可留空':'请设置10–128位密码'}}" maxlength="128"/>
 <label class="form-label">确认密码</label><input class="input" password value="{{confirm}}" bindinput="input" data-field="confirm" placeholder="再次输入新密码" maxlength="128"/></view>
 <text class="security-help">{{security.passwordSet?'保存后，其他设备需重新登录。':'首次设置请在重新登录后5分钟内完成。'}}</text>
+<button wx:if="{{security.wechatBound}}" hover-class="none" class="btn ghost" bindtap="unbindWechat" style="margin-top:18px">解除微信绑定</button>
 </view></scroll-view><view slot="dock" class="dock"><button hover-class="none" class="btn" bindtap="submit" loading="{{actionBusy}}">保存账号设置</button></view></g-shell>

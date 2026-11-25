@@ -41,6 +41,7 @@ const parents = {
   sms: 'login',
   history: 'today',
   accountSecurity: 'settings',
+  restorePreview: 'settings',
   achievements: 'settings',
   cookingRecord: 'today',
   cookingReminder: 'requests',

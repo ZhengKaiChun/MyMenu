@@ -166,7 +166,7 @@ export function mealRoutes(app, { db, route }) {
       'DATE_RANGE',
       '日期范围不能超过三个月',
     );
-    return (
+    const current = (
       await db.query(
         "SELECT DISTINCT o.meal_date::text AS date FROM orders o JOIN order_lines l ON l.order_id=o.id WHERE o.family_id=$1 AND o.status='accepted' AND o.meal_date BETWEEN $2 AND $3 AND ($4::boolean=false OR l.done OR o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date) AND ($5::boolean=false OR (o.meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date AND o.meal_date >= (now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months')) ORDER BY date",
         [r.params.familyId, from, to, r.query.done === '1', r.query.history === '1'],
@@ -174,6 +174,16 @@ export function mealRoutes(app, { db, route }) {
     ).rows.map((x) => ({
       date: String(x.date instanceof Date ? x.date.toISOString() : x.date).slice(0, 10),
     }));
+    if (r.query.history !== '1') return current;
+    const legacy = (
+      await db.query(
+        "SELECT DISTINCT meal_date::text AS date FROM legacy_history WHERE family_id=$1 AND meal_date BETWEEN $2 AND $3 AND meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date AND meal_date >= (now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months'",
+        [r.params.familyId, from, to],
+      )
+    ).rows;
+    return [...new Set([...current.map((x) => x.date), ...legacy.map((x) => x.date)])]
+      .sort()
+      .map((date) => ({ date }));
   });
   for (const endpoint of ['meals', 'history']) {
     route('GET', '/families/:familyId/' + endpoint, null, async (r) => {
@@ -214,11 +224,35 @@ export function mealRoutes(app, { db, route }) {
           [r.params.familyId, date],
         )
       ).rows;
+      if (endpoint === 'history') {
+        const legacy = (
+          await db.query(
+            "SELECT id,slot,dish_name,cover_id,quantity,sources,cooker_label FROM legacy_history WHERE family_id=$1 AND meal_date=$2 AND meal_date < (now() AT TIME ZONE 'Asia/Shanghai')::date AND meal_date >= (now() AT TIME ZONE 'Asia/Shanghai')::date-interval '3 months' ORDER BY created_at,id",
+            [r.params.familyId, date],
+          )
+        ).rows;
+        for (const h of legacy)
+          grouped.set('legacy:' + h.id, {
+            dishId: h.id,
+            slot: h.slot,
+            quantity: h.quantity,
+            snapshot: { name: h.dish_name, coverId: h.cover_id },
+            legacy: true,
+            sources: h.sources.map((s, index) => ({
+              id: h.id + ':' + index,
+              userId: h.id + ':' + index,
+              identity: s.identity,
+              quantity: s.quantity,
+            })),
+            cooker: h.cooker_label ? { identity: h.cooker_label } : null,
+          });
+      }
       return {
         date,
         dishes: [...grouped.values()].map((d) => ({
           ...d,
-          cooker: claims.find((c) => c.dish_id === d.dishId && c.slot === d.slot) || null,
+          cooker:
+            claims.find((c) => c.dish_id === d.dishId && c.slot === d.slot) || d.cooker || null,
         })),
       };
     });

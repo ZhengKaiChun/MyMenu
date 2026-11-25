@@ -147,6 +147,8 @@ async function complete(tx, fid, did, actor, users) {
   await tx.query('DELETE FROM cooking_records_legacy WHERE family_id=$1', [fid]);
   await tx.query('DELETE FROM cooking_records WHERE family_id=$1', [fid]);
   await tx.query('DELETE FROM achievement_totals WHERE family_id=$1', [fid]);
+  await tx.query('DELETE FROM legacy_history WHERE family_id=$1', [fid]);
+  await tx.query('DELETE FROM legacy_imports WHERE family_id=$1', [fid]);
   await tx.query('UPDATE invitations SET revoked=true WHERE family_id=$1', [fid]);
   await tx.query('UPDATE shares SET revoked=true WHERE source_family_id=$1', [fid]);
   await notify(

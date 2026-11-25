@@ -241,6 +241,16 @@ exports.settings = createPage({
       security,
       achievements,
       capabilities: await api.request('/capabilities'),
+      legacyAvailable: (() => {
+        const old = wx.getStorageSync(
+          require('../config/index').previewDatabaseKey || 'geiwofan.preview.database.v1',
+        );
+        return (
+          !api.isPreview() &&
+          old?.schema === 1 &&
+          old.families?.some((f) => f.id !== 'preview-home' && !f.deleted_at)
+        );
+      })(),
     });
   },
   methods: {
@@ -265,11 +275,48 @@ exports.settings = createPage({
       wx.reLaunch({ url: '/pages/home/index' });
     },
     async bindWechat() {
-      const result = await new Promise((resolve, reject) =>
-        wx.login({ success: resolve, fail: reject }),
+      const login = () =>
+        new Promise((resolve, reject) => wx.login({ success: resolve, fail: reject }));
+      const checked = await api.request('/me/wechat/check', {
+        method: 'POST',
+        body: { code: (await login()).code },
+      });
+      if (checked.state === 'current') {
+        wx.showToast({ title: '这个微信已绑定当前账号', icon: 'none' });
+        this.setData({ security: { ...this.data.security, wechatBound: true } });
+        return;
+      }
+      if (checked.state === 'other') {
+        await new Promise((resolve) =>
+          wx.showModal({
+            title: '这个微信已有账号',
+            content:
+              '已绑定账号「' +
+              checked.account +
+              '」。原账号和小家数据仍在，请先用原账号登录，在“账号与密码”里解除绑定后，再回来绑定。绑定不会自动迁移数据。',
+            showCancel: false,
+            confirmText: '我知道了',
+            success: resolve,
+          }),
+        );
+        return;
+      }
+      const target = this.data.security.username || this.data.user.nickname || '当前账号';
+      const answer = await new Promise((resolve) =>
+        wx.showModal({
+          title: '确认绑定到当前账号',
+          content:
+            '即将把这个微信绑定到「' +
+            target +
+            '」。以后微信一键登录会进入这个账号；其他账号的数据不会合并或转移。',
+          confirmText: '确认绑定',
+          success: resolve,
+        }),
       );
-      await api.request('/me/wechat', { method: 'POST', body: { code: result.code } });
-      wx.showToast({ title: '微信身份已绑定', icon: 'none' });
+      if (!answer.confirm) return;
+      await api.request('/me/wechat', { method: 'POST', body: { code: (await login()).code } });
+      this.setData({ security: { ...this.data.security, wechatBound: true } });
+      wx.showToast({ title: '已绑定当前账号', icon: 'none' });
     },
     async subscribe() {
       const templateId = this.data.capabilities.subscriptionTemplateId;
