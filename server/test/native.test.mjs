@@ -510,3 +510,32 @@ test('personal inventory works independently and account updates replace the ses
   assert.equal(security.data.currentPassword, '');
   assert.equal((await api.request('/me/security')).username, 'personal_changed');
 });
+
+test('production dish images use WeChat downloadFile before rendering and cache by account', async () => {
+  const runtime = nativeRuntime(null);
+  const session = runtime.load(resolve(runtime.root, 'lib/session.js'));
+  const api = runtime.load(resolve(runtime.root, 'lib/api.js'));
+  let signed = 0;
+  let downloaded = 0;
+  runtime.wx.request = (options) => {
+    signed++;
+    options.success({
+      statusCode: 200,
+      data: { url: 'https://givemefood.cn/media/test?expires=1&signature=x' },
+    });
+  };
+  runtime.wx.downloadFile = (options) => {
+    downloaded++;
+    assert.equal(options.url.startsWith('https://givemefood.cn/media/'), true);
+    options.success({ statusCode: 200, tempFilePath: '/tmp/wechat-dish.jpg' });
+  };
+  session.token = 'reviewer-a';
+  assert.equal(await api.image('dish-cover'), '/tmp/wechat-dish.jpg');
+  assert.equal(await api.image('dish-cover'), '/tmp/wechat-dish.jpg');
+  assert.equal(signed, 1);
+  assert.equal(downloaded, 1);
+  session.token = 'reviewer-b';
+  assert.equal(await api.image('dish-cover'), '/tmp/wechat-dish.jpg');
+  assert.equal(signed, 2);
+  assert.equal(downloaded, 2);
+});
