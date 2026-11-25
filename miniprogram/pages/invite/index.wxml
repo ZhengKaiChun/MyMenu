@@ -45,9 +45,10 @@
       </view>
     </view>
   </scroll-view>
-  <view slot="dock" class="dock">
+  <view slot="dock" class="dock"><text wx:if="{{preview}}" class="caption sharing-mode-note">本机演示邀请 · 微信好友需共享后台才能加入</text>
     <view class="row">
-      <button hover-class="none" class="btn" open-type="share" disabled="{{!invitation}}">
+      <button wx:if="{{preview}}" hover-class="none" class="btn" bindtap="previewSharing"><g-icon name="envelope" size="21" tone="light"/>微信邀请</button>
+      <button wx:else hover-class="none" class="btn" open-type="share" disabled="{{!invitation}}">
         <g-icon tone="light" name="envelope" size="21" />
         微信邀请
       </button>
@@ -71,7 +72,7 @@
         {{invitation.token}}
       </view>
       <view class="pass-tear" />
-      <view class="pass-bottom">7天有效 · 仅限一位新成员</view>
+      <view class="pass-bottom">{{preview?'仅当前设备演示 · 不能跨手机使用':'7天有效 · 仅限一位新成员'}}</view>
     </view>
     <button hover-class="none" class="btn" bindtap="copyCode" loading="{{actionBusy}}">
       <g-icon name="key" size="21" tone="light" />

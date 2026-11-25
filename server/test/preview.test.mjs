@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+// Exercise the device-local transport regardless of the deployable app's mode.
+const configPath = require.resolve('../../miniprogram/config/index.js');
+require.cache[configPath] = {
+  id: configPath,
+  filename: configPath,
+  loaded: true,
+  exports: { mode: 'preview', apiBase: 'http://127.0.0.1:3000' },
+};
 const preview = require('../../miniprogram/preview/index.js');
 const fingerprint = require('../../miniprogram/preview/hash.js');
 const { today } = require('../../miniprogram/preview/seed.js');

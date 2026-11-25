@@ -60,7 +60,13 @@ function createPage(options) {
         return await fn.apply(this, args);
       } catch (e) {
         if (e.status === 401 && ['UNAUTHENTICATED', 'SESSION_EXPIRED'].includes(e.code)) {
+          const pending = {
+            page: this.route || getCurrentPages().slice(-1)[0]?.route,
+            query: { ...this.query },
+          };
           session.clear();
+          if (pending.page && !['pages/login/index', 'pages/password/index'].includes(pending.page))
+            session.pendingLink = pending;
           wx.redirectTo({ url: '/pages/login/index' });
           return;
         }

@@ -3,7 +3,7 @@
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-recipeGift">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="real-letter recipe-letter">
+      <view wx:if="{{gift}}" class="real-letter recipe-letter">
         <view class="letter-inner">
           <text class="letter-postmark">给我饭 RECIPE MAIL</text>
           <text class="letter-kicker">把家的味道，寄给你</text>
@@ -26,10 +26,10 @@
         </view>
         <view class="letter-envelope-edge" />
       </view>
-      <view class="section-title">
+      <view wx:if="{{gift}}" class="section-title">
         <view class="h3 strong">信里装着{{gift.dishes.length}}道菜</view>
       </view>
-      <view class="gift-mini-list">
+      <view wx:if="{{gift}}" class="gift-mini-list">
         <view wx:for="{{gift.dishes}}" wx:key="id">
           <image class="food" src="{{item.cover}}" mode="aspectFill" />
           <text>{{item.name}}</text>
@@ -39,7 +39,7 @@
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button hover-class="none" class="btn" bindtap="save" loading="{{actionBusy}}">
+    <button hover-class="none" class="btn" bindtap="save" loading="{{actionBusy}}" disabled="{{loading || !gift || !!error}}">
       <g-icon name="check" size="21" tone="light" />
       收下这份味道 · 保存到小家
     </button>

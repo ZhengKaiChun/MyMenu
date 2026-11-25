@@ -38,8 +38,9 @@
       </view>
     </view>
   </scroll-view>
-  <view slot="dock" class="dock">
-    <button hover-class="none" class="btn" open-type="share" disabled="{{loading || !shareCover}}">分享给微信好友</button>
+  <view slot="dock" class="dock"><text wx:if="{{preview}}" class="caption sharing-mode-note">本机预览 · 连接共享后台后才能发给好友</text>
+    <button wx:if="{{preview}}" hover-class="none" class="btn" bindtap="previewSharing">分享给微信好友</button>
+    <button wx:else hover-class="none" class="btn" open-type="share" disabled="{{loading || !shareCover}}">分享给微信好友</button>
   </view>
 </g-shell>
 

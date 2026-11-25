@@ -1,4 +1,5 @@
 const { createPage, go, session, api, familyPath } = require('../lib/page');
+const links = require('../lib/link-context');
 exports.home = createPage({
   data: { families: [], houseIndex: 0 },
   async reload() {
@@ -47,6 +48,7 @@ exports.join = createPage({
 exports.invitation = createPage({
   data: { invitation: null },
   async reload() {
+    links.assertRemoteLink(this.query);
     this.setData({
       invitation: await api.request('/invitations/' + encodeURIComponent(this.query.token)),
     });
@@ -166,6 +168,7 @@ exports.invite = createPage({
       });
   },
   methods: {
+    previewSharing: links.explain,
     async chooseRole(e) {
       this.setData({ role: e.currentTarget.dataset.role, invitation: null });
       this.setData({
@@ -208,7 +211,10 @@ exports.invite = createPage({
             this.data.role === 'cook'
               ? '/assets/invitation-cook-share.png'
               : '/assets/invitation-share.png',
-          path: '/pages/invitation/index?token=' + encodeURIComponent(invitation.token),
+          path:
+            '/pages/invitation/index?token=' +
+            encodeURIComponent(invitation.token) +
+            links.suffix(),
         }
       : { title: '给我饭', path: '/pages/home/index' };
   },

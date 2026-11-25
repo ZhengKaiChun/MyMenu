@@ -3,7 +3,7 @@
   <scroll-view class="scroll" scroll-y>
     <view class="page-content page-invitation">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
-      <view class="real-letter">
+      <view wx:if="{{invitation}}" class="real-letter">
         <view class="letter-inner">
           <text class="letter-postmark">给我饭 INVITATION</text>
           <text class="letter-kicker">一封留给你的邀请</text>
@@ -22,10 +22,10 @@
         </view>
         <view class="letter-envelope-edge" />
       </view>
-      <text class="caption copy small-text">{{invitation.role==='cook'?'加入后一起管理菜谱、准备三餐':'加入后可以点菜、看回音和全家菜单'}}</text>
+      <text wx:if="{{invitation}}" class="caption copy small-text">{{invitation.role==='cook'?'加入后一起管理菜谱、准备三餐':'加入后可以点菜、看回音和全家菜单'}}</text>
     </view>
   </scroll-view>
   <view slot="dock" class="dock">
-    <button hover-class="none" class="btn" bindtap="accept" loading="{{actionBusy}}">接受邀请，回家吃饭</button>
+    <button hover-class="none" class="btn" bindtap="accept" loading="{{actionBusy}}" disabled="{{loading || !invitation || !!error}}">接受邀请，回家吃饭</button>
   </view>
 </g-shell>

@@ -667,18 +667,24 @@ function request(path, options = {}, token) {
       } else S.fail('微信外部提醒需配置正式后台；站内回音正常可用');
     } else if (parts[0] === 'invitations') {
       const i = S.demand(
-          db.invitations.find(
-            (i) => i.token === parts[1] && !i.revoked && i.expires_at > new Date().toISOString(),
-          ),
-          '邀请已失效，请重新寄一封',
-          410,
-          'INVITATION_EXPIRED',
-        ),
-        f = S.demand(
-          db.families.find((f) => f.id === i.family_id && !f.deleted_at),
-          '这个小家已解散',
-          410,
-        );
+        db.invitations.find((i) => i.token === parts[1]),
+        '此邀请不在当前设备。本机预览不支持跨手机加入，请接通共享后台后重新邀请。',
+        409,
+        'PREVIEW_LINK_NOT_LOCAL',
+      );
+      S.demand(!i.revoked, '这封邀请已撤回，请重新生成', 410, 'INVITATION_REVOKED');
+      S.demand(
+        i.expires_at > new Date().toISOString(),
+        '邀请已过期，请重新生成',
+        410,
+        'INVITATION_EXPIRED',
+      );
+      const f = S.demand(
+        db.families.find((f) => f.id === i.family_id && !f.deleted_at),
+        '这个小家已解散',
+        410,
+        'FAMILY_CLOSED',
+      );
       if (method === 'GET') out = { role: i.role, expires_at: i.expires_at, name: f.name };
       else {
         let existing = db.members.find((m) => m.family_id === f.id && m.user_id === user.id);
@@ -943,10 +949,15 @@ function dissolve(db, user, fid, method, rid, action, b) {
 }
 function packet(db, token) {
   const s = S.demand(
-    db.shares.find(
-      (s) => s.token === token && !s.revoked && s.expires_at > new Date().toISOString(),
-    ),
-    '菜谱分享已失效，请重新寄一封',
+    db.shares.find((s) => s.token === token),
+    '这封菜谱不在当前设备。本机预览不支持跨手机接收，请接通共享后台后重新分享。',
+    409,
+    'PREVIEW_LINK_NOT_LOCAL',
+  );
+  S.demand(!s.revoked, '这封菜谱分享已撤回', 410, 'SHARE_REVOKED');
+  S.demand(
+    s.expires_at > new Date().toISOString(),
+    '菜谱分享已过期，请重新寄一封',
     410,
     'SHARE_EXPIRED',
   );

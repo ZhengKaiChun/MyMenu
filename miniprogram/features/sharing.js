@@ -1,5 +1,6 @@
 const { createPage, go, decorate, session, api, familyPath } = require('../lib/page');
 const groups = require('../lib/collections');
+const links = require('../lib/link-context');
 function filterShare(page) {
   const dishes = page.data.allDishes.filter(
     (d) =>
@@ -67,6 +68,7 @@ function parcel(received) {
   return createPage({
     data: { gift: null, received },
     async reload() {
+      links.assertRemoteLink(this.query);
       const token = this.query.token || session.shareToken;
       if (!token) throw Error('这封信还没有封好');
       session.shareToken = token;
@@ -76,6 +78,7 @@ function parcel(received) {
       this.setData({ shareCover: await require('../lib/share-cover')(this, gift.dishes) });
     },
     methods: {
+      previewSharing: links.explain,
       receive() {
         go('recipeGift', { token: this.data.token });
       },
@@ -87,7 +90,8 @@ function parcel(received) {
       return {
         title: '这几道拿手菜，想请你也尝尝',
         imageUrl: this.data.shareCover || '/assets/recipe-share.png',
-        path: '/pages/recipeGift/index?token=' + encodeURIComponent(this.data.token),
+        path:
+          '/pages/recipeGift/index?token=' + encodeURIComponent(this.data.token) + links.suffix(),
       };
     },
   });
