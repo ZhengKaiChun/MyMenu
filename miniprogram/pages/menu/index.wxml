@@ -48,7 +48,7 @@
         </view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish"><g-icon wx:if="{{item.featured}}" class="featured-star" name="star" size="20"/>
           <button hover-class="none" class="menu-photo" bindtap="go" data-page="dish" data-id="{{item.id}}">
-            <image class="food" src="{{item.cover}}" mode="aspectFill" />
+            <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           </button>
           <view class="menu-dish-info">
             <button hover-class="none" class="h3 strong" bindtap="go" data-page="dish" data-id="{{item.id}}">
@@ -105,7 +105,7 @@
     </view>
     <scroll-view scroll-y style="height:{{cart.length > 4 ? 340 : cart.length * 76}}px;max-height:45vh">
       <view wx:for="{{cart}}" wx:key="id" class="row list-row cart-dish">
-        <image class="food" src="{{item.cover}}" mode="aspectFill" />
+        <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
         <text class="grow">{{item.name}}</text>
         <view class="row">
           <button hover-class="none" class="pill" bindtap="minus" data-id="{{item.id}}"><view class="qty-symbol"/></button>

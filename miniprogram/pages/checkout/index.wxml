@@ -18,7 +18,7 @@
           <text class="caption copy small-text">{{count}}份</text>
         </view>
         <view wx:for="{{items}}" wx:key="id" class="order-dish row">
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}}分钟 · 每份{{item.servings}}人份</text>

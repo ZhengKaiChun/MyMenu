@@ -15,7 +15,7 @@
       />
       <view class="cover-heading"><label class="form-label">菜品封面</label><button hover-class="none" class="text-btn" bindtap="ai">✧ AI优化图片</button></view>
       <button hover-class="none" class="upload cover-upload" bindtap="picture" data-kind="cover" style="width: 100%">
-        <image
+        <image webp="{{true}}"
           wx:if="{{cover}}"
           src="{{cover}}"
           mode="aspectFill"
@@ -118,7 +118,7 @@
           data-index="{{index}}"
           style="width: 100%"
         >
-          <image wx:if="{{item.image}}" class="step-photo" src="{{item.image}}" mode="scaleToFill" />
+          <image webp="{{true}}" wx:if="{{item.image}}" class="step-photo" src="{{item.image}}" mode="scaleToFill" />
           <view wx:else class="upload-placeholder"><g-icon name="image" size="26"/><text>添加步骤图 · 选填</text></view>
         </button>
         <textarea

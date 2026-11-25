@@ -4,7 +4,7 @@
     <view class="page-content page-settings">
       <view wx:if="{{error}}" class="error-tip" bindtap="retry">{{error}} · 点击重试</view>
       <view class="card profile-pass row">
-        <image
+        <image webp="{{true}}"
           wx:if="{{user.avatar}}"
           src="{{user.avatar}}"
           mode="aspectFill"

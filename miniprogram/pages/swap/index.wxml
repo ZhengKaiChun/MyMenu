@@ -10,7 +10,7 @@
       <view class="swap-original">
         <text class="caption copy small-text">原来点了</text>
         <view class="row start">
-          <image class="food" src="{{source.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{source.cover}}" mode="aspectFill" />
           <view class="h3 strong">{{source.snapshot.name}}</view>
         </view>
       </view>
@@ -24,7 +24,7 @@
           data-id="{{item.id}}"
           bindtap="pick"
         >
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <text>{{item.name}}</text>
           <text style="float: right">{{selected===item.id?'✓':'○'}}</text>
         </button>

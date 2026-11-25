@@ -4,7 +4,7 @@
       <checkbox-group bindchange="select">
         <label wx:for="{{dishes}}" wx:key="id" class="recipe-share-row">
           <checkbox value="{{item.id}}" checked="{{util.contains(selected,item.id)}}" />
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view>
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}}分钟 · 含用料与制作步骤</text>

@@ -8,7 +8,7 @@
         <button hover-class="none" class="pill" bindtap="toggle">{{textOnly?'图文版':'纯文字'}}</button>
       </view>
       <text class="muted">{{dish.minutes}} 分钟 · {{dish.servings}} 人份</text>
-      <image wx:if="{{!textOnly}}" src="{{dish.cover}}" class="food mid" mode="aspectFill" />
+      <image webp="{{true}}" wx:if="{{!textOnly}}" src="{{dish.cover}}" class="food mid" mode="aspectFill" />
       <view class="section-title"><view class="h3 strong">用料</view></view>
       <view wx:for="{{dish.ingredients}}" wx:key="index" class="list-row">
         <text>{{item.name}}</text>
@@ -18,7 +18,7 @@
       <view class="steps">
         <view wx:for="{{dish.steps}}" wx:key="index" class="step">
           <text class="step-num">STEP {{index+1}}</text>
-          <image
+          <image webp="{{true}}"
             wx:if="{{!textOnly ? item.image : false}}"
             src="{{item.image}}"
             class="step-photo"

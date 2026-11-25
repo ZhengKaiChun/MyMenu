@@ -36,7 +36,7 @@
         <view class="catalog-label">{{dishes.length}} 道菜</view>
         <view wx:for="{{dishes}}" wx:key="id" class="menu-dish manager-dish">
 
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h3 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.minutes}} 分钟</text>

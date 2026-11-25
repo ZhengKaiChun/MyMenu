@@ -37,7 +37,7 @@
           bindtap="openRecipe"
           data-id="{{item.dishId}}"
         >
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.snapshot.name}}</view>
             <view class="orderer-list">

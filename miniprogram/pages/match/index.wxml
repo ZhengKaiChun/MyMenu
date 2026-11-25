@@ -18,7 +18,7 @@
       </view>
       <view wx:for="{{results}}" wx:key="id" class="card">
         <view class="dish">
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">命中 {{item.matched}} 项 · 还需 {{util.join(item.missing)}}</text>

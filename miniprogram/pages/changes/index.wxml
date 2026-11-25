@@ -9,7 +9,7 @@
       </view>
       <view class="section-title"><view class="h3 strong">我已点的菜</view></view>
       <view wx:for="{{lines}}" wx:key="id" class="swap-source">
-        <image class="food" src="{{item.cover}}" mode="aspectFill" />
+        <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
         <view class="grow">
           <view class="h4 strong">{{item.snapshot.name}}</view>
           <text class="caption copy small-text">{{util.date(item.meal_date)}} · {{item.slot}} · {{item.quantity}}份</text>
@@ -33,12 +33,12 @@
         </view>
         <view class="change-pair">
           <view>
-            <image class="food" src="{{item.oldCover}}" mode="aspectFill" />
+            <image webp="{{true}}" class="food" src="{{item.oldCover}}" mode="aspectFill" />
             <text>{{item.old_snapshot.name}}</text>
           </view>
           <text>→</text>
           <view>
-            <image class="food" src="{{item.newCover}}" mode="aspectFill" />
+            <image webp="{{true}}" class="food" src="{{item.newCover}}" mode="aspectFill" />
             <text>{{item.new_snapshot.name}}</text>
           </view>
         </view>

@@ -12,13 +12,13 @@
           <text class="letter-kicker">A LITTLE CHANGE FOR OUR TABLE</text>
           <view class="change-pair">
             <view>
-              <image class="food" src="{{change.oldCover}}" mode="aspectFill" />
+              <image webp="{{true}}" class="food" src="{{change.oldCover}}" mode="aspectFill" />
               <text class="caption copy small-text">原来的菜</text>
               <view class="h4 strong">{{change.old_snapshot.name}}</view>
             </view>
             <text>→</text>
             <view>
-              <image class="food" src="{{change.newCover}}" mode="aspectFill" />
+              <image webp="{{true}}" class="food" src="{{change.newCover}}" mode="aspectFill" />
               <text class="caption copy small-text">想换成</text>
               <view class="h4 strong">{{change.new_snapshot.name}}</view>
             </view>

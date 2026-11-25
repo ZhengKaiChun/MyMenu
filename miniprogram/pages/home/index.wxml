@@ -12,7 +12,7 @@
         </view>
         <button hover-class="none" bindtap="go" data-page="settings">
           <view class="avatar">
-            <image wx:if="{{user.avatar}}" src="{{user.avatar}}" mode="aspectFill" />
+            <image webp="{{true}}" wx:if="{{user.avatar}}" src="{{user.avatar}}" mode="aspectFill" />
             <g-pig wx:else index="7" size="45" />
           </view>
         </button>

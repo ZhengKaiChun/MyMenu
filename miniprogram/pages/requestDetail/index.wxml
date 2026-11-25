@@ -16,7 +16,7 @@
           </view>
         </view>
         <view wx:for="{{order.items}}" wx:key="id" class="dish">
-          <image class="food" src="{{item.cover}}" mode="aspectFill" />
+          <image webp="{{true}}" class="food" src="{{item.cover}}" mode="aspectFill" />
           <view class="grow">
             <view class="h4 strong">{{item.name}}</view>
             <text class="caption copy small-text">{{item.quantity}}份</text>
